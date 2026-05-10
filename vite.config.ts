@@ -1,9 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
   base: './',
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.spec.ts'],
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
