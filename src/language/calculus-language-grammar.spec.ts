@@ -51,9 +51,11 @@ describe('CalcDoc grammar', () => {
 		assert.ok(parser);
 	})
 
-	it.each(parseFixtures)('$name', ({ doc, expectedTree }) => {
-		const result = parser.parse(doc);
-		assert.ok(result instanceof Tree);
-		assertMatchTree(result, expectedTree);
-	});
+	for (const { name, doc, expectedTree } of parseFixtures) {
+		it(name, () => {
+			const result = parser.parse(doc);
+			assert.ok(result instanceof Tree);
+			assertMatchTree(result, expectedTree);
+		});
+	}
 })

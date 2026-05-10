@@ -10,26 +10,38 @@ name: 'simple binding',
 doc: 'some = 123',
 expectedTree: `CalcDoc
   Pipeline
-    LetBinding
+    Binding
       Identifier
-      Expression
-        Literal
-          Number`,
+      Literal
+        Number`,
 },
 {
 name: 'expression binding',
 doc: 'some = 2+2',
 expectedTree: `CalcDoc
   Pipeline
-    LetBinding
+    Binding
       Identifier
-      Expression
-        Expression
+      AddExpression
+        Literal
+          Number
+        Literal
+          Number`,
+},
+{
+name: 'precedence with times',
+doc: '- 3 + 2 * 10',
+expectedTree: `CalcDoc
+  Pipeline
+    NoBinding
+      AddExpression
+        AddExpression
           Literal
             Number
-        AddOp
-        Expression
+        MulExpression
+          Literal
+            Number
           Literal
             Number`,
-	},
+},
 ];

@@ -8,40 +8,38 @@ Pipeline {
 }
 
 clause {
-	LetBinding
+	Binding
 	| NoBinding
 	| Comment
 }
 
-LetBinding { Identifier "=" Expression }
-NoBinding { Expression }
+Binding { Identifier "=" expression }
+NoBinding { expression }
 
-Expression {
-  Expression !_add AddOp Expression
-  | Expression !_mul MulOp Expression
-  | Expression !_convert ConvertOp Expression
-  | FunctionCall
+expression {
+  AddExpression
+  | MulExpression
+  | ConvertExpression
   | Literal
-  | OPR Expression CPR
+  | OPR expression CPR
 }
 
-FunctionCall { Identifier OPR ArgList? CPR }
-ArgList { Expression ("," Expression)* }
+AddExpression { expression? !_add (add | sub) expression }
+MulExpression{ expression !_mul (mul | div | mod) expression }
+ConvertExpression { expression !_convert ConvertOp expression }
 
 Literal { Number | String | Date }
 
 ConvertOp { IN }
-AddOp { add | sub }
-MulOp { mul | div | mod }
 
 @precedence {
-	// results deeper in AST
+	// Results deeper in AST
 	Identifier,
 	_mul @left,
 	_add @left,
 	_convert @left,
 	space
-	// results upper in AST
+	// Results upper in AST
 }
 
 @tokens {
@@ -67,6 +65,8 @@ MulOp { mul | div | mod }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
 
 	@precedence { Date, Number, Identifier }
+
+	@precedence { sub, Number }
 
 	OPR { "(" }
 	CPR { ")" }
