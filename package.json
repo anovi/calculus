@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "grammar": "lezer-generator ./src/language/calculus-language.grammar -o ./src/language/calculus-language.ts"
+    "grammar": "lezer-generator ./src/language/calculus-language.grammar -o ./language-build/calculus-language.ts"
   },
   "devDependencies": {
     "@types/node": "25.6.2",

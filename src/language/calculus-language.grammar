@@ -1,7 +1,7 @@
 // NAMING RULES
 // - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
 
-@top Query { Pipeline }
+@top CalcDoc { Pipeline }
 
 Pipeline {
 	clause+
@@ -31,8 +31,8 @@ ArgList { Expression ("," Expression)* }
 Literal { Number | String | Date }
 
 ConvertOp { IN }
-AddOp { Add | Sub }
-MulOp { Mul | Div | Mod }
+AddOp { add | sub }
+MulOp { mul | div | mod }
 
 @precedence {
 	// results deeper in AST
@@ -40,7 +40,7 @@ MulOp { Mul | Div | Mod }
 	_mul @left,
 	_add @left,
 	_convert @left,
-	Space
+	space
 	// results upper in AST
 }
 
@@ -50,11 +50,11 @@ MulOp { Mul | Div | Mod }
 	IN { "IN" | "in" }
 
 	// Arithmetic
-	Div { "/" }
-	Mul { "*" }
-	Mod { "%" }
-	Add { "+" }
-	Sub { "-" }
+	div { "/" }
+	mul { "*" }
+	mod { "%" }
+	add { "+" }
+	sub { "-" }
 
 	// Identifier
 	// need to have more symbols, like cyrrilic, and allowed YAML symbols
@@ -74,10 +74,10 @@ MulOp { Mul | Div | Mod }
 	// Comment
 	Comment { "//" ![\n]* }
 
-	@precedence { Comment, Div }
+	@precedence { Comment, div }
 
 	// Whitespace
-	Space { @whitespace+ }
+	space { @whitespace+ }
 
 	@precedence {
 		IN,
@@ -85,4 +85,4 @@ MulOp { Mul | Div | Mod }
 	}
 }
 
-@skip { Space }
+@skip { space }

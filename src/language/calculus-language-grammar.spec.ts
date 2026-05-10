@@ -1,46 +1,59 @@
 import assert from 'node:assert';
-import fs from 'node:fs';
-import path from 'node:path';
 import { buildParser } from "@lezer/generator";
 import { IterMode, Tree } from "@lezer/common"
+import grammarSource from './calculus-language.grammar?raw';
+import { parseFixtures } from './calculus-language-grammar.fixtures';
 
-
-const grammarSource = fs.readFileSync(path.join(process.cwd(), './src/language/calculus-language.grammar'))
-const parser = buildParser(grammarSource.toString(), {
+const parser = buildParser(grammarSource, {
 	moduleStyle: 'es',
+	fileName: 'calculus.build'
 })
 
-function printTree(tree: Tree) {
-	console.log('-'.repeat(30));
+const TREE_RULER = '-'.repeat(30);
+
+function formatTreeBody(tree: Tree): string {
+	const lines: string[] = [];
 	let level = 0;
-	function printNode(name: string) {
-		console.log(' '.repeat(level * 2) + name);
-	}
 	tree.iterate({
 		enter: (node) => {
-			printNode(node.name);
+			lines.push(' '.repeat(level * 2) + node.name);
 			level++;
 		},
 		leave: () => {
 			level--;
 		},
-		mode: IterMode.IncludeAnonymous
-	})
-	console.log('-'.repeat(30));
+		mode: IterMode.IncludeAnonymous,
+	});
+	return lines.join('\n');
+}
+
+function formatTree(tree: Tree): string {
+	return [TREE_RULER, formatTreeBody(tree), TREE_RULER].join('\n');
+}
+
+/** Logs tree with dashed rules; node lines match what `assertMatchTree` compares. */
+export function printTree(tree: Tree) {
+	console.log(formatTree(tree));
+}
+
+function assertMatchTree(tree: Tree, expected: string) {
+	const actual = formatTreeBody(tree);
+	if (actual !== expected) {
+		printTree(tree);
+	}
+	assert.strictEqual(actual, expected);
 }
 
 
-describe('Query grammar', () => {
+describe('CalcDoc grammar', () => {
 	
 	it('should build parser', () => {
 		assert.ok(parser);
 	})
-	it('should parse a simple query', () => {
-		const query = `some = 123`;
-		const result = parser.parse(query);
-		assert.ok(result)
-		assert.ok(result instanceof Tree)
-		printTree(result);
-	})
 
+	it.each(parseFixtures)('$name', ({ doc, expectedTree }) => {
+		const result = parser.parse(doc);
+		assert.ok(result instanceof Tree);
+		assertMatchTree(result, expectedTree);
+	});
 })
