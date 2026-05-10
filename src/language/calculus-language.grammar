@@ -1,9 +1,9 @@
 // NAMING RULES
 // - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
 
-@top CalcDoc { Pipeline }
+@top CalcDoc { pipeline }
 
-Pipeline {
+pipeline {
 	clause+
 }
 
@@ -13,8 +13,8 @@ clause {
 	| Comment
 }
 
-Binding { Identifier "=" expression }
-NoBinding { expression }
+Binding { Identifier "=" expression lineEnd}
+NoBinding { expression lineEnd}
 
 expression {
   AddExpression
@@ -73,6 +73,10 @@ ConvertOp { IN }
 
 	// Comment
 	Comment { "//" ![\n]* }
+
+	lineEnd { "\n" | @eof }
+
+	@precedence { lineEnd, space }
 
 	@precedence { Comment, div }
 

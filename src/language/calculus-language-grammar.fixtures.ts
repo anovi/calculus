@@ -9,39 +9,51 @@ export const parseFixtures: readonly ParseFixture[] = [
 name: 'simple binding',
 doc: 'some = 123',
 expectedTree: `CalcDoc
-  Pipeline
-    Binding
-      Identifier
-      Literal
-        Number`,
+  Binding
+    Identifier
+    Literal
+      Number`,
 },
 {
 name: 'expression binding',
 doc: 'some = 2+2',
 expectedTree: `CalcDoc
-  Pipeline
-    Binding
-      Identifier
+  Binding
+    Identifier
+    AddExpression
+      Literal
+        Number
+      Literal
+        Number`,
+},
+{
+name: 'precedence with times',
+doc: '- 3 + 2 * 10',
+expectedTree: `CalcDoc
+  NoBinding
+    AddExpression
       AddExpression
+        Literal
+          Number
+      MulExpression
         Literal
           Number
         Literal
           Number`,
 },
 {
-name: 'precedence with times',
-doc: '- 3 + 2 * 10',
+name: 'multiple lines',
+doc: 'some = 2 + 2\n10',
 expectedTree: `CalcDoc
-  Pipeline
-    NoBinding
-      AddExpression
-        AddExpression
-          Literal
-            Number
-        MulExpression
-          Literal
-            Number
-          Literal
-            Number`,
+  Binding
+    Identifier
+    AddExpression
+      Literal
+        Number
+      Literal
+        Number
+  NoBinding
+    Literal
+      Number`,
 },
 ];
