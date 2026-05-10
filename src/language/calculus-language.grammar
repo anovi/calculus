@@ -1,0 +1,88 @@
+// NAMING RULES
+// - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
+
+@top Query { Pipeline }
+
+Pipeline {
+	clause+
+}
+
+clause {
+	LetBinding
+	| NoBinding
+	| Comment
+}
+
+LetBinding { Identifier "=" Expression }
+NoBinding { Expression }
+
+Expression {
+  Expression !_add AddOp Expression
+  | Expression !_mul MulOp Expression
+  | Expression !_convert ConvertOp Expression
+  | FunctionCall
+  | Literal
+  | OPR Expression CPR
+}
+
+FunctionCall { Identifier OPR ArgList? CPR }
+ArgList { Expression ("," Expression)* }
+
+Literal { Number | String | Date }
+
+ConvertOp { IN }
+AddOp { Add | Sub }
+MulOp { Mul | Div | Mod }
+
+@precedence {
+	// results deeper in AST
+	Identifier,
+	_mul @left,
+	_add @left,
+	_convert @left,
+	Space
+	// results upper in AST
+}
+
+@tokens {
+
+	// Converter
+	IN { "IN" | "in" }
+
+	// Arithmetic
+	Div { "/" }
+	Mul { "*" }
+	Mod { "%" }
+	Add { "+" }
+	Sub { "-" }
+
+	// Identifier
+	// need to have more symbols, like cyrrilic, and allowed YAML symbols
+	IdentifierChar { @asciiLetter | @digit | "_" }
+	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
+	
+	// Literals
+	Number { @digit+ }
+	String { "\""![\"]*"\"" }
+	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
+
+	@precedence { Date, Number, Identifier }
+
+	OPR { "(" }
+	CPR { ")" }
+
+	// Comment
+	Comment { "//" ![\n]* }
+
+	@precedence { Comment, Div }
+
+	// Whitespace
+	Space { @whitespace+ }
+
+	@precedence {
+		IN,
+		Identifier
+	}
+}
+
+@skip { Space }
