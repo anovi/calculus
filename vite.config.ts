@@ -1,9 +1,19 @@
+import { fileURLToPath } from 'node:url'
+
 import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
   base: './',
+  build: {
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+        rates: fileURLToPath(new URL('./rates.html', import.meta.url)),
+      },
+    },
+  },
   test: {
     globals: true,
     environment: 'node',

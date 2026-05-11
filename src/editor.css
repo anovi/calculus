@@ -1,0 +1,76 @@
+:root {
+  --bg: #0c1222;
+  --surface: #141c2e;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #c8d1e0;
+  --heading: #f1f5ff;
+
+  color: var(--text);
+  background: var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  min-height: 100svh;
+  display: flex;
+}
+
+#editor {
+  flex: 1 1 auto;
+  min-height: 100svh;
+  display: flex;
+}
+
+#editor .cm-editor {
+  flex: 1 1 auto;
+  height: 100svh;
+  background: var(--surface);
+  color: var(--text);
+}
+
+#editor .cm-editor.cm-focused {
+  outline: none;
+}
+
+#editor .cm-scroller {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  padding: 18px 6px;
+}
+
+#editor .cm-gutters {
+  background: var(--bg);
+  color: rgba(200, 209, 224, 0.45);
+  border-right: 1px solid var(--border);
+}
+
+#editor .cm-activeLine,
+#editor .cm-activeLineGutter {
+  background: rgba(125, 211, 252, 0.06);
+}
+
+#editor .cm-cursor {
+  border-left-color: var(--heading);
+}
+
+#editor .cm-selectionBackground,
+#editor .cm-focused .cm-selectionBackground,
+#editor ::selection {
+  background: rgba(125, 211, 252, 0.22);
+}
