@@ -3,6 +3,8 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport } from '@codemirror/language'
 
 import { parser } from './language'
+import { calcRanges } from './composer/composer-field'
+import { calcResultsPlugin } from './composer/composer-view'
 import './editor.css'
 
 /** localStorage key used to persist the editor doc across reloads. */
@@ -56,6 +58,6 @@ new EditorView({
   parent: root,
   state: EditorState.create({
     doc: loadDoc(),
-    extensions: [basicSetup, calculus(), persist],
+    extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist],
   }),
 })
