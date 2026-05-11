@@ -21,7 +21,7 @@ expression {
   | MulExpression
   | ConvertExpression
   | Literal
-  | OPR expression CPR
+  | !_parenthesized opr expression cpr
 }
 
 AddExpression { expression? !_add (add | sub) expression }
@@ -35,6 +35,7 @@ ConvertOp { IN }
 @precedence {
 	// Results deeper in AST
 	Identifier,
+	_parenthesized @left,
 	_mul @left,
 	_add @left,
 	_convert @left,
@@ -68,8 +69,8 @@ ConvertOp { IN }
 
 	@precedence { sub, Number }
 
-	OPR { "(" }
-	CPR { ")" }
+	opr { "(" }
+	cpr { ")" }
 
 	// Comment
 	Comment { "//" ![\n]* }

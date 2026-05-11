@@ -42,6 +42,20 @@ expectedTree: `CalcDoc
           Number`,
 },
 {
+name: 'precedence with grouping',
+doc: '(3 + 2) * 10',
+expectedTree: `CalcDoc
+  NoBinding
+    MulExpression
+      AddExpression
+        Literal
+          Number
+        Literal
+          Number
+      Literal
+        Number`,
+},
+{
 name: 'multiple lines',
 doc: 'some = 2 + 2\n10',
 expectedTree: `CalcDoc
