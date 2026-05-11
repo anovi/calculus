@@ -99,6 +99,9 @@ export class MathComposer {
                     case terms.AddExpression:
                         result = this[terms.AddExpression](cursor);
                         break;
+                    case terms.MulExpression:
+                        result = this[terms.MulExpression](cursor);
+                        break;
                     default:
                         break;
                 }
