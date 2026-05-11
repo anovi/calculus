@@ -19,16 +19,15 @@ export class CalcValue extends RangeValue {
 }
 
 export class MathComposer {
-
-    bindings: Map<string, unknown> = new Map();
-    
-	sliceDoc: (from: number, to: number) => string;
-
 	constructor(sliceDoc: (from: number, to: number) => string) {
 		this.sliceDoc = sliceDoc;
 	}
+    
+    bindings: Map<string, unknown> = new Map();
 
-	assemble(cursor: TreeCursor, throwErrors: boolean = false): Range<CalcValue>[]|null {
+    sliceDoc: (from: number, to: number) => string;
+
+    assemble(cursor: TreeCursor, throwErrors: boolean = false): Range<CalcValue>[]|null {
 		try {
             if (cursor.type.id === terms.CalcDoc) {
                 return this.processRows(cursor);
@@ -46,160 +45,121 @@ export class MathComposer {
 		return null;
 	}
 
+    private readonly nodeHandlers: Map<number, (cursor: TreeCursor) => unknown> = new Map<number, (cursor: TreeCursor) => unknown>([
+        [terms.Binding, (cursor) => this.processBinding(cursor)],
+        [terms.NoBinding, (cursor) => this.processBinding(cursor)],
+        [terms.AddExpression, (cursor) => this.processAddExpression(cursor)],
+        [terms.MulExpression, (cursor) => this.processMulExpression(cursor)],
+        [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
+        [terms.Literal, (cursor) => this.processLiteral(cursor)],
+        [terms.String, (cursor) => this.processString(cursor)],
+        [terms.Number, (cursor) => this.processNumber(cursor)],
+    ]);
+
 	private processRows(cursor: TreeCursor): Range<CalcValue>[] {
 		const pipeline: Range<CalcValue>[] = [];
 		if (cursor.firstChild()) {
 			do {
-				if (cursor.node.type.id in this) {
-                    // @ts-ignore
-                    const value = this[cursor.node.type.id](cursor);
-                    if (value) pipeline.push(value);
-                }
+                const value = this.callHandler<Range<CalcValue> | null>(cursor.type.id, cursor);
+                if (value) pipeline.push(value);
 			} while (cursor.nextSibling());
 			cursor.parent();
 		}
 		return pipeline;
 	}
 
-    [terms.Binding](cursor: TreeCursor): Range<CalcValue>|null {
-        let value: Range<CalcValue>|null = null;
+    private callHandler<T>(termId: number, cursor: TreeCursor): T | null {
+        const handler = this.nodeHandlers.get(termId);
+        if (!handler) return null;
+        return handler(cursor) as T;
+    }
 
-        if (cursor.firstChild()) {
-            let id: string|undefined = undefined;
-            let result: null|number = null;
-			do {
-				switch (cursor.type.id) {
-                    case terms.Identifier:
-                        id = this.sliceDoc(cursor.from, cursor.to);    
-                        break;
-                    case terms.AddExpression:
-                        result = this[terms.AddExpression](cursor);
-                        break;
-                    default:
-                        break;
-                }
-			} while (cursor.nextSibling());
-            
-            if (result !== null) {
-                value = new CalcValue(result, id).range(cursor.from, cursor.to);
-                if (id !== undefined) this.bindings.set(id, result);
-            }
-            cursor.parent();
-		}
+    private forEachChild(
+        cursor: TreeCursor,
+        handlers: ReadonlyMap<number, (cursor: TreeCursor) => void>
+    ): void {
+        if (!cursor.firstChild()) return;
+        do {
+            handlers.get(cursor.type.id)?.(cursor);
+        } while (cursor.nextSibling());
+        cursor.parent();
+    }
+
+    private processBinding(cursor: TreeCursor): Range<CalcValue>|null {
+        let value: Range<CalcValue>|null = null;
+        let id: string|undefined = undefined;
+        let result: null|number = null;
+
+        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
+            [terms.Identifier, (childCursor) => {
+                id = this.sliceDoc(childCursor.from, childCursor.to);
+            }],
+            [terms.MulExpression, (childCursor) => {
+                result = this.callHandler<number>(terms.MulExpression, childCursor);
+            }],
+            [terms.AddExpression, (childCursor) => {
+                result = this.callHandler<number>(terms.AddExpression, childCursor);
+            }],
+        ]));
+
+        if (result !== null) {
+            value = new CalcValue(result, id).range(cursor.from, cursor.to);
+            if (id !== undefined) this.bindings.set(id, result);
+        }
         return value;
     }
 
-    [terms.NoBinding](cursor: TreeCursor): Range<CalcValue>|null {
-        let value: Range<CalcValue>|null = null;
-
-        if (cursor.firstChild()) {
-            let result: null|number = null;
-			do {
-				switch (cursor.type.id) {
-                    case terms.AddExpression:
-                        result = this[terms.AddExpression](cursor);
-                        break;
-                    case terms.MulExpression:
-                        result = this[terms.MulExpression](cursor);
-                        break;
-                    default:
-                        break;
-                }
-			} while (cursor.nextSibling());
-            
-            if (result !== null) value = new CalcValue(result).range(cursor.from, cursor.to);
-            cursor.parent();
-		}
-
-        return value;
-    }
-
-    [terms.AddExpression](cursor: TreeCursor): number|null {
-        let result: null|number = null;
+    private processExpression(cursor: TreeCursor, reducer: (...values: number[]) => number): number | null {
         const pipeline: number[] = [];
 
-        if (cursor.firstChild()) {
-			do {
-				switch (cursor.type.id) {
-                case terms.AddExpression:
-                    result = this[terms.AddExpression](cursor);
-                    if (result !== null) pipeline.push(result);
-                    break;
-                case terms.MulExpression:
-                    result = this[terms.MulExpression](cursor);
-                    if (result !== null) pipeline.push(result);
-                    break;
-                case terms.Literal:
-                    const n = this[terms.Literal](cursor);
-                    if (isNumber(n)) {
-                        pipeline.push(n);
-                    }
-                    break;
-                default:
-                    break;
-                }
-			} while (cursor.nextSibling());
-            cursor.parent();
-		}
+        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
+            [terms.AddExpression, (nestedCursor) => {
+                const value = this.callHandler<number>(terms.AddExpression, nestedCursor);
+                if (value !== null) pipeline.push(value);
+            }],
+            [terms.MulExpression, (nestedCursor) => {
+                const value = this.callHandler<number>(terms.MulExpression, nestedCursor);
+                if (value !== null) pipeline.push(value);
+            }],
+            [terms.Literal, (nestedCursor) => {
+                const value = this.callHandler<number>(terms.Literal, nestedCursor);
+                if (isNumber(value)) pipeline.push(value);
+            }],
+        ]));
 
-        if (pipeline.length > 0) return add(...pipeline);
+        if (pipeline.length > 0) return reducer(...pipeline);
         return null;
     }
 
-    [terms.MulExpression](cursor: TreeCursor): number|null {
-        let result: null|number = null;
-        const pipeline: number[] = [];
+    private processAddExpression(cursor: TreeCursor): number|null {
+        return this.processExpression(cursor, (...values) => add(...values));
+    }
 
-        if (cursor.firstChild()) {
-			do {
-				switch (cursor.type.id) {
-                case terms.AddExpression:
-                    result = this[terms.AddExpression](cursor);
-                    if (result !== null) pipeline.push(result);
-                    break;
-                case terms.MulExpression:
-                    result = this[terms.MulExpression](cursor);
-                    if (result !== null) pipeline.push(result);
-                    break;
-                case terms.Literal:
-                    const n = this[terms.Literal](cursor);
-                    if (isNumber(n)) {
-                        pipeline.push(n);
-                    }
-                    break;
-                default:
-                    break;
-                }
-			} while (cursor.nextSibling());
-            cursor.parent();
-		}
+    private processMulExpression(cursor: TreeCursor): number|null {
+        return this.processExpression(cursor, (...values) => times('*', ...values));
+    }
 
-        if (pipeline.length > 0) return times('*', ...pipeline);
+    private processConvertExpression(_cursor: TreeCursor): null {
         return null;
     }
 
-    [terms.ConvertExpression](_cursor: TreeCursor) {}
-
-    [terms.Literal](cursor: TreeCursor): number|null {
+    private processLiteral(cursor: TreeCursor): number|null {
         let result: number|null = null;
-        if (cursor.firstChild()) {
-			do {
-				switch (cursor.type.id) {
-                case terms.Number:
-                    result = this[terms.Number](cursor);
-                    break;
-                default:
-                    break;
-                }
-			} while (cursor.nextSibling());
-            cursor.parent();
-		}
+
+        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
+            [terms.Number, (numberCursor) => {
+                result = this.callHandler<number>(terms.Number, numberCursor);
+            }],
+        ]));
+
         return result;
     }
 
-    [terms.String](_cursor: TreeCursor) {}
+    private processString(_cursor: TreeCursor): null {
+        return null;
+    }
 
-    [terms.Number](cursor: TreeCursor) {
+    private processNumber(cursor: TreeCursor): number | null {
         const raw = this.sliceDoc(cursor.from, cursor.to);
         try {
             return Number.parseFloat(raw);
@@ -209,7 +169,6 @@ export class MathComposer {
         } catch {}
         return null;
     }
-
 }
 
 function add(...args: number[]) {
@@ -219,6 +178,7 @@ function add(...args: number[]) {
     }
     return sum;
 }
+
 function times(operator: '/'|'*'|'%', ...args: number[] ) {
     let result = args[0];
     for (let index = 1; index < args.length; index++) {
