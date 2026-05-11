@@ -2,6 +2,8 @@ export type ComposerFixture = {
   name: string;
   doc: string;
   expected: number[];
+  skip?: boolean;
+  only?: boolean;
 };
 
 export const composerFixtures: ComposerFixture[] = [

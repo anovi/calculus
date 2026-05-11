@@ -26,7 +26,8 @@ describe('CalcDoc grammar', () => {
     const sliceDoc = (from: number, to: number) => doc.slice(from, to);
 
 	for (const fx of composerFixtures) {
-        it(fx.name, () => {
+        const test = fx.only ? it.only : fx.skip ? it.skip : it;
+        test(fx.name, () => {
             doc = fx.doc;
             const result = parser.parse(doc);
             const cursor = result.cursor();
