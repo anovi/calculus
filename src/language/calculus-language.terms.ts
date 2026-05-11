@@ -10,9 +10,11 @@ export const
   ConvertExpression = 8,
   ConvertOp = 9,
   IN = 10,
-  Literal = 11,
-  Number = 12,
-  String = 13,
-  Date = 14,
-  NoBinding = 15,
-  Comment = 16
+  FunctionCall = 11,
+  ArgList = 12,
+  Literal = 13,
+  Number = 14,
+  String = 15,
+  Date = 16,
+  NoBinding = 17,
+  Comment = 18

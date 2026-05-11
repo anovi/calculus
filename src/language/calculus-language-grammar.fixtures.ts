@@ -101,4 +101,51 @@ expectedTree: `CalcDoc
       Literal
         Number`,
 },
+{
+  name: 'function call sqrt',
+  doc: 'sqrt(16)',
+  expectedTree: `CalcDoc
+  NoBinding
+    FunctionCall
+      Identifier
+      ArgList
+        Literal
+          Number`,
+},
+{
+  name: 'function call with no args',
+  doc: 'sqrt()',
+  expectedTree: `CalcDoc
+  NoBinding
+    FunctionCall
+      Identifier`,
+},
+{
+  name: 'function call in addition',
+  doc: '2 + sqrt(16)',
+  expectedTree: `CalcDoc
+  NoBinding
+    AddExpression
+      Literal
+        Number
+      PlusBinaryOp
+      FunctionCall
+        Identifier
+        ArgList
+          Literal
+            Number`,
+},
+{
+  name: 'function call multiple args',
+  doc: 'sqrt(1, 4)',
+  expectedTree: `CalcDoc
+  NoBinding
+    FunctionCall
+      Identifier
+      ArgList
+        Literal
+          Number
+        Literal
+          Number`,
+},
 ];

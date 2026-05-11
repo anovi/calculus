@@ -18,7 +18,7 @@ export class CalcValue extends RangeValue {
     }
 }
 
-type Operator = '-' | '+' | '/' | '*' | '%';
+type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 
 export class MathComposer {
 	constructor(sliceDoc: (from: number, to: number) => string) {
@@ -56,6 +56,7 @@ export class MathComposer {
         [terms.Literal, (cursor) => this.processLiteral(cursor)],
         [terms.String, (cursor) => this.processString(cursor)],
         [terms.Number, (cursor) => this.processNumber(cursor)],
+        [terms.FunctionCall, (cursor) => this.processFunctionCall(cursor)],
     ]);
 
 	private processRows(cursor: TreeCursor): Range<CalcValue>[] {
@@ -105,6 +106,9 @@ export class MathComposer {
             [terms.AddExpression, (childCursor) => {
                 result = this.callHandler<number>(terms.AddExpression, childCursor);
             }],
+            [terms.FunctionCall, (childCursor) => {
+                result = this.callHandler<number>(terms.FunctionCall, childCursor);
+            }],
         ]));
 
         if (result !== null) {
@@ -114,7 +118,7 @@ export class MathComposer {
         return value;
     }
     // reducer: (...values: number[]) => number
-    private processExpression(cursor: TreeCursor, type: 'plus'|'times'): number | null {
+    private processExpression(cursor: TreeCursor, _type: 'plus'|'times'): number | null {
         const pipeline: number[] = [];
         let operator: Operator = '+';
 
@@ -134,6 +138,10 @@ export class MathComposer {
             }],
             [terms.Literal, (nestedCursor) => {
                 const value = this.callHandler<number>(terms.Literal, nestedCursor);
+                if (isNumber(value)) pipeline.push(value);
+            }],
+            [terms.FunctionCall, (nestedCursor) => {
+                const value = this.callHandler<number>(terms.FunctionCall, nestedCursor);
                 if (isNumber(value)) pipeline.push(value);
             }],
             [terms.PlusBinaryOp, (cursor) => {
@@ -188,6 +196,55 @@ export class MathComposer {
         } catch {}
         return null;
     }
+
+    private evalExpressionValue(cursor: TreeCursor): number | null {
+        switch (cursor.type.id) {
+            case terms.Literal:
+                return this.processLiteral(cursor);
+            case terms.AddExpression:
+                return this.processAddExpression(cursor);
+            case terms.MulExpression:
+                return this.processMulExpression(cursor);
+            case terms.Identifier: {
+                const id = this.sliceDoc(cursor.from, cursor.to);
+                const value = this.bindings.get(id);
+                return isNumber(value) ? value : null;
+            }
+            case terms.FunctionCall:
+                return this.processFunctionCall(cursor);
+            default:
+                return null;
+        }
+    }
+
+    private processArgList(cursor: TreeCursor): number[] {
+        const args: number[] = [];
+        if (!cursor.firstChild()) return args;
+        do {
+            const value = this.evalExpressionValue(cursor);
+            if (value !== null) args.push(value);
+        } while (cursor.nextSibling());
+        cursor.parent();
+        return args;
+    }
+
+    private processFunctionCall(cursor: TreeCursor): number | null {
+        let name = '';
+        let args: number[] = [];
+        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
+            [terms.Identifier, (childCursor) => {
+                name = this.sliceDoc(childCursor.from, childCursor.to).toLowerCase();
+            }],
+            [terms.ArgList, (childCursor) => {
+                args = this.processArgList(childCursor);
+            }],
+        ]));
+        if (name === 'sqrt') {
+            if (args.length !== 1) return null;
+            return Math.sqrt(args[0]);
+        }
+        return null;
+    }
 }
 
 function performOperation(operator: Operator, ...args: number[] ) {
@@ -208,6 +265,9 @@ function performOperation(operator: Operator, ...args: number[] ) {
                 break;
             case '/':
                 result = result / args[index]; 
+                break;
+            case '^':
+                result = result ** args[index]; 
                 break;
             default:
                 throw Error(`Unknown operator ${operator}`)
