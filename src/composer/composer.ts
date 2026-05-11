@@ -18,6 +18,8 @@ export class CalcValue extends RangeValue {
     }
 }
 
+type Operator = '-' | '+' | '/' | '*' | '%';
+
 export class MathComposer {
 	constructor(sliceDoc: (from: number, to: number) => string) {
 		this.sliceDoc = sliceDoc;
@@ -111,9 +113,10 @@ export class MathComposer {
         }
         return value;
     }
-
-    private processExpression(cursor: TreeCursor, reducer: (...values: number[]) => number): number | null {
+    // reducer: (...values: number[]) => number
+    private processExpression(cursor: TreeCursor, type: 'plus'|'times'): number | null {
         const pipeline: number[] = [];
+        let operator: Operator = '+';
 
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
             [terms.AddExpression, (nestedCursor) => {
@@ -133,18 +136,26 @@ export class MathComposer {
                 const value = this.callHandler<number>(terms.Literal, nestedCursor);
                 if (isNumber(value)) pipeline.push(value);
             }],
+            [terms.PlusBinaryOp, (cursor) => {
+                operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
+            }],
+            [terms.TimesBinaryOp, () => {
+                operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
+            }],
         ]));
 
-        if (pipeline.length > 0) return reducer(...pipeline);
+        if (pipeline.length > 0) {
+            return performOperation(operator, ...pipeline)
+        }
         return null;
     }
 
     private processAddExpression(cursor: TreeCursor): number|null {
-        return this.processExpression(cursor, (...values) => add(...values));
+        return this.processExpression(cursor, 'plus');
     }
 
     private processMulExpression(cursor: TreeCursor): number|null {
-        return this.processExpression(cursor, (...values) => times('*', ...values));
+        return this.processExpression(cursor, 'times');
     }
 
     private processConvertExpression(_cursor: TreeCursor): null {
@@ -179,18 +190,16 @@ export class MathComposer {
     }
 }
 
-function add(...args: number[]) {
-    let sum = 0;
-    for (let index = 0; index < args.length; index++) {
-        sum += args[index]; 
-    }
-    return sum;
-}
-
-function times(operator: '/'|'*'|'%', ...args: number[] ) {
+function performOperation(operator: Operator, ...args: number[] ) {
     let result = args[0];
     for (let index = 1; index < args.length; index++) {
         switch (operator) {
+            case '-':
+                result = result - args[index]; 
+                break;
+            case '+':
+                result = result + args[index]; 
+                break;
             case '%':
                 result = result % args[index]; 
                 break;

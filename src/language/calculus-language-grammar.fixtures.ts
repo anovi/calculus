@@ -31,6 +31,7 @@ expectedTree: `CalcDoc
     AddExpression
       Literal
         Number
+      PlusBinaryOp
       Literal
         Number`,
 },
@@ -41,11 +42,14 @@ expectedTree: `CalcDoc
   NoBinding
     AddExpression
       AddExpression
+        PlusBinaryOp
         Literal
           Number
+      PlusBinaryOp
       MulExpression
         Literal
           Number
+        TimesBinaryOp
         Literal
           Number`,
 },
@@ -58,8 +62,10 @@ expectedTree: `CalcDoc
       AddExpression
         Literal
           Number
+        PlusBinaryOp
         Literal
           Number
+      TimesBinaryOp
       Literal
         Number`,
 },
@@ -72,6 +78,7 @@ expectedTree: `CalcDoc
     AddExpression
       Literal
         Number
+      PlusBinaryOp
       Literal
         Number
   NoBinding
@@ -90,6 +97,7 @@ expectedTree: `CalcDoc
     Identifier
     AddExpression
       Identifier
+      PlusBinaryOp
       Literal
         Number`,
 },
