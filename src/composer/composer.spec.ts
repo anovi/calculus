@@ -5,6 +5,7 @@ import { Range } from "@codemirror/state";
 
 import grammarSource from '../language/calculus-language.grammar?raw';
 import { CalcValue, MathComposer } from './composer';
+import { composerFixtures } from './composer.spec.fixtures';
 import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
@@ -21,18 +22,26 @@ function assertValues(values: Range<CalcValue>[], assertions: number[]) {
 
 describe('CalcDoc grammar', () => {
 
-    let doc = '2+2';
+    let doc = '';
     const sliceDoc = (from: number, to: number) => doc.slice(from, to);
 
-	it('builds value', () => {
-        const result = parser.parse(doc);
-        assert.ok(result instanceof Tree);
-        printTree(result)
-        const cursor = result.cursor();
-        const composer = new MathComposer(sliceDoc);
-        const res = composer.assemble(cursor);
-        assert.ok(res)
-        console.log(res)
-        assertValues(res, [4])
-    });
+	for (const fx of composerFixtures) {
+        it(fx.name, () => {
+            doc = fx.doc;
+            const result = parser.parse(doc);
+            const cursor = result.cursor();
+            const composer = new MathComposer(sliceDoc);
+            const res = composer.assemble(cursor);
+
+            try {
+                assert.ok(result instanceof Tree);
+                assert.ok(res)
+                assertValues(res, fx.expected)
+            } catch (error) {
+                printTree(result);
+                console.log(res);
+                throw error;
+            }
+        });
+    }
 })

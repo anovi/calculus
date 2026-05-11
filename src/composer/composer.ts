@@ -46,7 +46,7 @@ export class MathComposer {
 		return null;
 	}
 
-	processRows(cursor: TreeCursor): Range<CalcValue>[] {
+	private processRows(cursor: TreeCursor): Range<CalcValue>[] {
 		const pipeline: Range<CalcValue>[] = [];
 		if (cursor.firstChild()) {
 			do {
@@ -120,8 +120,12 @@ export class MathComposer {
 				switch (cursor.type.id) {
                 case terms.AddExpression:
                     result = this[terms.AddExpression](cursor);
+                    if (result !== null) pipeline.push(result);
                     break;
-                // case terms.MulExpression:
+                case terms.MulExpression:
+                    result = this[terms.MulExpression](cursor);
+                    if (result !== null) pipeline.push(result);
+                    break;
                 case terms.Literal:
                     const n = this[terms.Literal](cursor);
                     if (isNumber(n)) {
@@ -136,12 +140,42 @@ export class MathComposer {
 		}
 
         if (pipeline.length > 0) return add(...pipeline);
-        return result;
+        return null;
     }
 
-    [terms.MulExpression](cursor: TreeCursor) {}
+    [terms.MulExpression](cursor: TreeCursor): number|null {
+        let result: null|number = null;
+        const pipeline: number[] = [];
 
-    [terms.ConvertExpression](cursor: TreeCursor) {}
+        if (cursor.firstChild()) {
+			do {
+				switch (cursor.type.id) {
+                case terms.AddExpression:
+                    result = this[terms.AddExpression](cursor);
+                    if (result !== null) pipeline.push(result);
+                    break;
+                case terms.MulExpression:
+                    result = this[terms.MulExpression](cursor);
+                    if (result !== null) pipeline.push(result);
+                    break;
+                case terms.Literal:
+                    const n = this[terms.Literal](cursor);
+                    if (isNumber(n)) {
+                        pipeline.push(n);
+                    }
+                    break;
+                default:
+                    break;
+                }
+			} while (cursor.nextSibling());
+            cursor.parent();
+		}
+
+        if (pipeline.length > 0) return times('*', ...pipeline);
+        return null;
+    }
+
+    [terms.ConvertExpression](_cursor: TreeCursor) {}
 
     [terms.Literal](cursor: TreeCursor): number|null {
         let result: number|null = null;
@@ -160,7 +194,7 @@ export class MathComposer {
         return result;
     }
 
-    [terms.String](cursor: TreeCursor) {}
+    [terms.String](_cursor: TreeCursor) {}
 
     [terms.Number](cursor: TreeCursor) {
         const raw = this.sliceDoc(cursor.from, cursor.to);
@@ -182,10 +216,22 @@ function add(...args: number[]) {
     }
     return sum;
 }
-function times(...args: number[]) {
-    let sum = 0;
-    for (let index = 0; index < args.length; index++) {
-        sum += args[index]; 
+function times(operator: '/'|'*'|'%', ...args: number[] ) {
+    let result = args[0];
+    for (let index = 1; index < args.length; index++) {
+        switch (operator) {
+            case '%':
+                result = result % args[index]; 
+                break;
+            case '*':
+                result = result * args[index]; 
+                break;
+            case '/':
+                result = result / args[index]; 
+                break;
+            default:
+                throw Error(`Unknown operator ${operator}`)
+        }
     }
-    return sum;
+    return result;
 }
