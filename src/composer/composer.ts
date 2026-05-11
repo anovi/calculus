@@ -94,6 +94,9 @@ export class MathComposer {
             [terms.Identifier, (childCursor) => {
                 id = this.sliceDoc(childCursor.from, childCursor.to);
             }],
+            [terms.Literal, (childCursor) => {
+                result = this.callHandler<number>(terms.Literal, childCursor);
+            }],
             [terms.MulExpression, (childCursor) => {
                 result = this.callHandler<number>(terms.MulExpression, childCursor);
             }],
@@ -120,6 +123,11 @@ export class MathComposer {
             [terms.MulExpression, (nestedCursor) => {
                 const value = this.callHandler<number>(terms.MulExpression, nestedCursor);
                 if (value !== null) pipeline.push(value);
+            }],
+            [terms.Identifier, (nestedCursor) => {
+                const id = this.sliceDoc(nestedCursor.from, nestedCursor.to);
+                const value = this.bindings.get(id)
+                if (isNumber(value)) pipeline.push(value);
             }],
             [terms.Literal, (nestedCursor) => {
                 const value = this.callHandler<number>(terms.Literal, nestedCursor);

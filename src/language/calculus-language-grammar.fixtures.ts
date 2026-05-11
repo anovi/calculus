@@ -15,6 +15,14 @@ expectedTree: `CalcDoc
       Number`,
 },
 {
+name: 'float',
+doc: '0.123',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number`,
+},
+{
 name: 'expression binding',
 doc: 'some = 2+2',
 expectedTree: `CalcDoc
@@ -69,5 +77,20 @@ expectedTree: `CalcDoc
   NoBinding
     Literal
       Number`,
+},
+{
+name: 'expression with binded value',
+doc: 'some = 10\nother = some + 2',
+expectedTree: `CalcDoc
+  Binding
+    Identifier
+    Literal
+      Number
+  Binding
+    Identifier
+    AddExpression
+      Identifier
+      Literal
+        Number`,
 },
 ];

@@ -21,6 +21,7 @@ expression {
   | MulExpression
   | ConvertExpression
   | Literal
+  | Identifier
   | !_parenthesized opr expression cpr
 }
 
@@ -55,13 +56,14 @@ ConvertOp { IN }
 	add { "+" }
 	sub { "-" }
 
-	// Identifier
-	// need to have more symbols, like cyrrilic, and allowed YAML symbols
+	// Identifier. Need to have more symbols, like cyrrilic, and allowed YAML symbols
 	IdentifierChar { @asciiLetter | @digit | "_" }
 	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
 	
 	// Literals
-	Number { @digit+ }
+	Float { @digit+ "." @digit+ }
+	Integer { @digit+ }
+	Number { Integer | Float }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
 
