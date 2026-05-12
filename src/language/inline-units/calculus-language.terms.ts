@@ -8,7 +8,7 @@ export const
   MulExpression = 6,
   TimesBinaryOp = 7,
   ConvertExpression = 8,
-  ConvertOp = 9,
+  Unit = 9,
   FunctionCall = 10,
   ArgList = 11,
   Literal = 12,
