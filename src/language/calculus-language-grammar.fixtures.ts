@@ -41,12 +41,24 @@ expectedTree: `CalcDoc
 },
 {
 name: 'unit convertion',
-doc: '12 EUR in USD',
+doc: '12 EUR in Usd',
 expectedTree: `CalcDoc
   NoBinding
     ConvertExpression
       Literal
         NumberWithUnit
+      Unit`,
+},
+{
+name: 'with double unit convertion',
+doc: '12 EUR in USD in RSD',
+expectedTree: `CalcDoc
+  NoBinding
+    ConvertExpression
+      ConvertExpression
+        Literal
+          NumberWithUnit
+        Unit
       Unit`,
 },
 {
