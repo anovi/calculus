@@ -9,8 +9,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "preview": "vite preview",
     "test": "vitest run",
+    "bench": "vitest bench src/benchmarks/units-parse.bench.ts",
     "test:watch": "vitest",
-    "grammar": "lezer-generator ./src/language/calculus-language.grammar -o ./src/language/calculus-language.ts"
+    "grammar": "lezer-generator ./src/language/baseline/calculus-language.grammar -o ./src/language/baseline/calculus-language.ts",
+    "grammar-inline-units": "lezer-generator ./src/language/inline-units/calculus-language.grammar -o ./src/language/inline-units/calculus-language.ts"
   },
   "devDependencies": {
     "@types/node": "25.6.2",

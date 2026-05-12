@@ -1,0 +1,99 @@
+// NAMING RULES
+// - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
+
+@top CalcDoc { pipeline }
+
+pipeline {
+	clause+
+}
+
+clause {
+	Binding
+	| NoBinding
+	| Comment
+}
+
+Binding { Identifier "=" expression lineEnd}
+NoBinding { expression lineEnd}
+
+expression {
+  AddExpression
+  | MulExpression
+  | ConvertExpression
+  | FunctionCall
+  | Literal
+  | Identifier
+  | !_parenthesized opr expression cpr
+}
+
+AddExpression { expression? !_add PlusBinaryOp expression }
+MulExpression{ expression !_mul TimesBinaryOp expression }
+ConvertExpression { expression !_convert ConvertOp expression }
+
+FunctionCall { Identifier opr ArgList? cpr }
+ArgList { expression ("," expression)* }
+
+Literal { NumberWithUnit | Number | String | Date }
+
+ConvertOp { in }
+
+@precedence {
+	// Results deeper in AST
+	Identifier,
+	FunctionCall,
+	_parenthesized @left,
+	_mul @left,
+	_add @left,
+	_convert @left,
+	space
+	// Results upper in AST
+}
+
+@tokens {
+
+	// Converter
+	in { "IN" | "in" | "into" | "as" | "to" }
+
+	// Arithmetic
+
+	TimesBinaryOp { "/" | "*" | "%" | "^" }
+	PlusBinaryOp { "+" | "-" }
+
+	// Identifier. Need to have more symbols, like cyrrilic, and allowed YAML symbols
+	IdentifierChar { @asciiLetter | @digit | "_" }
+	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
+	
+	// Literals
+	Float { @digit+ "." @digit+ }
+	Integer { @digit+ }
+	Number { Integer | Float }
+	NumberWithUnit { (Integer | Float) " "? ("AED" | "AFN" | "ALL" | "AMD" | "AOA" | "ARS" | "AUD" | "AWG" | "AZN" | "BAM" | "BBD" | "BDT" | "BHD" | "BIF" | "BMD" | "BND" | "BOB" | "BOV" | "BRL" | "BSD" | "BTN" | "BWP" | "BYN" | "BZD" | "CAD" | "CDF" | "CHE" | "CHF" | "CHW" | "CLF" | "CLP" | "CNY" | "COP" | "COU" | "CRC" | "CUP" | "CVE" | "CZK" | "DJF" | "DKK" | "DOP" | "DZD" | "EGP" | "ERN" | "ETB" | "EUR" | "FJD" | "FKP" | "GBP" | "GEL" | "GHS" | "GIP" | "GMD" | "GNF" | "GTQ" | "GYD" | "HKD" | "HNL" | "HTG" | "HUF" | "IDR" | "ILS" | "INR" | "IQD" | "IRR" | "ISK" | "JMD" | "JOD" | "JPY" | "KES" | "KGS" | "KHR" | "KMF" | "KPW" | "KRW" | "KWD" | "KYD" | "KZT" | "LAK" | "LBP" | "LKR" | "LRD" | "LSL" | "LYD" | "MAD" | "MDL" | "MGA" | "MKD" | "MMK" | "MNT" | "MOP" | "MRU" | "MUR" | "MVR" | "MWK" | "MXN" | "MXV" | "MYR" | "MZN" | "NAD" | "NGN" | "NIO" | "NOK" | "NPR" | "NZD" | "OMR" | "PAB" | "PEN" | "PGK" | "PHP" | "PKR" | "PLN" | "PYG" | "QAR" | "RON" | "RSD" | "RUB" | "RWF" | "SAR" | "SBD" | "SCR" | "SDG" | "SEK" | "SGD" | "SHP" | "SLE" | "SOS" | "SRD" | "SSP" | "STN" | "SVC" | "SYP" | "SZL" | "THB" | "TJS" | "TMT" | "TND" | "TOP" | "TRY" | "TTD" | "TWD" | "TZS" | "UAH" | "UGX" | "USD" | "USN" | "UYI" | "UYU" | "UYW" | "UZS" | "VED" | "VES" | "VND" | "VUV" | "WST" | "XAD" | "XAF" | "XAG" | "XAU" | "XBA" | "XBB" | "XBC" | "XBD" | "XCD" | "XCG" | "XDR" | "XOF" | "XPD" | "XPF" | "XPT" | "XSU" | "XTS" | "XUA" | "YER" | "ZAR" | "ZMW" | "ZWG") }
+	String { "\""![\"]*"\"" }
+	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
+
+	@precedence { Date, NumberWithUnit, Number, Identifier }
+
+	@precedence { PlusBinaryOp, Number }
+
+	opr { "(" }
+	cpr { ")" }
+
+	// Comment
+	Comment { "//" ![\n]* }
+
+	lineEnd { "\n" | @eof }
+
+	@precedence { lineEnd, space }
+
+	@precedence { Comment, TimesBinaryOp }
+
+	// Whitespace
+	space { @whitespace+ }
+
+	@precedence {
+		in,
+		Identifier
+	}
+}
+
+@skip { space }

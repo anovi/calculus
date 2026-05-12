@@ -1,10 +1,10 @@
 import assert from 'node:assert';
 import { buildParser } from "@lezer/generator";
 import { Tree } from "@lezer/common"
-import grammarSource from './calculus-language.grammar?raw';
+import grammarSource from './baseline/calculus-language.grammar?raw';
 import { parseFixtures } from './calculus-language-grammar.fixtures';
 import { formatTreeBody, printTree } from '../lib/tree';
-import { createNumberWithUnitTokenizer } from './calculus-number-with-unit-tokens';
+import { createNumberWithUnitTokenizer } from './baseline/calculus-number-with-unit-tokens';
 
 
 const parser = buildParser(grammarSource, {

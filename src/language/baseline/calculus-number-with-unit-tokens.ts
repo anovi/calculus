@@ -1,7 +1,10 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
+import { PrefixTree } from '../../lib/prefix-tree';
 import { NumberWithUnit } from './calculus-language.terms';
-import { CURRENCY_CODES_BY_LENGTH } from '../lib/currencies';
+import { CURRENCIES } from '../currencies';
+
+const currencyTrie = PrefixTree.fromWords(CURRENCIES);
 
 function isDigit(code: number) {
   return code >= 48 && code <= 57;
@@ -30,21 +33,12 @@ export function createNumberWithUnitTokenizer(numberWithUnitTerm: number) {
     let i = numLen;
     if (input.peek(i) === 32) i++;
 
-    for (const code of CURRENCY_CODES_BY_LENGTH) {
-      let ok = true;
-      for (let j = 0; j < code.length; j++) {
-        if (input.peek(i + j) !== code.charCodeAt(j)) {
-          ok = false;
-          break;
-        }
-      }
-      if (!ok) continue;
+    const curLen = currencyTrie.longestMatchUtf16((rel) => input.peek(i + rel));
+    if (curLen === 0) return;
 
-      const total = i + code.length;
-      for (let k = 0; k < total; k++) input.advance();
-      input.acceptToken(numberWithUnitTerm);
-      return;
-    }
+    const total = i + curLen;
+    for (let k = 0; k < total; k++) input.advance();
+    input.acceptToken(numberWithUnitTerm);
   });
 }
 

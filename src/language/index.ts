@@ -1,3 +1,3 @@
-import * as terms from './calculus-language.terms';
-export * from './calculus-language';
+import * as terms from './baseline/calculus-language.terms';
+export * from './baseline/calculus-language';
 export { terms };

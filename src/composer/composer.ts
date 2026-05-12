@@ -2,7 +2,7 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
-import { parseNumberWithCurrency } from '../lib/currencies';
+import { parseNumberWithCurrency } from '../language/currencies';
 import { isNumber } from '../lib/number';
 
 type LiteralResult = { n: number; unit?: string };

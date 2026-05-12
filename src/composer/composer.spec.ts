@@ -3,8 +3,8 @@ import { buildParser } from "@lezer/generator";
 import { Tree } from "@lezer/common"
 import { Range } from "@codemirror/state";
 
-import grammarSource from '../language/calculus-language.grammar?raw';
-import { createNumberWithUnitTokenizer } from '../language/calculus-number-with-unit-tokens';
+import grammarSource from '../language/baseline/calculus-language.grammar?raw';
+import { createNumberWithUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
 import { CalcValue, MathComposer } from './composer';
 import { composerFixtures } from './composer.spec.fixtures';
 import { printTree } from '../lib/tree';
