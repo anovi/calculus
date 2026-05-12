@@ -3,7 +3,7 @@ import { Tree } from "@lezer/common"
 
 import { formatTreeBody, printTree } from '../lib/tree';
 import { parseFixtures } from './calculus-language-grammar.fixtures';
-import { calculusParser } from './inline-units/parser';
+import { calculusParser } from './baseline/parser';
 
 
 function assertMatchTree(tree: Tree, expected: string) {
