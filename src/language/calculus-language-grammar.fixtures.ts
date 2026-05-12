@@ -23,6 +23,14 @@ expectedTree: `CalcDoc
       NumberWithUnit`,
 },
 {
+name: 'value with lowercase unit',
+doc: '100 usd',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      NumberWithUnit`,
+},
+{
 name: 'binding with value and unit',
 doc: 'w = 12 EUR',
 expectedTree: `CalcDoc

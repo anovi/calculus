@@ -1,22 +1,10 @@
 import assert from 'node:assert';
-import { buildParser } from "@lezer/generator";
 import { Tree } from "@lezer/common"
-import grammarSource from './baseline/calculus-language.grammar?raw';
-import { parseFixtures } from './calculus-language-grammar.fixtures';
+
 import { formatTreeBody, printTree } from '../lib/tree';
-import { createNumberWithUnitTokenizer } from './baseline/calculus-number-with-unit-tokens';
+import { parseFixtures } from './calculus-language-grammar.fixtures';
+import { calculusParser } from './inline-units/parser';
 
-
-const parser = buildParser(grammarSource, {
-	moduleStyle: 'es',
-	fileName: 'calculus.build',
-	externalTokenizer(name, terms) {
-		if (name !== 'numberWithUnitTokens') {
-			throw new Error(`Unexpected external tokenizer: ${name}`);
-		}
-		return createNumberWithUnitTokenizer(terms.NumberWithUnit);
-	},
-})
 
 function assertMatchTree(tree: Tree, expected: string) {
 	const actual = formatTreeBody(tree);
@@ -29,12 +17,12 @@ function assertMatchTree(tree: Tree, expected: string) {
 describe('CalcDoc grammar', () => {
 	
 	it('should build parser', () => {
-		assert.ok(parser);
+		assert.ok(calculusParser);
 	})
 
 	for (const { name, doc, expectedTree } of parseFixtures) {
 		it(name, () => {
-			const result = parser.parse(doc);
+			const result = calculusParser.parse(doc);
 			assert.ok(result instanceof Tree);
 			assertMatchTree(result, expectedTree);
 		});
