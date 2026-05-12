@@ -15,6 +15,25 @@ expectedTree: `CalcDoc
       Number`,
 },
 {
+name: 'value with unit',
+doc: '100px',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Value
+        NumberWithUnit`,
+},
+{
+name: 'binding with value and unit',
+doc: 'w = 12rem',
+expectedTree: `CalcDoc
+  Binding
+    Identifier
+    Literal
+      Value
+        NumberWithUnit`,
+},
+{
 name: 'float',
 doc: '0.123',
 expectedTree: `CalcDoc

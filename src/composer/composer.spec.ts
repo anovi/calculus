@@ -20,6 +20,13 @@ function assertValues(values: Range<CalcValue>[], assertions: number[]) {
     }
 }
 
+function assertUnits(values: Range<CalcValue>[], expected: (string | undefined)[]) {
+    if (!values || values.length !== expected.length) throw Error('Values and expected units must be equal length!');
+    for (let index = 0; index < values.length; index++) {
+        assert.equal(values[index].value.unit, expected[index]);
+    }
+}
+
 describe('CalcDoc grammar', () => {
 
     let doc = '';
@@ -38,6 +45,7 @@ describe('CalcDoc grammar', () => {
                 assert.ok(result instanceof Tree);
                 assert.ok(res)
                 assertValues(res, fx.expected)
+                if (fx.expectedUnits) assertUnits(res, fx.expectedUnits)
             } catch (error) {
                 printTree(result);
                 console.log(res);
