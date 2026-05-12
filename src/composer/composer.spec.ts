@@ -4,13 +4,20 @@ import { Tree } from "@lezer/common"
 import { Range } from "@codemirror/state";
 
 import grammarSource from '../language/calculus-language.grammar?raw';
+import { createNumberWithUnitTokenizer } from '../language/calculus-number-with-unit-tokens';
 import { CalcValue, MathComposer } from './composer';
 import { composerFixtures } from './composer.spec.fixtures';
 import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
 	moduleStyle: 'es',
-	fileName: 'calculus.build'
+	fileName: 'calculus.build',
+	externalTokenizer(name, terms) {
+		if (name !== 'numberWithUnitTokens') {
+			throw new Error(`Unexpected external tokenizer: ${name}`);
+		}
+		return createNumberWithUnitTokenizer(terms.NumberWithUnit);
+	},
 })
 
 function assertValues(values: Range<CalcValue>[], assertions: number[]) {

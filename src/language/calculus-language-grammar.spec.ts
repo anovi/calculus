@@ -4,13 +4,19 @@ import { Tree } from "@lezer/common"
 import grammarSource from './calculus-language.grammar?raw';
 import { parseFixtures } from './calculus-language-grammar.fixtures';
 import { formatTreeBody, printTree } from '../lib/tree';
+import { createNumberWithUnitTokenizer } from './calculus-number-with-unit-tokens';
+
 
 const parser = buildParser(grammarSource, {
 	moduleStyle: 'es',
-	fileName: 'calculus.build'
+	fileName: 'calculus.build',
+	externalTokenizer(name, terms) {
+		if (name !== 'numberWithUnitTokens') {
+			throw new Error(`Unexpected external tokenizer: ${name}`);
+		}
+		return createNumberWithUnitTokenizer(terms.NumberWithUnit);
+	},
 })
-
-
 
 function assertMatchTree(tree: Tree, expected: string) {
 	const actual = formatTreeBody(tree);
@@ -19,7 +25,6 @@ function assertMatchTree(tree: Tree, expected: string) {
 	}
 	assert.strictEqual(actual, expected);
 }
-
 
 describe('CalcDoc grammar', () => {
 	

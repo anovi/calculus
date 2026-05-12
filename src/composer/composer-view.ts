@@ -27,7 +27,11 @@ class ResultWidget extends WidgetType {
   }
 
   eq(other: ResultWidget): boolean {
-    return other.value.result === this.value.result && other.value.name === this.value.name;
+    return (
+      other.value.result === this.value.result &&
+      other.value.name === this.value.name &&
+      other.value.unit === this.value.unit
+    );
   }
 
   toDOM(): HTMLElement {
@@ -42,7 +46,8 @@ class ResultWidget extends WidgetType {
 
     const pill = document.createElement('span');
     pill.className = 'cm-calc-result__pill';
-    pill.textContent = `= ${formatResult(this.value.result)}`;
+    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
+    pill.textContent = `= ${formatResult(this.value.result)}${unitSuffix}`;
     wrap.appendChild(pill);
 
     return wrap;

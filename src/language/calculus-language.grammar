@@ -1,6 +1,12 @@
 // NAMING RULES
 // - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
 
+// Unit suffixes are matched in TypeScript (see calculus-number-with-unit-tokens.ts) so ISO lists
+// stay in `src/lib/currencies.ts` instead of being pasted into this grammar.
+@external tokens numberWithUnitTokens from "./calculus-number-with-unit-tokens.ts" {
+	NumberWithUnit
+}
+
 @top CalcDoc { pipeline }
 
 pipeline {
@@ -33,9 +39,9 @@ ConvertExpression { expression !_convert ConvertOp expression }
 FunctionCall { Identifier opr ArgList? cpr }
 ArgList { expression ("," expression)* }
 
-Literal { Number | String | Date }
+Literal { NumberWithUnit | Number | String | Date }
 
-ConvertOp { IN }
+ConvertOp { in }
 
 @precedence {
 	// Results deeper in AST
@@ -52,7 +58,7 @@ ConvertOp { IN }
 @tokens {
 
 	// Converter
-	IN { "IN" | "in" }
+	in { "IN" | "in" | "into" | "as" | "to" }
 
 	// Arithmetic
 
@@ -90,7 +96,7 @@ ConvertOp { IN }
 	space { @whitespace+ }
 
 	@precedence {
-		IN,
+		in,
 		Identifier
 	}
 }

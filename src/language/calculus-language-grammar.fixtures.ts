@@ -16,22 +16,20 @@ expectedTree: `CalcDoc
 },
 {
 name: 'value with unit',
-doc: '100px',
+doc: '100USD',
 expectedTree: `CalcDoc
   NoBinding
     Literal
-      Value
-        NumberWithUnit`,
+      NumberWithUnit`,
 },
 {
 name: 'binding with value and unit',
-doc: 'w = 12rem',
+doc: 'w = 12 EUR',
 expectedTree: `CalcDoc
   Binding
     Identifier
     Literal
-      Value
-        NumberWithUnit`,
+      NumberWithUnit`,
 },
 {
 name: 'float',

@@ -40,15 +40,15 @@ export const composerFixtures: ComposerFixture[] = [
   },
   {
     name: 'value with unit (standalone)',
-    doc: '100px',
+    doc: '100USD',
     expected: [100],
-    expectedUnits: ['px'],
+    expectedUnits: ['USD'],
   },
   {
     name: 'value with unit (binding)',
-    doc: 'width = 12rem',
+    doc: 'width = 12 EUR',
     expected: [12],
-    expectedUnits: ['rem'],
+    expectedUnits: ['EUR'],
   },
   {
     name: 'plain number has no unit',
@@ -58,9 +58,9 @@ export const composerFixtures: ComposerFixture[] = [
   },
   {
     name: 'float with unit',
-    doc: '3.5kg',
+    doc: '3.5JPY',
     expected: [3.5],
-    expectedUnits: ['kg'],
+    expectedUnits: ['JPY'],
   },
 ];
 
