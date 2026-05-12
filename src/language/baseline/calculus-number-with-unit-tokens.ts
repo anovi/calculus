@@ -1,8 +1,13 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { PrefixTree } from '../../lib/prefix-tree';
-import { NumberWithUnit } from './calculus-language.terms';
+import { NumberWithUnit, Unit } from './calculus-language.terms';
 import { CURRENCIES } from '../currencies';
+
+export type NumberWithUnitTokenizerTerms = {
+  NumberWithUnit: number;
+  Unit: number;
+};
 
 const currencyTrie = PrefixTree.fromWords(CURRENCIES);
 
@@ -25,22 +30,29 @@ function numberSpanLength(input: InputStream): number {
   return i;
 }
 
-export function createNumberWithUnitTokenizer(numberWithUnitTerm: number) {
+export function createNumberWithUnitTokenizer(terms: NumberWithUnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
     const numLen = numberSpanLength(input);
-    if (numLen < 0) return;
+    if (numLen >= 0) {
+      let i = numLen;
+      if (input.peek(i) === 32) i++;
 
-    let i = numLen;
-    if (input.peek(i) === 32) i++;
+      const curLen = currencyTrie.longestMatchUtf16((rel) => input.peek(i + rel));
+      if (curLen > 0) {
+        const total = i + curLen;
+        for (let k = 0; k < total; k++) input.advance();
+        input.acceptToken(terms.NumberWithUnit);
+        return;
+      }
+    }
 
-    const curLen = currencyTrie.longestMatchUtf16((rel) => input.peek(i + rel));
-    if (curLen === 0) return;
+    const unitLen = currencyTrie.longestMatchUtf16((rel) => input.peek(rel));
+    if (unitLen === 0) return;
 
-    const total = i + curLen;
-    for (let k = 0; k < total; k++) input.advance();
-    input.acceptToken(numberWithUnitTerm);
+    for (let k = 0; k < unitLen; k++) input.advance();
+    input.acceptToken(terms.Unit);
   });
 }
 
-/** Wired into the generated parser; term id comes from `calculus-language.terms`. */
-export const numberWithUnitTokens = createNumberWithUnitTokenizer(NumberWithUnit);
+/** Wired into the generated parser; term ids come from `calculus-language.terms`. */
+export const numberWithUnitTokens = createNumberWithUnitTokenizer({ NumberWithUnit, Unit });

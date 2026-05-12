@@ -43,10 +43,11 @@ expectedTree: `CalcDoc
 name: 'unit convertion',
 doc: '12 EUR in USD',
 expectedTree: `CalcDoc
-  Binding
-    Identifier
-    Literal
-      NumberWithUnit`,
+  NoBinding
+    ConvertExpression
+      Literal
+        NumberWithUnit
+      Unit`,
 },
 {
 name: 'float',

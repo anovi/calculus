@@ -10,6 +10,9 @@ export const calculusParser = buildParser(grammarSource, {
 		if (name !== 'numberWithUnitTokens') {
 			throw new Error(`Unexpected external tokenizer: ${name}`);
 		}
-		return createNumberWithUnitTokenizer(terms.NumberWithUnit);
+		return createNumberWithUnitTokenizer({
+			NumberWithUnit: terms.NumberWithUnit,
+			Unit: terms.Unit,
+		});
 	},
 })
