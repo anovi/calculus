@@ -25,6 +25,7 @@
   "dependencies": {
     "@lezer/generator": "1.8.0",
     "codemirror": "6.0.2",
+    "decimal.js": "10.6.0",
     "lezer": "0.13.5"
   }
 }

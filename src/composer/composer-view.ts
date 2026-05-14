@@ -7,6 +7,7 @@ import {
   type EditorView,
   type ViewUpdate,
 } from '@codemirror/view'
+import type Decimal from 'decimal.js'
 
 import { CalcValue } from './composer'
 import { calcRangesField, getCalcRanges } from './composer-field'
@@ -28,7 +29,7 @@ class ResultWidget extends WidgetType {
 
   eq(other: ResultWidget): boolean {
     return (
-      other.value.result === this.value.result &&
+      other.value.result.eq(this.value.result) &&
       other.value.name === this.value.name &&
       other.value.unit === this.value.unit
     );
@@ -58,10 +59,10 @@ class ResultWidget extends WidgetType {
   }
 }
 
-function formatResult(n: number): string {
-  if (!Number.isFinite(n)) return String(n);
-  if (Number.isInteger(n)) return n.toString();
-  return Number.parseFloat(n.toFixed(6)).toString();
+function formatResult(n: Decimal): string {
+  if (!n.isFinite()) return n.toString();
+  if (n.isInteger()) return n.toString();
+  return n.toDecimalPlaces(6).toString();
 }
 
 /**

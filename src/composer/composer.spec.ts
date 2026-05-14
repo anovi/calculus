@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import { buildParser } from "@lezer/generator";
 import { Tree } from "@lezer/common"
 import { Range } from "@codemirror/state";
+import Decimal from 'decimal.js';
 
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
 import { createNumberWithUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
@@ -23,10 +24,15 @@ const parser = buildParser(grammarSource, {
 	},
 })
 
-function assertValues(values: Range<CalcValue>[], assertions: number[]) {
+function assertValues(values: Range<CalcValue>[], assertions: (number | string)[]) {
     if (!values || values.length !== assertions.length) throw Error('Values and assertions must be equal length!');
     for (let index = 0; index < values.length; index++) {
-        assert.equal(values[index].value.result, assertions[index]);
+        const actual = values[index].value.result;
+        const expected = new Decimal(assertions[index]);
+        assert.ok(
+            actual.eq(expected),
+            `Row ${index}: expected ${expected.toString()}, got ${actual.toString()}`
+        );
     }
 }
 

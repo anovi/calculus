@@ -2,6 +2,7 @@ import { EditorState, RangeSet, StateField, type Extension } from '@codemirror/s
 import { syntaxTree } from '@codemirror/language'
 
 import { CalcValue, MathComposer } from './composer'
+import { ratesStore } from '../rates-store'
 
 /**
  * Builds a `RangeSet<CalcValue>` for the current editor state by running
@@ -9,7 +10,7 @@ import { CalcValue, MathComposer } from './composer'
  */
 function computeRanges(state: EditorState): RangeSet<CalcValue> {
   const tree = syntaxTree(state)
-  const composer = new MathComposer((from, to) => state.sliceDoc(from, to))
+  const composer = new MathComposer((from, to) => state.sliceDoc(from, to), ratesStore)
   const ranges = composer.assemble(tree.cursor()) ?? []
   if (ranges.length === 0) return RangeSet.empty
   return RangeSet.of(ranges, true)
@@ -31,7 +32,7 @@ export const calcRangesField: StateField<FieldValue> = StateField.define<FieldVa
   create(state) {
     return {
       ranges: computeRanges(state),
-      composer: new MathComposer((from, to) => state.sliceDoc(from, to))
+      composer: new MathComposer((from, to) => state.sliceDoc(from, to), ratesStore)
     }
   },
 

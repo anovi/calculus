@@ -8,6 +8,7 @@ import type { CalcValue, MathComposer } from "./composer";
 /** Currency rates referenced by fixtures below. Keep in sync with `expected` values. */
 const MOCK_RATES: Partial<Record<CurrencyCode, Partial<Record<CurrencyCode, number>>>> = {
   USD: { EUR: 0.9 },
+  EUR: { USD: 1.12 },
 };
 
 /**
@@ -41,7 +42,11 @@ export function createMockRatesStore(): RatesStore {
 export type ComposerFixture = {
   name: string;
   doc: string;
-  expected: number[];
+  /**
+   * Expected per-row result. Use a string when the exact decimal matters
+   * (avoids any float round-trip through the test source).
+   */
+  expected: (number | string)[];
   /** When set, asserts `CalcValue.unit` per row (use `undefined` for rows without a unit). */
   expectedUnits?: (string | undefined)[];
   skip?: boolean;
@@ -102,6 +107,12 @@ export const composerFixtures: ComposerFixture[] = [
     name: 'currency convertion',
     doc: '10 USD in EUR',
     expected: [9],
+  },
+  {
+    name: 'currency convertion via expression',
+    doc: '10 USD + 1 EUR',
+    expected: [11.12],
+    // only: true
   },
 ];
 

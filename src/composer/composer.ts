@@ -1,21 +1,22 @@
 import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
+import Decimal from 'decimal.js';
 
 import { terms } from '../language';
 import { parseNumberWithCurrency } from '../language/currencies';
 import { canConvert, getConvertRate, isCurrency } from '../units/unit-converter';
 import { type RatesStore } from '../rates-store';
 
-type ExpressionResult = { n: number; unit?: string };
+type ExpressionResult = { n: Decimal; unit?: string };
 
 
 /** Represents a row of calculation; can be binded to a name or not */
 export class CalcValue extends RangeValue {
-    readonly result: number;
+    readonly result: Decimal;
     readonly dependencies?: string[];
     readonly name?: string;
     readonly unit?: string;
-    constructor(result: number, name?: string, dependencies?: string[], unit?: string) {
+    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string) {
         super();
         this.result = result;
         this.name = name;
@@ -176,7 +177,7 @@ export class MathComposer {
         ]));
 
         if (pipeline.length > 0) {
-            const result = performOperation(operator, ...pipeline);
+            const result = this.performOperation(operator, ...pipeline);
             if (convertToUnit && result.unit && typeof result.unit === 'string') {
                 return this.convert(result as ExpressionResult & {unit: string}, convertToUnit);
             }
@@ -188,11 +189,11 @@ export class MathComposer {
     private convert(value: ExpressionResult & {unit: string}, unit: string): ExpressionResult {
         if (canConvert(value.unit, unit)) {
             const rate = (isCurrency(unit) && isCurrency(value.unit))
-                ? this.rates.getRate(value.unit, unit) || 1
+                ? this.rates.getRate(value.unit, unit) ?? 1
                 : getConvertRate(value.unit, unit);
             return {
-                n: value.n * rate,
-                unit,
+                n: value.n.times(rate),
+                unit: unit,
             }
         }
         return value;
@@ -222,7 +223,7 @@ export class MathComposer {
                 const raw = this.sliceDoc(nwuCursor.from, nwuCursor.to);
                 const parsed = parseNumberWithCurrency(raw);
                 if (parsed) {
-                    result = { n: parsed.value, unit: parsed.unit };
+                    result = { n: new Decimal(parsed.value), unit: parsed.unit };
                 }
             }],
         ]));
@@ -238,12 +239,10 @@ export class MathComposer {
     private processNumber(cursor: TreeCursor): ExpressionResult | null {
         const raw = this.sliceDoc(cursor.from, cursor.to);
         try {
-            return { n: Number.parseFloat(raw) };
-        } catch {}
-        try {
-            return { n: Number.parseInt(raw) };
-        } catch {}
-        return null;
+            return { n: new Decimal(raw) };
+        } catch {
+            return null;
+        }
     }
 
     private evalExpressionValue(cursor: TreeCursor): ExpressionResult | null {
@@ -290,46 +289,44 @@ export class MathComposer {
         ]));
         if (name === 'sqrt') {
             if (args.length !== 1) return null;
-            return { n: Math.sqrt(args[0].n), unit: args[0].unit };
+            return { n: args[0].n.sqrt(), unit: args[0].unit };
         }
         return null;
     }
-}
 
-function performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
-    let result = args[0].n;
-    const baseUnit: string|undefined = args[0].unit;
-    let convertRate = 1;
-    for (let index = 1; index < args.length; index++) {
-        const unit = args[index].unit;
-        if (baseUnit) {
-            if (unit && canConvert(unit, baseUnit)) {
-                convertRate = getConvertRate(unit, baseUnit);
+    private performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
+        let result = args[0].n;
+        const baseUnit: string|undefined = args[0].unit;
+        for (let index = 1; index < args.length; index++) {
+            let exp = args[index];
+            if (baseUnit) {
+                if (exp.unit && canConvert(exp.unit, baseUnit)) {
+                    exp = this.convert({ ...exp, unit: exp.unit }, baseUnit);
+                }
+            }
+            switch (operator) {
+                case '-':
+                    result = result.minus(exp.n);
+                    break;
+                case '+':
+                    result = result.plus(exp.n);
+                    break;
+                case '%':
+                    result = result.mod(exp.n);
+                    break;
+                case '*':
+                    result = result.times(exp.n);
+                    break;
+                case '/':
+                    result = result.div(exp.n);
+                    break;
+                case '^':
+                    result = result.pow(exp.n);
+                    break;
+                default:
+                    throw Error(`Unknown operator ${operator}`)
             }
         }
-        switch (operator) {
-            case '-':
-                result = result - args[index].n * convertRate;
-                break;
-            case '+':
-                result = result + args[index].n * convertRate;
-                break;
-            case '%':
-                result = result % args[index].n * convertRate;
-                break;
-            case '*':
-                result = result * args[index].n * convertRate;
-                break;
-            case '/':
-                result = result / args[index].n * convertRate;
-                break;
-            case '^':
-                result = result ** args[index].n * convertRate;
-                break;
-            default:
-                throw Error(`Unknown operator ${operator}`)
-        }
-        convertRate = 1;
+        return { n: result, unit: baseUnit };
     }
-    return { n: result, unit: baseUnit };
 }
