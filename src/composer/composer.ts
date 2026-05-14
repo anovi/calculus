@@ -3,9 +3,10 @@ import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
 import { parseNumberWithCurrency } from '../language/currencies';
-import { isNumber } from '../lib/number';
+import { canConvert, getConvertRate, isCurrency } from '../units/unit-converter';
+import { type RatesStore } from '../rates-store';
 
-type LiteralResult = { n: number; unit?: string };
+type ExpressionResult = { n: number; unit?: string };
 
 
 /** Represents a row of calculation; can be binded to a name or not */
@@ -26,11 +27,15 @@ export class CalcValue extends RangeValue {
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 
 export class MathComposer {
-	constructor(sliceDoc: (from: number, to: number) => string) {
+
+    rates: RatesStore;
+
+	constructor(sliceDoc: (from: number, to: number) => string, ratesStore: RatesStore) {
 		this.sliceDoc = sliceDoc;
+        this.rates = ratesStore;
 	}
     
-    bindings: Map<string, unknown> = new Map();
+    bindings: Map<string, ExpressionResult> = new Map();
 
     sliceDoc: (from: number, to: number) => string;
 
@@ -55,6 +60,7 @@ export class MathComposer {
     private readonly nodeHandlers: Map<number, (cursor: TreeCursor) => unknown> = new Map<number, (cursor: TreeCursor) => unknown>([
         [terms.Binding, (cursor) => this.processBinding(cursor)],
         [terms.NoBinding, (cursor) => this.processBinding(cursor)],
+        [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
         [terms.AddExpression, (cursor) => this.processAddExpression(cursor)],
         [terms.MulExpression, (cursor) => this.processMulExpression(cursor)],
         [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
@@ -95,63 +101,71 @@ export class MathComposer {
     private processBinding(cursor: TreeCursor): Range<CalcValue>|null {
         let value: Range<CalcValue>|null = null;
         let id: string|undefined = undefined;
-        let result: null|number = null;
-        let unit: string | undefined = undefined;
+        let result: null | ExpressionResult = null as null | ExpressionResult;
 
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
             [terms.Identifier, (childCursor) => {
                 id = this.sliceDoc(childCursor.from, childCursor.to);
             }],
             [terms.Literal, (childCursor) => {
-                const lit = this.processLiteral(childCursor);
-                if (lit) {
-                    result = lit.n;
-                    unit = lit.unit;
-                }
+                result = this.processLiteral(childCursor);
             }],
             [terms.MulExpression, (childCursor) => {
-                result = this.callHandler<number>(terms.MulExpression, childCursor);
+                result = this.callHandler<ExpressionResult>(terms.MulExpression, childCursor);
             }],
             [terms.AddExpression, (childCursor) => {
-                result = this.callHandler<number>(terms.AddExpression, childCursor);
+                result = this.callHandler<ExpressionResult>(terms.AddExpression, childCursor);
             }],
             [terms.FunctionCall, (childCursor) => {
-                result = this.callHandler<number>(terms.FunctionCall, childCursor);
+                result = this.callHandler<ExpressionResult>(terms.FunctionCall, childCursor);
+            }],
+            [terms.ConvertExpression, (childCursor) => {
+                result = this.callHandler<ExpressionResult>(terms.ConvertExpression, childCursor);
             }],
         ]));
 
         if (result !== null) {
-            value = new CalcValue(result, id, undefined, unit).range(cursor.from, cursor.to);
+            value = new CalcValue(result.n, id, undefined, result.unit).range(cursor.from, cursor.to);
             if (id !== undefined) this.bindings.set(id, result);
         }
         return value;
     }
     // reducer: (...values: number[]) => number
-    private processExpression(cursor: TreeCursor, _type: 'plus'|'times'): number | null {
-        const pipeline: number[] = [];
+    private processExpression(cursor: TreeCursor, type: 'plus'|'times'|'convert'): ExpressionResult | null {
+        const pipeline: ExpressionResult[] = [];
         let operator: Operator = '+';
+        let convertToUnit: string|undefined = undefined;
 
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
             [terms.AddExpression, (nestedCursor) => {
-                const value = this.callHandler<number>(terms.AddExpression, nestedCursor);
+                const value = this.callHandler<ExpressionResult>(terms.AddExpression, nestedCursor);
                 if (value !== null) pipeline.push(value);
             }],
             [terms.MulExpression, (nestedCursor) => {
-                const value = this.callHandler<number>(terms.MulExpression, nestedCursor);
+                const value = this.callHandler<ExpressionResult>(terms.MulExpression, nestedCursor);
                 if (value !== null) pipeline.push(value);
+            }],
+            [terms.ConvertExpression, (nestedCursor) => {
+                const res = this.processConvertExpression(nestedCursor)
+                if (res) pipeline.push(res);
+            }],
+            [terms.Unit, (nestedCursor) => {
+                if (type === 'convert') {
+                    convertToUnit = this.sliceDoc(nestedCursor.from, nestedCursor.to);
+                }
             }],
             [terms.Identifier, (nestedCursor) => {
                 const id = this.sliceDoc(nestedCursor.from, nestedCursor.to);
                 const value = this.bindings.get(id)
-                if (isNumber(value)) pipeline.push(value);
+                if (value) pipeline.push(value);
             }],
             [terms.Literal, (nestedCursor) => {
                 const lit = this.processLiteral(nestedCursor);
-                if (lit) pipeline.push(lit.n);
+                if (lit) pipeline.push(lit);
             }],
             [terms.FunctionCall, (nestedCursor) => {
-                const value = this.callHandler<number>(terms.FunctionCall, nestedCursor);
-                if (isNumber(value)) pipeline.push(value);
+                const value = this.callHandler<ExpressionResult>(terms.FunctionCall, nestedCursor);
+                if (value) pipeline.push(value);
             }],
             [terms.PlusBinaryOp, (cursor) => {
                 operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
@@ -162,65 +176,80 @@ export class MathComposer {
         ]));
 
         if (pipeline.length > 0) {
-            return performOperation(operator, ...pipeline)
+            const result = performOperation(operator, ...pipeline);
+            if (convertToUnit && result.unit && typeof result.unit === 'string') {
+                return this.convert(result as ExpressionResult & {unit: string}, convertToUnit);
+            }
+            return result;
         }
         return null;
     }
 
-    private processAddExpression(cursor: TreeCursor): number|null {
+    private convert(value: ExpressionResult & {unit: string}, unit: string): ExpressionResult {
+        if (canConvert(value.unit, unit)) {
+            const rate = (isCurrency(unit) && isCurrency(value.unit))
+                ? this.rates.getRate(value.unit, unit) || 1
+                : getConvertRate(value.unit, unit);
+            return {
+                n: value.n * rate,
+                unit,
+            }
+        }
+        return value;
+    }
+
+    private processAddExpression(cursor: TreeCursor): ExpressionResult|null {
         return this.processExpression(cursor, 'plus');
     }
 
-    private processMulExpression(cursor: TreeCursor): number|null {
+    private processMulExpression(cursor: TreeCursor): ExpressionResult|null {
         return this.processExpression(cursor, 'times');
     }
 
-    private processConvertExpression(_cursor: TreeCursor): null {
-        return null;
+    private processConvertExpression(cursor: TreeCursor): ExpressionResult | null {
+        return this.processExpression(cursor, 'convert');
     }
 
-    private processLiteral(cursor: TreeCursor): LiteralResult | null {
-        let n: number | null = null;
-        let unit: string | undefined;
+    private processLiteral(cursor: TreeCursor): ExpressionResult | null {
+        let result: ExpressionResult | null = null;
 
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
             [terms.Number, (numberCursor) => {
-                const v = this.callHandler<number>(terms.Number, numberCursor);
-                if (v !== null) n = v;
+                const v = this.callHandler<ExpressionResult>(terms.Number, numberCursor);
+                if (v !== null) result = v;
             }],
             [terms.NumberWithUnit, (nwuCursor) => {
                 const raw = this.sliceDoc(nwuCursor.from, nwuCursor.to);
                 const parsed = parseNumberWithCurrency(raw);
                 if (parsed) {
-                    n = parsed.value;
-                    unit = parsed.unit;
+                    result = { n: parsed.value, unit: parsed.unit };
                 }
             }],
         ]));
 
-        if (n === null) return null;
-        return { n, unit };
+        if (result === null) return null;
+        return result;
     }
 
     private processString(_cursor: TreeCursor): null {
         return null;
     }
 
-    private processNumber(cursor: TreeCursor): number | null {
+    private processNumber(cursor: TreeCursor): ExpressionResult | null {
         const raw = this.sliceDoc(cursor.from, cursor.to);
         try {
-            return Number.parseFloat(raw);
+            return { n: Number.parseFloat(raw) };
         } catch {}
         try {
-            return Number.parseInt(raw);
+            return { n: Number.parseInt(raw) };
         } catch {}
         return null;
     }
 
-    private evalExpressionValue(cursor: TreeCursor): number | null {
+    private evalExpressionValue(cursor: TreeCursor): ExpressionResult | null {
         switch (cursor.type.id) {
             case terms.Literal:
-                return this.processLiteral(cursor)?.n ?? null;
+                return this.processLiteral(cursor) ?? null;
             case terms.AddExpression:
                 return this.processAddExpression(cursor);
             case terms.MulExpression:
@@ -228,7 +257,7 @@ export class MathComposer {
             case terms.Identifier: {
                 const id = this.sliceDoc(cursor.from, cursor.to);
                 const value = this.bindings.get(id);
-                return isNumber(value) ? value : null;
+                return value ? value : null;
             }
             case terms.FunctionCall:
                 return this.processFunctionCall(cursor);
@@ -237,8 +266,8 @@ export class MathComposer {
         }
     }
 
-    private processArgList(cursor: TreeCursor): number[] {
-        const args: number[] = [];
+    private processArgList(cursor: TreeCursor): ExpressionResult[] {
+        const args: ExpressionResult[] = [];
         if (!cursor.firstChild()) return args;
         do {
             const value = this.evalExpressionValue(cursor);
@@ -248,9 +277,9 @@ export class MathComposer {
         return args;
     }
 
-    private processFunctionCall(cursor: TreeCursor): number | null {
+    private processFunctionCall(cursor: TreeCursor): ExpressionResult | null {
         let name = '';
-        let args: number[] = [];
+        let args: ExpressionResult[] = [];
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
             [terms.Identifier, (childCursor) => {
                 name = this.sliceDoc(childCursor.from, childCursor.to).toLowerCase();
@@ -261,37 +290,46 @@ export class MathComposer {
         ]));
         if (name === 'sqrt') {
             if (args.length !== 1) return null;
-            return Math.sqrt(args[0]);
+            return { n: Math.sqrt(args[0].n), unit: args[0].unit };
         }
         return null;
     }
 }
 
-function performOperation(operator: Operator, ...args: number[] ) {
-    let result = args[0];
+function performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
+    let result = args[0].n;
+    const baseUnit: string|undefined = args[0].unit;
+    let convertRate = 1;
     for (let index = 1; index < args.length; index++) {
+        const unit = args[index].unit;
+        if (baseUnit) {
+            if (unit && canConvert(unit, baseUnit)) {
+                convertRate = getConvertRate(unit, baseUnit);
+            }
+        }
         switch (operator) {
             case '-':
-                result = result - args[index]; 
+                result = result - args[index].n * convertRate;
                 break;
             case '+':
-                result = result + args[index]; 
+                result = result + args[index].n * convertRate;
                 break;
             case '%':
-                result = result % args[index]; 
+                result = result % args[index].n * convertRate;
                 break;
             case '*':
-                result = result * args[index]; 
+                result = result * args[index].n * convertRate;
                 break;
             case '/':
-                result = result / args[index]; 
+                result = result / args[index].n * convertRate;
                 break;
             case '^':
-                result = result ** args[index]; 
+                result = result ** args[index].n * convertRate;
                 break;
             default:
                 throw Error(`Unknown operator ${operator}`)
         }
+        convertRate = 1;
     }
-    return result;
+    return { n: result, unit: baseUnit };
 }

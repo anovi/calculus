@@ -6,7 +6,7 @@ import { Range } from "@codemirror/state";
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
 import { createNumberWithUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
 import { CalcValue, MathComposer } from './composer';
-import { composerFixtures } from './composer.spec.fixtures';
+import { composerFixtures, createMockRatesStore } from './composer.spec.fixtures';
 import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
@@ -48,7 +48,7 @@ describe('CalcDoc grammar', () => {
             doc = fx.doc;
             const result = parser.parse(doc);
             const cursor = result.cursor();
-            const composer = new MathComposer(sliceDoc);
+            const composer = new MathComposer(sliceDoc, createMockRatesStore());
             const res = composer.assemble(cursor);
 
             try {

@@ -1,6 +1,42 @@
 import { Range } from "@codemirror/state";
 
+import { pairKey } from "../rates/pair-key";
+import type { CurrencyCode, PairEntry, PairKey } from "../rates/types";
+import { RatesStore } from "../rates-store";
 import type { CalcValue, MathComposer } from "./composer";
+
+/** Currency rates referenced by fixtures below. Keep in sync with `expected` values. */
+const MOCK_RATES: Partial<Record<CurrencyCode, Partial<Record<CurrencyCode, number>>>> = {
+  USD: { EUR: 0.9 },
+};
+
+/**
+ * Builds a `RatesStore` pre-seeded with deterministic fixture rates. Uses the real
+ * `RatesStore` class so private-field typing matches, but stubs network + persistence
+ * so no I/O happens during tests.
+ */
+export function createMockRatesStore(): RatesStore {
+  const entries = new Map<PairKey, PairEntry>();
+  const fetchedAt = Date.now();
+  for (const [from, quotes] of Object.entries(MOCK_RATES) as [CurrencyCode, Record<CurrencyCode, number>][]) {
+    for (const [to, rate] of Object.entries(quotes) as [CurrencyCode, number][]) {
+      entries.set(pairKey(from, to), { rate, date: '2026-05-14', fetchedAt });
+    }
+  }
+  return new RatesStore({
+    persistence: {
+      load: () => entries,
+      save: () => {},
+    },
+    fetcher: {
+      fetchPair: async () => {
+        throw new Error('Mock RatesStore: fetchPair should not be called in tests');
+      },
+      fetchBaseRates: async () => [],
+    },
+    staleAfterMs: Number.POSITIVE_INFINITY,
+  });
+}
 
 export type ComposerFixture = {
   name: string;
@@ -26,7 +62,7 @@ export const composerFixtures: ComposerFixture[] = [
   {
     name: 'sqrt with binding',
     doc: 'x = 9\nsqrt(x)',
-    expected: [9, 3]
+    expected: [9, 3],
   },
   // Bindings
   {
@@ -61,6 +97,11 @@ export const composerFixtures: ComposerFixture[] = [
     doc: '3.5JPY',
     expected: [3.5],
     expectedUnits: ['JPY'],
+  },
+  {
+    name: 'currency convertion',
+    doc: '10 USD in EUR',
+    expected: [9],
   },
 ];
 
