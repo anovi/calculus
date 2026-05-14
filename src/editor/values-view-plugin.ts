@@ -9,8 +9,8 @@ import {
 } from '@codemirror/view'
 import type Decimal from 'decimal.js'
 
-import { CalcValue } from './composer'
-import { calcRangesField, getCalcRanges } from './composer-field'
+import { CalcValue } from '../composer'
+import { calcRangesField, getCalcRanges } from './values-field'
 
 /**
  * Inline widget rendering a calculation result next to its source range.

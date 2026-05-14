@@ -3,9 +3,9 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport } from '@codemirror/language'
 
 import { parser } from './language'
-import { calcRanges } from './composer/composer-field'
-import { calcResultsPlugin } from './composer/composer-view'
+import { calcRanges, calcResultsPlugin } from './editor'
 import './editor.css'
+import { initializeRatesStore } from './rates-store'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -61,3 +61,5 @@ new EditorView({
     extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist],
   }),
 })
+
+void initializeRatesStore()
