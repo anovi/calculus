@@ -25,6 +25,8 @@
   "dependencies": {
     "@lezer/generator": "1.8.0",
     "codemirror": "6.0.2",
+    "convert": "7.0.0",
+    "convert-units": "3.0.0-beta.8",
     "decimal.js": "10.6.0",
     "lezer": "0.13.5"
   }

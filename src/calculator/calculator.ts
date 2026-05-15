@@ -3,8 +3,8 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
-import { parseNumberWithCurrency } from '../language/currencies';
-import { canConvert, getConvertRate } from '../units/unit-converter';
+import { normalizeUnit, parseNumberWithUnit } from '../language/parse-number-with-unit';
+import { unitsConverter } from '../units';
 import { isCurrency, type CurrencyCode } from '../currencies';
 import { pairKey, type RatesStore } from '../rates-store';
 
@@ -154,7 +154,8 @@ export class MathCalculator {
             }],
             [terms.Unit, (nestedCursor) => {
                 if (type === 'convert') {
-                    convertToUnit = this.sliceDoc(nestedCursor.from, nestedCursor.to);
+                    const raw = this.sliceDoc(nestedCursor.from, nestedCursor.to);
+                    convertToUnit = normalizeUnit(raw) ?? undefined;
                 }
             }],
             [terms.Identifier, (nestedCursor) => {
@@ -192,25 +193,30 @@ export class MathCalculator {
         return Boolean(expr.unit && typeof expr.unit === 'string');
     }
 
-    private convert(value: ExpressionResult & {unit: string}, unit: string): ExpressionResult {
-        if (canConvert(value.unit, unit)) {
-            let rate: number = 1;
-            if (isCurrency(unit) && isCurrency(value.unit)) {
-                const currencyRate = this.rates.getRate(value.unit, unit);
-                if (currencyRate == null) {
-                    this.ratesAwaited.push(pairKey(value.unit, unit))
-                    rate = NaN; // Got a better idea?
-                } else {
-                    rate = currencyRate;
-                }
+    private convert(value: ExpressionResult & {unit: string}, toUnit: string): ExpressionResult {
+        let rate: number = 1;
+        const unitA = value.unit;
+        const unitB = toUnit;
+
+        if (isCurrency(unitA) && isCurrency(unitB)) {
+            const currencyRate = this.rates.getRate(unitA, unitB);
+            if (currencyRate == null) {
+                this.ratesAwaited.push(pairKey(unitA, unitB))
+                rate = NaN; // Got a better idea?
             } else {
-                rate = getConvertRate(value.unit, unit);
-            } 
+                rate = currencyRate;
+            }
             return {
                 n: value.n.times(rate),
-                unit: unit,
+                unit: unitB,
             }
         }
+
+        if (unitsConverter.canConvert(unitA, unitB)) {
+            const newVal = unitsConverter.convertValue(value.n, unitA, unitB);
+            return { n: newVal, unit: unitB };
+        }
+
         return value;
     }
 
@@ -236,7 +242,7 @@ export class MathCalculator {
             }],
             [terms.NumberWithUnit, (childCursor) => {
                 const raw = this.sliceDoc(childCursor.from, childCursor.to);
-                const parsed = parseNumberWithCurrency(raw);
+                const parsed = parseNumberWithUnit(raw);
                 if (parsed) {
                     result = { n: new Decimal(parsed.value), unit: parsed.unit };
                 }
@@ -314,10 +320,8 @@ export class MathCalculator {
         const baseUnit: string|undefined = args[0].unit;
         for (let index = 1; index < args.length; index++) {
             let exp = args[index];
-            if (baseUnit) {
-                if (exp.unit && canConvert(exp.unit, baseUnit)) {
-                    exp = this.convert({ ...exp, unit: exp.unit }, baseUnit);
-                }
+            if (baseUnit && exp.unit && baseUnit !== exp.unit) {
+                exp = this.convert({ ...exp, unit: exp.unit }, baseUnit);
             }
             switch (operator) {
                 case '-':

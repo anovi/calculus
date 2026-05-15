@@ -1,1 +1,1 @@
-export * as unit_converter from './unit-converter';
+export { unitsConverter } from './unit-converter';

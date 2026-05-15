@@ -177,27 +177,3 @@ export const CURRENCIES = [
 "ZMW",
 "ZWG",
 ] as const;
-
-/** ISO codes longest-first so a hypothetical shorter prefix never shadows a longer code. */
-export const CURRENCY_CODES_BY_LENGTH: readonly string[] = [...CURRENCIES].sort(
-  (a, b) => b.length - a.length || a.localeCompare(b),
-);
-
-/**
- * Parse a `NumberWithUnit` source slice (e.g. `100USD`, `12.5 EUR`) into numeric value and currency code.
- * Returns null if the suffix is not a known currency from {@link CURRENCIES}.
- */
-export function parseNumberWithCurrency(
-  text: string,
-): { value: number; unit: string } | null {
-  for (const code of CURRENCY_CODES_BY_LENGTH) {
-    if (!text.endsWith(code)) continue;
-    let numPart = text.slice(0, -code.length);
-    if (numPart.endsWith(' ')) numPart = numPart.slice(0, -1);
-    if (numPart.length === 0) continue;
-    const value = Number.parseFloat(numPart);
-    if (!Number.isFinite(value)) continue;
-    return { value, unit: code };
-  }
-  return null;
-}

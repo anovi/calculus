@@ -114,5 +114,10 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [11.12],
     // only: true
   },
+  {
+    name: 'units convertion',
+    doc: '10 km in mi',
+    expected: [6.2137119223733395],
+  },
 ];
 

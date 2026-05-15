@@ -113,7 +113,6 @@ export const calcResultsPlugin = ViewPlugin.fromClass(
     update(update: ViewUpdate): void {
       const before = update.startState.field(calcRangesField);
       const after = update.state.field(calcRangesField);
-      // console.log('awaitedRates', before.awaitedRates, after.awaitedRates)
       if (this.subscriptions.length > 0) this.subscriptions.forEach(sub => sub());
       this.subscriptions = after.awaitedRates
         .map((pairKey) => {
