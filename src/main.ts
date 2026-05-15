@@ -1,11 +1,13 @@
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
-import { LRLanguage, LanguageSupport } from '@codemirror/language'
+import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
 import { parser } from './language'
 import { calcRanges, calcResultsPlugin } from './editor'
 import './editor.css'
+import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
+import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -58,7 +60,7 @@ new EditorView({
   parent: root,
   state: EditorState.create({
     doc: loadDoc(),
-    extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist],
+    extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist, syntaxHighlighting(calculusHighlightStyle)],
   }),
 })
 

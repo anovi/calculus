@@ -1,0 +1,17 @@
+:root {
+  --accent: #7dd3fc;
+  --ok: #86efac;
+  --error: #fca5a5;
+
+  --cm-hl-variable: var(--heading);
+  --cm-hl-operator: var(--accent);
+  --cm-hl-number: #93c5fd;
+  --cm-hl-string: var(--error);
+  --cm-hl-literal: var(--ok);
+  --cm-hl-bool: #93c5fd;
+  --cm-hl-bracket: rgba(200, 209, 224, 0.55);
+  --cm-hl-logic: var(--accent);
+  --cm-hl-type: var(--ok);
+  --cm-hl-comment: rgba(200, 209, 224, 0.45);
+  --cm-hl-unit: #c4b5fd;
+}

@@ -103,3 +103,5 @@ convertOp { in }
 }
 
 @skip { space }
+
+@external propSource calculusLangHighlight from "./calculus-lang-highlighting"
