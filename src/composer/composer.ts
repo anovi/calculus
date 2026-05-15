@@ -1,11 +1,12 @@
+import Decimal from 'decimal.js';
 import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
-import Decimal from 'decimal.js';
 
 import { terms } from '../language';
 import { parseNumberWithCurrency } from '../language/currencies';
 import { canConvert, getConvertRate, isCurrency } from '../units/unit-converter';
-import { type RatesStore } from '../rates-store';
+import { pairKey, type RatesStore } from '../rates-store';
+import type { Currency } from '../units/currencies';
 
 type ExpressionResult = { n: Decimal; unit?: string };
 
@@ -30,6 +31,7 @@ type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 export class MathComposer {
 
     rates: RatesStore;
+    ratesAwaited: Currency[] = [];
 
 	constructor(sliceDoc: (from: number, to: number) => string, ratesStore: RatesStore) {
 		this.sliceDoc = sliceDoc;
@@ -188,9 +190,18 @@ export class MathComposer {
 
     private convert(value: ExpressionResult & {unit: string}, unit: string): ExpressionResult {
         if (canConvert(value.unit, unit)) {
-            const rate = (isCurrency(unit) && isCurrency(value.unit))
-                ? this.rates.getRate(value.unit, unit) ?? 1
-                : getConvertRate(value.unit, unit);
+            let rate: number = 1;
+            if (isCurrency(unit) && isCurrency(value.unit)) {
+                const currencyRate = this.rates.getRate(value.unit, unit);
+                if (currencyRate == null) {
+                    this.ratesAwaited.push(pairKey(value.unit, unit))
+                    rate = NaN; // Got a better idea?
+                } else {
+                    rate = currencyRate;
+                }
+            } else {
+                rate = getConvertRate(value.unit, unit);
+            } 
             return {
                 n: value.n.times(rate),
                 unit: unit,

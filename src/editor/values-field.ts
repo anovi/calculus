@@ -2,23 +2,32 @@ import { EditorState, RangeSet, StateField, type Extension } from '@codemirror/s
 import { syntaxTree } from '@codemirror/language'
 
 import { CalcValue, MathComposer } from '../composer/composer'
-import { ratesStore } from '../rates-store'
+import { parsePairKey, ratesStore } from '../rates-store'
+import { CurrencyRateUpdated } from './effects'
 
 /**
  * Builds a `RangeSet<CalcValue>` for the current editor state by running
  * `MathComposer` over the freshly parsed syntax tree.
  */
-function computeRanges(state: EditorState): RangeSet<CalcValue> {
+function computeRanges(state: EditorState): FieldValue {
   const tree = syntaxTree(state)
   const composer = new MathComposer((from, to) => state.sliceDoc(from, to), ratesStore)
   const ranges = composer.assemble(tree.cursor()) ?? []
-  if (ranges.length === 0) return RangeSet.empty
-  return RangeSet.of(ranges, true)
+
+  if (ranges.length === 0) return {
+    ranges: RangeSet.empty,
+    awaitedRates: [],
+  };
+
+  return {
+    ranges: RangeSet.of(ranges, true),
+    awaitedRates: composer.ratesAwaited
+  }
 }
 
 type FieldValue = {
   ranges: RangeSet<CalcValue>;
-  composer: MathComposer;
+  awaitedRates: string[];
 }
 
 /**
@@ -30,19 +39,12 @@ type FieldValue = {
  */
 export const calcRangesField: StateField<FieldValue> = StateField.define<FieldValue>({
   create(state) {
-    return {
-      ranges: computeRanges(state),
-      composer: new MathComposer((from, to) => state.sliceDoc(from, to), ratesStore)
-    }
+    return computeRanges(state);
   },
 
   update(value, tr) {
-    // const mapped = value.ranges.map(tr.changes);
-    // tr.changes.touchesRange()
-    value.composer.sliceDoc = (from, to) => tr.state.sliceDoc(from, to);
-    if (tr.docChanged) return {
-      ranges: computeRanges(tr.state),
-      composer: value.composer,
+    if (tr.docChanged || tr.effects.find(fx => fx.is(CurrencyRateUpdated))) {
+      return computeRanges(tr.state);
     }
     return value
   },

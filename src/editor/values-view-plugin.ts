@@ -11,6 +11,8 @@ import type Decimal from 'decimal.js'
 
 import { CalcValue } from '../composer'
 import { calcRangesField, getCalcRanges } from './values-field'
+import { parsePairKey, ratesStore } from '../rates-store'
+import { CurrencyRateUpdated } from './effects'
 
 /**
  * Inline widget rendering a calculation result next to its source range.
@@ -101,7 +103,8 @@ function buildDecorations(view: EditorView): DecorationSet {
  */
 export const calcResultsPlugin = ViewPlugin.fromClass(
   class {
-    decorations: DecorationSet
+    decorations: DecorationSet;
+    subscriptions: (() => void)[] = [];
 
     constructor(view: EditorView) {
       this.decorations = buildDecorations(view);
@@ -110,9 +113,26 @@ export const calcResultsPlugin = ViewPlugin.fromClass(
     update(update: ViewUpdate): void {
       const before = update.startState.field(calcRangesField);
       const after = update.state.field(calcRangesField);
+      // console.log('awaitedRates', before.awaitedRates, after.awaitedRates)
+      if (this.subscriptions.length > 0) this.subscriptions.forEach(sub => sub());
+      this.subscriptions = after.awaitedRates
+        .map((pairKey) => {
+          return this.subscribeToCurrencyRateUpdate(pairKey, update.view)
+        })
+        .filter((v) => v != null);
       if (before !== after) {
         this.decorations = buildDecorations(update.view);
       }
+    }
+
+    private subscribeToCurrencyRateUpdate(pairKey: string, view: EditorView) {
+      const pair = parsePairKey(pairKey);
+      if (!pair) return;
+      console.log('Subscribe to', pairKey);
+      return ratesStore.subscribe(pair.from, pair.to, (state) => {
+        if (!state.entry) return;
+        view.dispatch({ effects: CurrencyRateUpdated.of(null) })
+      });
     }
   },
   {
