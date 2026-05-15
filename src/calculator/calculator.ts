@@ -5,7 +5,7 @@ import { RangeValue, Range } from "@codemirror/state";
 import { terms } from '../language';
 import { normalizeUnit, parseNumberWithUnit } from '../language/parse-number-with-unit';
 import { unitsConverter } from '../units';
-import { isCurrency, type CurrencyCode } from '../currencies';
+import { isCurrency, type PairKey } from '../currencies';
 import { pairKey, type RatesStore } from '../rates-store';
 
 type ExpressionResult = { n: Decimal; unit?: string };
@@ -31,7 +31,7 @@ type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 export class MathCalculator {
 
     rates: RatesStore;
-    ratesAwaited: CurrencyCode[] = [];
+    ratesAwaited: PairKey[] = [];
 
 	constructor(sliceDoc: (from: number, to: number) => string, ratesStore: RatesStore) {
 		this.sliceDoc = sliceDoc;
@@ -201,7 +201,7 @@ export class MathCalculator {
         if (isCurrency(unitA) && isCurrency(unitB)) {
             const currencyRate = this.rates.getRate(unitA, unitB);
             if (currencyRate == null) {
-                this.ratesAwaited.push(pairKey(unitA, unitB))
+                this.ratesAwaited.push(pairKey(unitA, unitB));
                 rate = NaN; // Got a better idea?
             } else {
                 rate = currencyRate;
