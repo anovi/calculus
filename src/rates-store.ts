@@ -1,19 +1,18 @@
-export { RatesStore } from "./rates/store";
+export { RatesStore } from "./currencies/store";
 export type {
 	RatesFetcher,
 	RatesPersistence,
 	RatesStoreDeps,
-} from "./rates/store";
+} from "./currencies";
 export type {
 	CurrencyCode,
 	PairEntry,
 	PairKey,
 	PairState,
-} from "./rates/types";
-export { STALE_AFTER_MS, WARMUP_QUOTES } from "./rates/types";
-export { pairKey, parsePairKey } from "./rates/pair-key";
-
-import { RatesStore } from "./rates/store";
+} from "./currencies";
+export { STALE_AFTER_MS, WARMUP_QUOTES } from "./currencies";
+export { pairKey, parsePairKey } from "./currencies";
+import { RatesStore } from "./currencies";
 
 /** Default app-wide singleton. Consumers import this directly; tests can mock it via vi.mock + vi.hoisted. */
 export const ratesStore = new RatesStore();

@@ -1,18 +1,18 @@
 import { EditorState, RangeSet, StateField, type Extension } from '@codemirror/state'
 import { syntaxTree } from '@codemirror/language'
 
-import { CalcValue, MathComposer } from '../composer/composer'
-import { parsePairKey, ratesStore } from '../rates-store'
+import { CalcValue, MathCalculator } from '../calculator/calculator'
+import { ratesStore } from '../rates-store'
 import { CurrencyRateUpdated } from './effects'
 
 /**
  * Builds a `RangeSet<CalcValue>` for the current editor state by running
- * `MathComposer` over the freshly parsed syntax tree.
+ * `MathCalculator` over the freshly parsed syntax tree.
  */
 function computeRanges(state: EditorState): FieldValue {
   const tree = syntaxTree(state)
-  const composer = new MathComposer((from, to) => state.sliceDoc(from, to), ratesStore)
-  const ranges = composer.assemble(tree.cursor()) ?? []
+  const calculator = new MathCalculator((from, to) => state.sliceDoc(from, to), ratesStore)
+  const ranges = calculator.assemble(tree.cursor()) ?? []
 
   if (ranges.length === 0) return {
     ranges: RangeSet.empty,
@@ -21,7 +21,7 @@ function computeRanges(state: EditorState): FieldValue {
 
   return {
     ranges: RangeSet.of(ranges, true),
-    awaitedRates: composer.ratesAwaited
+    awaitedRates: calculator.ratesAwaited
   }
 }
 
@@ -31,7 +31,7 @@ type FieldValue = {
 }
 
 /**
- * A `StateField` holding the latest `RangeSet` produced by `MathComposer`.
+ * A `StateField` holding the latest `RangeSet` produced by `MathCalculator`.
  *
  * The set is recomputed whenever the document changes or the (potentially
  * asynchronously parsed) syntax tree advances. Otherwise the previous value

@@ -1,181 +1,65 @@
-import './style.css'
-import { registerSW } from 'virtual:pwa-register'
+import { EditorView, basicSetup } from 'codemirror'
+import { EditorState } from '@codemirror/state'
+import { LRLanguage, LanguageSupport } from '@codemirror/language'
 
-const API_BASE = 'https://api.frankfurter.dev/v2/rates'
+import { parser } from './language'
+import { calcRanges, calcResultsPlugin } from './editor'
+import './editor.css'
+import { initializeRatesStore } from './rates-store'
 
-/** Major quotes to request; the API returns only rows it has data for. */
-const QUOTES = [
-  'USD',
-  'GBP',
-  'JPY',
-  'CHF',
-  'CAD',
-  'AUD',
-  'NZD',
-  'CNY',
-  'INR',
-  'BRL',
-  'MXN',
-  'KRW',
-  'SEK',
-  'NOK',
-  'DKK',
-  'PLN',
-  'HUF',
-  'CZK',
-  'RON',
-  'TRY',
-  'ZAR',
-  'SGD',
-  'HKD',
-  'ILS',
-  'THB',
-  'IDR',
-  'PHP',
-].join(',')
+/** localStorage key used to persist the editor doc across reloads. */
+const STORAGE_KEY = 'calculus:doc'
 
-type RateRow = {
-  date: string
-  base: string
-  quote: string
-  rate: number
+const DEFAULT_DOC = `// Welcome to calculus.
+// Each line is either a comment, an expression, or a named binding.
+
+tax_rate = 0.21
+net = 100
+gross = net + net * tax_rate
+`
+
+const calcLanguage = LRLanguage.define({
+  name: 'calculus',
+  parser,
+})
+
+function calculus(): LanguageSupport {
+  return new LanguageSupport(calcLanguage)
 }
 
-function buildRatesUrl(): string {
-  const params = new URLSearchParams({
-    base: 'EUR',
-    quotes: QUOTES,
-  })
-  return `${API_BASE}?${params.toString()}`
-}
-
-function formatRate(value: number): string {
-  if (value >= 100) return value.toFixed(2)
-  if (value >= 1) return value.toFixed(4)
-  return value.toFixed(6)
-}
-
-function renderLoading(root: HTMLElement): void {
-  root.innerHTML = `
-    <div class="shell">
-      <header class="header">
-        <h1 class="title">EUR exchange rates</h1>
-        <p class="subtitle">Loading from Frankfurter…</p>
-      </header>
-      <main class="card" aria-busy="true">
-        <div class="skeleton-grid" aria-hidden="true">
-          ${Array.from({ length: 8 }, () => '<div class="skeleton-row"></div>').join('')}
-        </div>
-      </main>
-    </div>
-  `
-}
-
-function renderError(root: HTMLElement, message: string): void {
-  root.innerHTML = `
-    <div class="shell">
-      <header class="header">
-        <h1 class="title">EUR exchange rates</h1>
-        <p class="subtitle status status--error">${message}</p>
-      </header>
-      <main class="card">
-        <p class="hint">If you opened this page before while online, try again: cached rates may still load when the network is unavailable.</p>
-        <button type="button" class="btn" id="retry">Retry</button>
-      </main>
-    </div>
-  `
-  document.getElementById('retry')?.addEventListener('click', () => loadRates(root))
-}
-
-function renderRates(
-  root: HTMLElement,
-  rows: RateRow[],
-  meta: { fetchedAt: string },
-): void {
-  const sorted = [...rows].sort((a, b) => a.quote.localeCompare(b.quote))
-  const dateLabel = sorted[0]?.date ?? '—'
-  const online = navigator.onLine
-  const statusHtml = online
-    ? '<span class="pill pill--ok">Online</span>'
-    : '<span class="pill pill--muted">Offline · cached rates</span>'
-
-  root.innerHTML = `
-    <div class="shell">
-      <header class="header">
-        <h1 class="title">1 EUR equals</h1>
-        <p class="subtitle">
-          ECB-blended daily rates via <a href="https://www.frankfurter.app/" target="_blank" rel="noreferrer">Frankfurter</a>
-          · date <strong>${dateLabel}</strong>
-        </p>
-        <div class="meta-row">
-          ${statusHtml}
-          <span class="pill pill--muted">Updated locally ${meta.fetchedAt}</span>
-        </div>
-      </header>
-      <main class="card">
-        <table class="rates" aria-label="EUR to foreign currency rates">
-          <thead>
-            <tr><th>Currency</th><th class="num">Rate (per 1 EUR)</th></tr>
-          </thead>
-          <tbody>
-            ${sorted
-              .map(
-                (r) => `
-              <tr>
-                <td><span class="ccy">${r.quote}</span></td>
-                <td class="num mono">${formatRate(r.rate)}</td>
-              </tr>`,
-              )
-              .join('')}
-          </tbody>
-        </table>
-        <p class="footnote">Installable PWA: assets and the last successful API response are cached for offline use.</p>
-      </main>
-      <footer class="footer">
-        <button type="button" class="btn btn--ghost" id="refresh">Refresh</button>
-      </footer>
-    </div>
-  `
-
-  document.getElementById('refresh')?.addEventListener('click', () => loadRates(root))
-}
-
-async function loadRates(root: HTMLElement): Promise<void> {
-  renderLoading(root)
-  const url = buildRatesUrl()
-  const fetchedAt = new Date().toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-
+function loadDoc(): string {
   try {
-    const res = await fetch(url, { cache: 'default' })
-    if (!res.ok) {
-      throw new Error(`Request failed (${res.status})`)
-    }
-    const data: unknown = await res.json()
-    if (!Array.isArray(data)) {
-      throw new Error('Unexpected API response')
-    }
-    const rows = data as RateRow[]
-    if (rows.length === 0) {
-      throw new Error('No rates returned')
-    }
-    renderRates(root, rows, { fetchedAt })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Something went wrong'
-    renderError(root, message)
+    const cached = localStorage.getItem(STORAGE_KEY)
+    if (cached !== null) return cached
+  } catch {
+    // Storage may be disabled (private mode, quota); fall through to default.
+  }
+  return DEFAULT_DOC
+}
+
+function saveDoc(doc: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, doc)
+  } catch {
+    // Ignore quota / availability errors; persistence is best-effort.
   }
 }
 
-const root = document.querySelector<HTMLDivElement>('#app')
+const root = document.querySelector<HTMLDivElement>('#editor')
 if (!root) {
-  throw new Error('#app missing')
+  throw new Error('#editor missing')
 }
 
-registerSW({ immediate: true })
+const persist = EditorView.updateListener.of((update) => {
+  if (update.docChanged) saveDoc(update.state.doc.toString())
+})
 
-window.addEventListener('online', () => loadRates(root))
-window.addEventListener('offline', () => loadRates(root))
+new EditorView({
+  parent: root,
+  state: EditorState.create({
+    doc: loadDoc(),
+    extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist],
+  }),
+})
 
-void loadRates(root)
+void initializeRatesStore()

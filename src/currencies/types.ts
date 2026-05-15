@@ -33,8 +33,7 @@ export const STALE_AFTER_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Quotes pre-fetched at startup for both EUR and USD bases.
- * Matches the list previously hard-coded in src/main.ts and covers
- * the majors most likely to appear in calculator conversions.
+ * Covers the majors most likely to appear in calculator conversions.
  */
 export const WARMUP_QUOTES: readonly CurrencyCode[] = [
 	"EUR",

@@ -6,8 +6,8 @@ import Decimal from 'decimal.js';
 
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
 import { createNumberWithUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
-import { CalcValue, MathComposer } from './composer';
-import { composerFixtures, createMockRatesStore } from './composer.spec.fixtures';
+import { CalcValue, MathCalculator } from './calculator';
+import { calculatorFixtures, createMockRatesStore } from './calculator.spec.fixtures';
 import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
@@ -48,14 +48,14 @@ describe('CalcDoc grammar', () => {
     let doc = '';
     const sliceDoc = (from: number, to: number) => doc.slice(from, to);
 
-	for (const fx of composerFixtures) {
+	for (const fx of calculatorFixtures) {
         const test = fx.only ? it.only : fx.skip ? it.skip : it;
         test(fx.name, () => {
             doc = fx.doc;
             const result = parser.parse(doc);
             const cursor = result.cursor();
-            const composer = new MathComposer(sliceDoc, createMockRatesStore());
-            const res = composer.assemble(cursor);
+            const calculator = new MathCalculator(sliceDoc, createMockRatesStore());
+            const res = calculator.assemble(cursor);
 
             try {
                 assert.ok(result instanceof Tree);

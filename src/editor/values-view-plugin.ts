@@ -9,7 +9,7 @@ import {
 } from '@codemirror/view'
 import type Decimal from 'decimal.js'
 
-import { CalcValue } from '../composer'
+import { CalcValue } from '../calculator'
 import { calcRangesField, getCalcRanges } from './values-field'
 import { parsePairKey, ratesStore } from '../rates-store'
 import { CurrencyRateUpdated } from './effects'
@@ -98,7 +98,7 @@ function buildDecorations(view: EditorView): DecorationSet {
  *
  * Decorations live on the view (not in state) because they're a pure
  * presentation concern; we just rebuild them whenever the field's reference
- * changes (i.e., the composer recomputed). Reference equality on the field's
+ * changes (i.e., the calculator recomputed). Reference equality on the field's
  * value avoids unnecessary work when only the selection or viewport moved.
  */
 export const calcResultsPlugin = ViewPlugin.fromClass(

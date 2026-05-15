@@ -4,9 +4,9 @@ import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
 import { parseNumberWithCurrency } from '../language/currencies';
-import { canConvert, getConvertRate, isCurrency } from '../units/unit-converter';
+import { canConvert, getConvertRate } from '../units/unit-converter';
+import { isCurrency, type CurrencyCode } from '../currencies';
 import { pairKey, type RatesStore } from '../rates-store';
-import type { Currency } from '../units/currencies';
 
 type ExpressionResult = { n: Decimal; unit?: string };
 
@@ -28,10 +28,10 @@ export class CalcValue extends RangeValue {
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 
-export class MathComposer {
+export class MathCalculator {
 
     rates: RatesStore;
-    ratesAwaited: Currency[] = [];
+    ratesAwaited: CurrencyCode[] = [];
 
 	constructor(sliceDoc: (from: number, to: number) => string, ratesStore: RatesStore) {
 		this.sliceDoc = sliceDoc;
@@ -180,12 +180,16 @@ export class MathComposer {
 
         if (pipeline.length > 0) {
             const result = this.performOperation(operator, ...pipeline);
-            if (convertToUnit && result.unit && typeof result.unit === 'string') {
-                return this.convert(result as ExpressionResult & {unit: string}, convertToUnit);
+            if (convertToUnit && this.isResultWithUnit(result)) {
+                return this.convert(result, convertToUnit);
             }
             return result;
         }
         return null;
+    }
+
+    private isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
+        return Boolean(expr.unit && typeof expr.unit === 'string');
     }
 
     private convert(value: ExpressionResult & {unit: string}, unit: string): ExpressionResult {
@@ -226,12 +230,12 @@ export class MathComposer {
         let result: ExpressionResult | null = null;
 
         this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
-            [terms.Number, (numberCursor) => {
-                const v = this.callHandler<ExpressionResult>(terms.Number, numberCursor);
+            [terms.Number, (childCursor) => {
+                const v = this.callHandler<ExpressionResult>(terms.Number, childCursor);
                 if (v !== null) result = v;
             }],
-            [terms.NumberWithUnit, (nwuCursor) => {
-                const raw = this.sliceDoc(nwuCursor.from, nwuCursor.to);
+            [terms.NumberWithUnit, (childCursor) => {
+                const raw = this.sliceDoc(childCursor.from, childCursor.to);
                 const parsed = parseNumberWithCurrency(raw);
                 if (parsed) {
                     result = { n: new Decimal(parsed.value), unit: parsed.unit };

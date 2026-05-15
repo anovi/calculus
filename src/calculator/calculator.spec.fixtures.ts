@@ -1,9 +1,9 @@
 import { Range } from "@codemirror/state";
 
-import { pairKey } from "../rates/pair-key";
-import type { CurrencyCode, PairEntry, PairKey } from "../rates/types";
+import { pairKey } from "../currencies/pair-key";
+import type { CurrencyCode, PairEntry, PairKey } from "../currencies/types";
 import { RatesStore } from "../rates-store";
-import type { CalcValue, MathComposer } from "./composer";
+import type { CalcValue, MathCalculator } from "./calculator";
 
 /** Currency rates referenced by fixtures below. Keep in sync with `expected` values. */
 const MOCK_RATES: Partial<Record<CurrencyCode, Partial<Record<CurrencyCode, number>>>> = {
@@ -39,7 +39,7 @@ export function createMockRatesStore(): RatesStore {
   });
 }
 
-export type ComposerFixture = {
+export type CalculatorFixture = {
   name: string;
   doc: string;
   /**
@@ -51,10 +51,10 @@ export type ComposerFixture = {
   expectedUnits?: (string | undefined)[];
   skip?: boolean;
   only?: boolean;
-  context?: (composer: MathComposer, result: Range<CalcValue>[]) => void;
+  context?: (calculator: MathCalculator, result: Range<CalcValue>[]) => void;
 };
 
-export const composerFixtures: ComposerFixture[] = [
+export const calculatorFixtures: CalculatorFixture[] = [
   // Operators
   { name: 'Binary', doc: '2+2', expected: [4] },
   { name: 'Tertiary', doc: '2 + 2 * 3', expected: [8] },
