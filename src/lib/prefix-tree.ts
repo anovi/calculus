@@ -19,89 +19,103 @@ function trieKeyFromUtf16Unit(c: number): number {
 /**
  * Case-insensitive prefix tree (trie) backed by parallel arrays.
  * Each node is an index into `firstChild`, `nextSibling`, `edgeChar`, and `isTerminal`.
+ * Terminal nodes may optionally store a value of type `T` (default: none).
  */
-export class PrefixTree {
+export class PrefixTree<T = void> {
 	readonly firstChild: number[];
 	readonly nextSibling: number[];
 	readonly edgeChar: number[];
-	readonly isTerminal: Uint8Array;
+
+	private readonly terminal: number[];
+	private readonly leafValues: (T | undefined)[];
 
 	private constructor(
 		firstChild: number[],
 		nextSibling: number[],
 		edgeChar: number[],
-		isTerminal: Uint8Array,
+		terminal: number[],
+		leafValues: (T | undefined)[],
 	) {
 		this.firstChild = firstChild;
 		this.nextSibling = nextSibling;
 		this.edgeChar = edgeChar;
-		this.isTerminal = isTerminal;
+		this.terminal = terminal;
+		this.leafValues = leafValues;
+	}
+
+	/** Snapshot of terminal flags (one per node). */
+	get isTerminal(): Uint8Array {
+		return new Uint8Array(this.terminal);
+	}
+
+	/** Empty trie; use `addWord` to populate. */
+	static empty<T = void>(): PrefixTree<T> {
+		return PrefixTree.createEmpty();
 	}
 
 	/** Builds a trie from the given strings (matching is case-insensitive). */
-	static fromWords(words: readonly string[]): PrefixTree {
+	static fromWords(words: readonly string[]): PrefixTree<void> {
+		const trie = PrefixTree.empty();
+		for (const word of words) {
+			trie.addWord(word);
+		}
+		return trie;
+	}
+
+	private static createEmpty<T>(): PrefixTree<T> {
 		const firstChild: number[] = [];
 		const nextSibling: number[] = [];
 		const edgeChar: number[] = [];
-		const isTerminal: number[] = [];
+		const terminal: number[] = [];
+		const leafValues: (T | undefined)[] = [];
 
 		const allocNode = (char: number): number => {
 			const id = firstChild.length;
 			firstChild.push(NONE);
 			nextSibling.push(NONE);
 			edgeChar.push(char);
-			isTerminal.push(0);
+			terminal.push(0);
+			leafValues.push(undefined);
 			return id;
 		};
 
 		allocNode(0); // root
 
-		const findChild = (parent: number, code: number): number => {
-			let child = firstChild[parent];
-			while (child !== NONE) {
-				if (edgeChar[child] === code) return child;
-				child = nextSibling[child];
-			}
-			return NONE;
-		};
-
-		const linkChild = (parent: number, code: number): number => {
-			const id = allocNode(code);
-			nextSibling[id] = firstChild[parent];
-			firstChild[parent] = id;
-			return id;
-		};
-
-		for (const word of words) {
-			const codes = normalizeKey(word);
-			let node = 0;
-			for (const code of codes) {
-				const next = findChild(node, code);
-				if (next === NONE) {
-					node = linkChild(node, code);
-				} else {
-					node = next;
-				}
-			}
-			isTerminal[node] = 1;
-		}
-
-		return new PrefixTree(
-			firstChild,
-			nextSibling,
-			edgeChar,
-			new Uint8Array(isTerminal),
-		);
+		return new PrefixTree(firstChild, nextSibling, edgeChar, terminal, leafValues);
 	}
 
 	get nodeCount(): number {
 		return this.firstChild.length;
 	}
 
+	/** Inserts a word (case-insensitive). Replaces any existing value at that word. */
+	addWord(word: string, ...args: T extends void ? [] : [value: T]): void {
+		const value = args[0] as T | undefined;
+		const codes = normalizeKey(word);
+		let node = 0;
+		for (const code of codes) {
+			const next = this.childForCode(node, code);
+			if (next === NONE) {
+				node = this.linkChild(node, code);
+			} else {
+				node = next;
+			}
+		}
+		this.terminal[node] = 1;
+		this.leafValues[node] = value;
+	}
+
+	/** Value stored at this word, or `undefined` if the word is absent or has no value. */
+	getWordValue(s: string): T | undefined {
+		const node = this.walk(normalizeKey(s));
+		if (node === NONE || this.terminal[node] !== 1) return undefined;
+		return this.leafValues[node];
+	}
+
 	/** True if the full string exists as a word (case-insensitive). */
 	hasWord(s: string): boolean {
 		const node = this.walk(normalizeKey(s));
-		return node !== NONE && this.isTerminal[node] === 1;
+		return node !== NONE && this.terminal[node] === 1;
 	}
 
 	/** True if any inserted word starts with this prefix (case-insensitive). */
@@ -130,9 +144,21 @@ export class PrefixTree {
 			if (child === NONE) break;
 			node = child;
 			depth++;
-			if (this.isTerminal[node] === 1) best = depth;
+			if (this.terminal[node] === 1) best = depth;
 		}
 		return best;
+	}
+
+	private linkChild(parent: number, code: number): number {
+		const id = this.firstChild.length;
+		this.firstChild.push(NONE);
+		this.nextSibling.push(NONE);
+		this.edgeChar.push(code);
+		this.terminal.push(0);
+		this.leafValues.push(undefined);
+		this.nextSibling[id] = this.firstChild[parent];
+		this.firstChild[parent] = id;
+		return id;
 	}
 
 	private childForCode(node: number, code: number): number {

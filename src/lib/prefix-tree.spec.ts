@@ -74,4 +74,57 @@ describe("PrefixTree", () => {
 			assert.strictEqual(trie.longestMatchUtf16(fromString("EuR")), 3);
 		});
 	});
+
+	describe("addWord", () => {
+		it("inserts words into an empty trie", () => {
+			const trie = PrefixTree.empty();
+			trie.addWord("ab");
+			trie.addWord("abc");
+			assert.strictEqual(trie.hasWord("ab"), true);
+			assert.strictEqual(trie.hasWord("abc"), true);
+			assert.strictEqual(trie.hasPrefix("a"), true);
+		});
+
+		it("extends a trie built with fromWords", () => {
+			const trie = PrefixTree.fromWords(["x"]);
+			trie.addWord("y");
+			assert.strictEqual(trie.hasWord("x"), true);
+			assert.strictEqual(trie.hasWord("y"), true);
+		});
+	});
+
+	describe("leaf values", () => {
+		it("stores and retrieves values on terminal nodes", () => {
+			const trie = PrefixTree.empty<number>();
+			trie.addWord("usd", 840);
+			trie.addWord("eur", 978);
+			assert.strictEqual(trie.getWordValue("USD"), 840);
+			assert.strictEqual(trie.getWordValue("eur"), 978);
+			assert.strictEqual(trie.getWordValue("gbp"), undefined);
+		});
+
+		it("replaces the value when the same word is added again", () => {
+			const trie = PrefixTree.empty<string>();
+			trie.addWord("a", "first");
+			trie.addWord("a", "second");
+			assert.strictEqual(trie.getWordValue("a"), "second");
+		});
+
+		it("stores the same object reference on different words", () => {
+			const shared = { kind: "currency" as const };
+			const trie = PrefixTree.empty<{ kind: "currency" }>();
+			trie.addWord("usd", shared);
+			trie.addWord("eur", shared);
+			const usd = trie.getWordValue("usd");
+			const eur = trie.getWordValue("eur");
+			assert.strictEqual(usd, shared);
+			assert.strictEqual(eur, shared);
+			assert.strictEqual(usd, eur);
+		});
+
+		it("returns undefined for void tries", () => {
+			const trie = PrefixTree.fromWords(["x"]);
+			assert.strictEqual(trie.getWordValue("x"), undefined);
+		});
+	});
 });
