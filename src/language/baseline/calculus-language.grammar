@@ -4,7 +4,6 @@
 // Unit suffixes are matched in TypeScript (see calculus-number-with-unit-tokens.ts) so ISO lists
 // stay in `src/lib/currencies.ts` instead of being pasted into this grammar.
 @external tokens numberWithUnitTokens from "./calculus-number-with-unit-tokens.ts" {
-	NumberWithUnit,
 	Unit
 }
 
@@ -42,6 +41,8 @@ ArgList { expression ("," expression)* }
 
 Literal { NumberWithUnit | Number | String | Date }
 
+NumberWithUnit { Number Unit }
+
 convertOp { in }
 
 @precedence {
@@ -71,8 +72,8 @@ convertOp { in }
 	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
 	
 	// Literals
-	Float { @digit+ "." @digit+ }
-	Integer { @digit+ }
+	Float { @digit+ (" "? @digit+)* "." @digit+ (" "? @digit+)* }
+	Integer { @digit+ (" "? @digit+)* }
 	Number { Integer | Float }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }

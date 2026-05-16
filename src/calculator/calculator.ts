@@ -258,7 +258,7 @@ export class MathCalculator {
     }
 
     private processNumber(cursor: TreeCursor): ExpressionResult | null {
-        const raw = this.sliceDoc(cursor.from, cursor.to);
+        const raw = this.sliceDoc(cursor.from, cursor.to).replaceAll(' ', '');
         try {
             return { n: new Decimal(raw) };
         } catch {

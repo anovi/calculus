@@ -20,7 +20,9 @@ doc: '100USD',
 expectedTree: `CalcDoc
   NoBinding
     Literal
-      NumberWithUnit`,
+      NumberWithUnit
+        Number
+        Unit`,
 },
 {
 name: 'value with lowercase unit',
@@ -28,7 +30,9 @@ doc: '100 usd',
 expectedTree: `CalcDoc
   NoBinding
     Literal
-      NumberWithUnit`,
+      NumberWithUnit
+        Number
+        Unit`,
 },
 {
 name: 'binding with value and unit',
@@ -37,7 +41,9 @@ expectedTree: `CalcDoc
   Binding
     Identifier
     Literal
-      NumberWithUnit`,
+      NumberWithUnit
+        Number
+        Unit`,
 },
 {
 name: 'unit convertion',
@@ -47,6 +53,8 @@ expectedTree: `CalcDoc
     ConvertExpression
       Literal
         NumberWithUnit
+          Number
+          Unit
       Unit`,
 },
 {
@@ -58,6 +66,8 @@ expectedTree: `CalcDoc
       ConvertExpression
         Literal
           NumberWithUnit
+            Number
+            Unit
         Unit
       Unit`,
 },

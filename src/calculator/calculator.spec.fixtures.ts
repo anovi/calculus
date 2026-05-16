@@ -112,12 +112,16 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'currency convertion via expression',
     doc: '10 USD + 1 EUR',
     expected: [11.12],
-    // only: true
   },
   {
     name: 'units convertion',
     doc: '10 km in mi',
     expected: [6.2137119223733395],
+  },
+  {
+    name: 'formatting',
+    doc: '1 999 232',
+    expected: [1_999_232],
   },
 ];
 

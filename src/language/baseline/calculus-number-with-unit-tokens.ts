@@ -1,12 +1,11 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { PrefixTree } from '../../lib/prefix-tree';
-import { NumberWithUnit, Unit } from './calculus-language.terms';
+import { Unit } from './calculus-language.terms';
 import { CURRENCIES } from '../currencies';
 import { getConvertUnitSpellings } from '../../units/convert-package';
 
-export type NumberWithUnitTokenizerTerms = {
-  NumberWithUnit: number;
+export type UnitTokenizerTerms = {
   Unit: number;
 };
 
@@ -27,10 +26,6 @@ const standaloneUnitTrie = PrefixTree.fromWords([
   ), // `in` is the convert keyword (inch still works as a number suffix, e.g. `12in`)
 ]);
 
-function isDigit(code: number) {
-  return code >= 48 && code <= 57;
-}
-
 function isIdentifierChar(code: number) {
   return (
     (code >= 65 && code <= 90) ||  // A-Z
@@ -46,44 +41,22 @@ function hasUnitSuffixBoundary(input: InputStream, endOffset: number) {
   return next < 0 || !isIdentifierChar(next);
 }
 
-/**
- * Scans a Lezer {@link InputStream} from the current position: integer, or `digits '.' digits+`
- * (same shape as the grammar's Integer / Float). Returns total length in code units, or -1 if no number.
- */
-function numberSpanLength(input: InputStream): number {
-  if (!isDigit(input.peek(0))) return -1;
-  let i = 0;
-  while (isDigit(input.peek(i))) i++;
-  if (input.peek(i) === 46 && isDigit(input.peek(i + 1))) {
-    i++;
-    while (isDigit(input.peek(i))) i++;
-  }
-  return i;
-}
-
-export function createNumberWithUnitTokenizer(terms: NumberWithUnitTokenizerTerms) {
+export function createUnitTokenizer(terms: UnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
-    const numLen = numberSpanLength(input);
-    if (numLen >= 0) {
-      let i = numLen;
-      if (input.peek(i) === 32) i++;
-
-      const curLen = unitSuffixTrie.longestMatchUtf16((rel) => input.peek(i + rel));
-      if (curLen > 0 && hasUnitSuffixBoundary(input, i + curLen)) {
-        const total = i + curLen;
-        for (let k = 0; k < total; k++) input.advance();
-        input.acceptToken(terms.NumberWithUnit);
-        return;
-      }
+    const suffixLen = unitSuffixTrie.longestMatchUtf16((rel) => input.peek(rel));
+    if (suffixLen > 0 && hasUnitSuffixBoundary(input, suffixLen)) {
+      for (let k = 0; k < suffixLen; k++) input.advance();
+      input.acceptToken(terms.Unit);
+      return;
     }
 
-    const unitLen = standaloneUnitTrie.longestMatchUtf16((rel) => input.peek(rel));
-    if (unitLen === 0 || !hasUnitSuffixBoundary(input, unitLen)) return;
+    const standaloneLen = standaloneUnitTrie.longestMatchUtf16((rel) => input.peek(rel));
+    if (standaloneLen === 0 || !hasUnitSuffixBoundary(input, standaloneLen)) return;
 
-    for (let k = 0; k < unitLen; k++) input.advance();
+    for (let k = 0; k < standaloneLen; k++) input.advance();
     input.acceptToken(terms.Unit);
   });
 }
 
 /** Wired into the generated parser; term ids come from `calculus-language.terms`. */
-export const numberWithUnitTokens = createNumberWithUnitTokenizer({ NumberWithUnit, Unit });
+export const numberWithUnitTokens = createUnitTokenizer({ Unit });
