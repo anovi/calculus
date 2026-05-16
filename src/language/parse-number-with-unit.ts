@@ -67,33 +67,3 @@ function numberPartLength(text: string): number {
 
   return i;
 }
-
-/**
- * Parse a `NumberWithUnit` source slice (e.g. `100USD`, `12.5 EUR`, `10 km`) into value and unit.
- * Matching follows the external number-with-unit tokenizer (longest suffix, case-insensitive).
- */
-export function parseNumberWithUnit(
-  text: string,
-): { value: number; unit: string } | null {
-  const numLen = numberPartLength(text);
-  if (numLen <= 0) return null;
-
-  let i = numLen;
-  if (text[i] === ' ') i++;
-  if (i >= text.length) return null;
-
-  const unitLen = unitSuffixTrie.longestMatchUtf16((rel) => {
-    const pos = i + rel;
-    if (pos >= text.length) return -1;
-    return text.charCodeAt(pos);
-  });
-  if (unitLen === 0) return null;
-
-  const unit = normalizeUnit(text.slice(i, i + unitLen));
-  if (!unit) return null;
-
-  const value = Number.parseFloat(text.slice(0, numLen));
-  if (!Number.isFinite(value)) return null;
-
-  return { value, unit };
-}

@@ -3,7 +3,7 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
-import { normalizeUnit, parseNumberWithUnit } from '../language/parse-number-with-unit';
+import { normalizeUnit } from '../language/parse-number-with-unit';
 import { unitsConverter } from '../units';
 import { isCurrency, type PairKey } from '../currencies';
 import { pairKey, type RatesStore } from '../rates-store';
@@ -241,10 +241,20 @@ export class MathCalculator {
                 if (v !== null) result = v;
             }],
             [terms.NumberWithUnit, (childCursor) => {
-                const raw = this.sliceDoc(childCursor.from, childCursor.to);
-                const parsed = parseNumberWithUnit(raw);
-                if (parsed) {
-                    result = { n: new Decimal(parsed.value), unit: parsed.unit };
+                let n: Decimal | null = null;
+                let unit: string | undefined;
+                this.forEachChild(childCursor, new Map<number, (childCursor: TreeCursor) => void>([
+                    [terms.Number, (numCursor) => {
+                        const v = this.processNumber(numCursor);
+                        if (v) n = v.n;
+                    }],
+                    [terms.Unit, (unitCursor) => {
+                        const raw = this.sliceDoc(unitCursor.from, unitCursor.to);
+                        unit = normalizeUnit(raw) ?? undefined;
+                    }],
+                ]));
+                if (n !== null && unit) {
+                    result = { n, unit };
                 }
             }],
         ]));
