@@ -2,7 +2,7 @@ import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { PrefixTree } from '../../lib/prefix-tree';
 import { Unit } from './calculus-language.terms';
-import { CURRENCIES } from '../currencies';
+import { CURRENCY_CODES } from '../../currencies/currencies-list';
 import { getConvertUnitSpellings } from '../../units/convert-package';
 
 export type UnitTokenizerTerms = {
@@ -11,20 +11,8 @@ export type UnitTokenizerTerms = {
 
 const convertUnits = getConvertUnitSpellings();
 
-/** All units/currencies that may follow a number (`100USD`, `5 km`). */
-const unitSuffixTrie = PrefixTree.fromWords([...CURRENCIES, ...convertUnits]);
-
-/**
- * Units/currencies that may appear alone (`12 EUR in USD`). Single-letter abbrs (e.g. `s`, `w`)
- * are omitted so they are not taken from identifiers/bindings; `in` is omitted because it is the
- * convert keyword (inch still works as a number suffix, e.g. `12in`).
- */
-const standaloneUnitTrie = PrefixTree.fromWords([
-  ...CURRENCIES,
-  ...convertUnits.filter(
-    (unit) => unit.length > 1 && unit.toLowerCase() !== 'in',
-  ), // `in` is the convert keyword (inch still works as a number suffix, e.g. `12in`)
-]);
+/** All units/currencies (`100USD`, standalone `EUR` in convert targets). */
+const unitSuffixTrie = PrefixTree.fromWords([...CURRENCY_CODES, ...convertUnits]);
 
 function isIdentifierChar(code: number) {
   return (
@@ -41,19 +29,30 @@ function hasUnitSuffixBoundary(input: InputStream, endOffset: number) {
   return next < 0 || !isIdentifierChar(next);
 }
 
+/** Matches Lezer `@whitespace` / grammar `space { @whitespace+ }`. */
+function isSkippedWhitespace(code: number) {
+  return code === 9 || code === 10 || code === 11 || code === 12 || code === 13 || code === 32;
+}
+
+/** Standalone `in` is the convert keyword; inch still matches as a number suffix (`12in`). */
+function isStandaloneInKeyword(input: InputStream, len: number) {
+  return (
+    len === 2 &&
+    isSkippedWhitespace(input.peek(-1)) &&
+    (input.peek(0) === 105 || input.peek(0) === 73) &&
+    (input.peek(1) === 110 || input.peek(1) === 78)
+  );
+}
+
 export function createUnitTokenizer(terms: UnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
     const suffixLen = unitSuffixTrie.longestMatchUtf16((rel) => input.peek(rel));
-    if (suffixLen > 0 && hasUnitSuffixBoundary(input, suffixLen)) {
-      for (let k = 0; k < suffixLen; k++) input.advance();
-      input.acceptToken(terms.Unit);
-      return;
-    }
 
-    const standaloneLen = standaloneUnitTrie.longestMatchUtf16((rel) => input.peek(rel));
-    if (standaloneLen === 0 || !hasUnitSuffixBoundary(input, standaloneLen)) return;
+    if (suffixLen === 0) return;
+    if (!hasUnitSuffixBoundary(input, suffixLen)) return;
+    if (isStandaloneInKeyword(input, suffixLen)) return;
 
-    for (let k = 0; k < standaloneLen; k++) input.advance();
+    for (let k = 0; k < suffixLen; k++) input.advance();
     input.acceptToken(terms.Unit);
   });
 }

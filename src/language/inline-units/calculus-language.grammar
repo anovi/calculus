@@ -67,7 +67,7 @@ convertOp { in }
 	Float { @digit+ "." @digit+ }
 	Integer { @digit+ }
 	Number { Integer | Float }
-	// Placeholder expanded at grammar build / dev time from `src/language/currencies.ts` (see `currency-unit-alternation.ts` and Vite `injectInlineUnitsCurrencyGrammar`).
+	// Placeholder expanded at grammar build / dev time from `src/currencies/currencies-list.ts` (see `currency-unit-alternation.ts` and Vite `injectInlineUnitsCurrencyGrammar`).
 	Unit { "@@INJECT@@" }
 	NumberWithUnit { (Integer | Float) " "? Unit }
 	String { "\""![\"]*"\"" }

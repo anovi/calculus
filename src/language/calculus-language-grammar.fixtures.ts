@@ -55,8 +55,41 @@ expectedTree: `CalcDoc
         NumberWithUnit
           Number
           Unit
+      ConvertOp
       Unit`,
 },
+{
+name: 'standalone convert keyword in (not a Unit)',
+doc: '12 in USD',
+expectedTree: `CalcDoc
+  NoBinding
+    ConvertExpression
+      Literal
+        Number
+      ConvertOp
+      Unit`,
+},
+{
+name: 'standalone convert keyword in with tab (not a Unit)',
+doc: '12\tin USD',
+expectedTree: `CalcDoc
+  NoBinding
+    ConvertExpression
+      Literal
+        Number
+      ConvertOp
+      Unit`,
+},
+{
+name: 'suffix `in` recognized as Unit',
+doc: '12in',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      NumberWithUnit
+        Number
+        Unit`,
+  },
 {
 name: 'with double unit convertion',
 doc: '12 EUR in USD in RSD',
@@ -68,7 +101,9 @@ expectedTree: `CalcDoc
           NumberWithUnit
             Number
             Unit
+        ConvertOp
         Unit
+      ConvertOp
       Unit`,
 },
 {

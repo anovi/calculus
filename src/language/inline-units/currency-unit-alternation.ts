@@ -1,12 +1,12 @@
-import { CURRENCIES } from '../currencies.ts'
+import { CURRENCY_CODES } from '../../currencies/currencies-list.ts'
 
 /**
  * Body of the Lezer `Unit { ... }` token rule: string literals joined by `|`,
- * built from {@link CURRENCIES} with lowercase, uppercase, and title-case variants.
+ * built from {@link CURRENCY_CODES} with lowercase, uppercase, and title-case variants.
  */
 export function buildCurrencyUnitAlternationBody(): string {
 	const variants = new Set<string>();
-	for (const code of CURRENCIES) {
+	for (const code of CURRENCY_CODES) {
 		const upper = code;
 		variants.add(upper);
 		variants.add(code.toLowerCase());
