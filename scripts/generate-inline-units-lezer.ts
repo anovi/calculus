@@ -1,6 +1,6 @@
 /**
  * Expands `Unit { "@@INJECT@@" }` in the inline-units grammar from
- * `src/language/currencies.ts`, then runs lezer-generator on the result.
+ * `src/currencies/currencies-list.ts`, then runs lezer-generator on the result.
  *
  * Run: node --experimental-strip-types scripts/generate-inline-units-lezer.ts
  */
