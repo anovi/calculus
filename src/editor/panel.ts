@@ -10,6 +10,7 @@ import { terms } from "../language";
 const toggleHelp = StateEffect.define<boolean>();
 
 const NONE: Operation[] = [];
+const WHITESPACE_EXCEPT_NEWLINE = /^[^\S\r\n]+$/
 
 export const helpPanelState = StateField.define<boolean>({
     create: () => true,
@@ -26,25 +27,41 @@ export const SuggestionsStateField = StateField.define<Operation[]>({
         const selection = tr.state.selection;
         if (!isAtomicSelection(selection)) return NONE;
         const from = selection.main.from;
-        const tree = syntaxTree(tr.state);
-        let nodeCur: NodeIterator|null = tree.resolveStack(from, -1);
-        const stack: string[] = [];
+        const state = tr.state;
+        const tree = syntaxTree(state);
+
+        // Skips spaces going back until meets non-space
+        // `point` will be at the boundary
+        let point = from;
+        // debugger
+        while (point > 0) {
+            const textBeforeSelection = state.sliceDoc(point - 1, from);
+            if (!textBeforeSelection.match(WHITESPACE_EXCEPT_NEWLINE)) break;
+            point--;
+        }
+        let innerMostNode = tree.resolveInner(point, -1);
+
+        let nodeCur: NodeIterator|null = tree.resolveStack(point, -1);
+        const stack: string[] = []; // DEBUGGING INFO
         const stackTypeIDs: number[] = [];
         while (nodeCur?.node)  {
-            stack.push(nodeCur.node.name);
+            stack.push(nodeCur.node.name); // DEBUGGING INFO
             stackTypeIDs.push(nodeCur.node.type.id);
 			nodeCur = nodeCur.next;
 		}
-        console.log(stack.join(' <-- '));
+        console.log(stack.join(' <-- ')); // DEBUGGING INFO
+        console.log(innerMostNode.name) // DEBUGGING INFO
 
-        const innerMostNode = tree.resolveInner(from, -1);
-        console.log(innerMostNode.name)
+        const rules: SuggestionRule[]|undefined = superMap[innerMostNode.type.id];
+        if (!rules) return NONE;
+        // const rule: SuggestionRule|undefined = superMap[innerMostNode.type.id];
+        for (const rule of rules) {
+            if (rule.notIn && rule.notIn.includes(stackTypeIDs[1])) continue;
+            if (rule.in && !rule.in.includes(stackTypeIDs[1])) continue;
+            return rule.suggest;
+        }
 
-        const rule: SuggestionRule|undefined = superMap[innerMostNode.type.id];
-        if (!rule) return NONE;
-        if (rule.notIn?.includes(stackTypeIDs[0])) return NONE;
-
-        return rule.suggest;
+        return NONE;
     },
     // provide: () => showPanel.of(createHelpPanel)
 })
@@ -58,7 +75,6 @@ function button(op: Operation) {
 
 function createHelpPanel(_view: EditorView): Panel {
     let dom = document.createElement("div");
-    let value: Operation[] = [];
     dom.textContent = "F1: Toggle the help panel"
     dom.className = "cm-help-panel"
     return {
@@ -71,7 +87,6 @@ function createHelpPanel(_view: EditorView): Panel {
                 const operation = suggestions[index];
                 dom.appendChild(button(operation));
             }
-            value = suggestions;
         },
     };
 }
@@ -81,6 +96,7 @@ export function helpPanel() {
 }
 
 type Operation = { sign: string, operation: string };
+
 const binaryOps: Operation[] = [{
     sign: '+',
     operation: 'plus',
@@ -89,20 +105,33 @@ const binaryOps: Operation[] = [{
     operation: 'multiply',
 }];
 
+const equal: Operation = {
+    sign: '=',
+    operation: 'euqal',
+}
+
 const NodeTypes = {
     containers: [terms.AddExpression, terms.MulExpression, terms.ConvertExpression],
     atomics: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.ConvertOp, terms.Unit, terms.Number],
+    binaryOperations: [terms.AddExpression, terms.MulExpression, terms.ConvertExpression],
 }
 
 type SuggestionRule = {
     in?: number[],
     notIn?: number[],
-    suggest: Operation[]
+    siblingBefore?: number,
+    suggest: Operation[],
 };
 
-const superMap: Record<number, SuggestionRule> = {
-    [terms.Number]: {
+const superMap: Record<number, SuggestionRule[]> = {
+    [terms.Number]: [{
         suggest: binaryOps,
-        notIn: [terms.AddExpression, terms.MulExpression],
-    }
+    }],
+    [terms.Identifier]: [{
+        suggest: binaryOps,
+        in: NodeTypes.binaryOperations
+    }, {
+        suggest: [equal, ...binaryOps],
+        in: [terms.NoBinding],
+    }]
 };
