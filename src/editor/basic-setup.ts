@@ -5,16 +5,16 @@ import {
 	drawSelection,
 	dropCursor,
 	highlightActiveLineGutter,
-	EditorView,
+	EditorView
 } from "@codemirror/view"
-import { type Extension, } from "@codemirror/state"
+import { type Extension } from "@codemirror/state"
 import {
 	defaultHighlightStyle,
 	syntaxHighlighting,
 	bracketMatching,
-	foldKeymap,
+	foldKeymap
 } from "@codemirror/language"
-import { history, historyKeymap, indentWithTab } from "@codemirror/commands"
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { searchKeymap } from "@codemirror/search"
 import {
 	autocompletion,
@@ -87,11 +87,11 @@ export const basicSetup: () => Extension = () => [
 
 	keymap.of([
 		...closeBracketsKeymap,
+		...defaultKeymap, // when removed, jumping over widgets is broken
 		...searchKeymap,
 		...historyKeymap,
 		...foldKeymap,
 		...completionKeymap,
-		...lintKeymap,
-		indentWithTab, // Use tab to indent
-	]),
+		...lintKeymap
+	])
 ]
