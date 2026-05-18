@@ -1,6 +1,6 @@
 import { registerSW } from 'virtual:pwa-register'
 
-import { EditorView, basicSetup } from 'codemirror'
+import { EditorView } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
@@ -10,6 +10,7 @@ import './editor.css'
 import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
+import { basicSetup } from './editor/basic-setup'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -63,7 +64,7 @@ new EditorView({
   state: EditorState.create({
     doc: loadDoc(),
     extensions: [
-      basicSetup,
+      basicSetup(),
       calculus(),
       unitAutocompletion(),
       calcRanges(),
