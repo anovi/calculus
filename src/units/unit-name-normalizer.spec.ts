@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { normalizeUnit } from './parse-number-with-unit';
+import { normalizeUnit } from './unit-name-normalizer';
 
 
 describe('normalizeUnit', () => {

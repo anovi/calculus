@@ -1,6 +1,6 @@
 /**
  * Expands `Unit { "@@INJECT@@" }` in the inline-units grammar from
- * `src/currencies/currencies-list.ts`, then runs lezer-generator on the result.
+ * `src/units/currencies-list.ts`, then runs lezer-generator on the result.
  *
  * Run: node --experimental-strip-types scripts/generate-inline-units-lezer.ts
  */
@@ -23,7 +23,7 @@ const marker = 'Unit { "@@INJECT@@" }';
 const src = readFileSync(grammarPath, 'utf8');
 if (!src.includes('@@INJECT@@')) {
 	throw new Error(
-		`${grammarPath}: expected Unit placeholder ${JSON.stringify(marker)} (from currencies at build time)`,
+		`${grammarPath}: expected Unit placeholder ${JSON.stringify(marker)} (from units/currencies-list at build time)`,
 	);
 }
 const expanded = src.replace(marker, `Unit { ${buildCurrencyUnitAlternationBody()} }`);

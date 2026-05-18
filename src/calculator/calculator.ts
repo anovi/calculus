@@ -3,10 +3,9 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
-import { normalizeUnit } from '../language/parse-number-with-unit';
-import { unitsConverter } from '../units';
-import { isCurrency, type PairKey } from '../currencies';
-import { pairKey, type RatesStore } from '../rates-store';
+import { normalizeUnit, canConvert, convertValue } from '../units';
+import { isCurrency } from '../units/currency';
+import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 
 type ExpressionResult = { n: Decimal; unit?: string };
 
@@ -212,8 +211,8 @@ export class MathCalculator {
             }
         }
 
-        if (unitsConverter.canConvert(unitA, unitB)) {
-            const newVal = unitsConverter.convertValue(value.n, unitA, unitB);
+        if (canConvert(unitA, unitB)) {
+            const newVal = convertValue(value.n, unitA, unitB);
             return { n: newVal, unit: unitB };
         }
 

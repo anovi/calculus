@@ -7,10 +7,10 @@ import {
 	loadSnapshot as defaultLoadSnapshot,
 	saveSnapshot as defaultSaveSnapshot,
 } from "./persistence";
+import type { CurrencyCode } from '../units/currency';
 import {
 	STALE_AFTER_MS,
 	WARMUP_QUOTES,
-	type CurrencyCode,
 	type PairEntry,
 	type PairKey,
 	type PairState,
@@ -72,8 +72,9 @@ export class RatesStore {
 		this.entries = this.persistence.load();
 	}
 
-	/** Sync read of cached rate. Schedules a background fetch if the entry is missing or stale. */
+	/** Sync read of cached rate. Same-currency pairs return 1 without fetching. Otherwise schedules a background fetch if the entry is missing or stale. */
 	getRate(from: CurrencyCode, to: CurrencyCode): number | null {
+		if (from.toUpperCase() === to.toUpperCase()) return 1;
 		const key = pairKey(from, to);
 		const entry = this.entries.get(key);
 		if (entry === undefined) {

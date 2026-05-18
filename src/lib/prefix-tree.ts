@@ -8,6 +8,14 @@ function normalizeKey(s: string): number[] {
 	return out;
 }
 
+function wordFromCodePoints(codes: readonly number[]): string {
+	let s = "";
+	for (const c of codes) {
+		s += String.fromCodePoint(c);
+	}
+	return s;
+}
+
 /** Lowercase trie key for one UTF-16 code unit (ASCII fast path). */
 function trieKeyFromUtf16Unit(c: number): number {
 	if (c < 0) return c;
@@ -62,28 +70,6 @@ export class PrefixTree<T = void> {
 		return trie;
 	}
 
-	private static createEmpty<T>(): PrefixTree<T> {
-		const firstChild: number[] = [];
-		const nextSibling: number[] = [];
-		const edgeChar: number[] = [];
-		const terminal: number[] = [];
-		const leafValues: (T | undefined)[] = [];
-
-		const allocNode = (char: number): number => {
-			const id = firstChild.length;
-			firstChild.push(NONE);
-			nextSibling.push(NONE);
-			edgeChar.push(char);
-			terminal.push(0);
-			leafValues.push(undefined);
-			return id;
-		};
-
-		allocNode(0); // root
-
-		return new PrefixTree(firstChild, nextSibling, edgeChar, terminal, leafValues);
-	}
-
 	get nodeCount(): number {
 		return this.firstChild.length;
 	}
@@ -124,6 +110,39 @@ export class PrefixTree<T = void> {
 	}
 
 	/**
+	 * All inserted words whose lowercase form starts with `prefix` (case-insensitive),
+	 * with the value stored at each terminal (or `undefined` when none).
+	 * Words are returned in lowercase, matching the trie’s internal keys.
+	 */
+	searchByPrefix(prefix: string): Array<{ word: string; value: T | undefined }> {
+		const prefixCodes = normalizeKey(prefix);
+		const start = this.walk(prefixCodes);
+		if (start === NONE) return [];
+
+		const out: Array<{ word: string; value: T | undefined }> = [];
+		const path = prefixCodes.slice();
+
+		const visit = (node: number): void => {
+			if (this.terminal[node] === 1) {
+				out.push({
+					word: wordFromCodePoints(path),
+					value: this.leafValues[node],
+				});
+			}
+			let child = this.firstChild[node];
+			while (child !== NONE) {
+				path.push(this.edgeChar[child]);
+				visit(child);
+				path.pop();
+				child = this.nextSibling[child];
+			}
+		};
+
+		visit(start);
+		return out;
+	}
+
+	/**
 	 * Length (in UTF-16 code units) of the longest inserted word that matches
 	 * `peek(0)…peek(length-1)` from the start. Returns 0 if no word matches.
 	 *
@@ -147,6 +166,28 @@ export class PrefixTree<T = void> {
 			if (this.terminal[node] === 1) best = depth;
 		}
 		return best;
+	}
+
+	private static createEmpty<T>(): PrefixTree<T> {
+		const firstChild: number[] = [];
+		const nextSibling: number[] = [];
+		const edgeChar: number[] = [];
+		const terminal: number[] = [];
+		const leafValues: (T | undefined)[] = [];
+
+		const allocNode = (char: number): number => {
+			const id = firstChild.length;
+			firstChild.push(NONE);
+			nextSibling.push(NONE);
+			edgeChar.push(char);
+			terminal.push(0);
+			leafValues.push(undefined);
+			return id;
+		};
+
+		allocNode(0); // root
+
+		return new PrefixTree(firstChild, nextSibling, edgeChar, terminal, leafValues);
 	}
 
 	private linkChild(parent: number, code: number): number {

@@ -23,6 +23,7 @@
     "workbox-window": "7.4.1"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.2",
     "@lezer/generator": "1.8.0",
     "codemirror": "6.0.2",
     "convert": "7.0.0",

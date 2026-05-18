@@ -1,9 +1,8 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { PrefixTree } from '../../lib/prefix-tree';
+import { CURRENCY_CODES, getConvertUnitSpellings } from '../../units';
 import { Unit } from './calculus-language.terms';
-import { CURRENCY_CODES } from '../../currencies/currencies-list';
-import { getConvertUnitSpellings } from '../../units/convert-package';
 
 export type UnitTokenizerTerms = {
   Unit: number;
@@ -12,7 +11,7 @@ export type UnitTokenizerTerms = {
 const convertUnits = getConvertUnitSpellings();
 
 /** All units/currencies (`100USD`, standalone `EUR` in convert targets). */
-const unitSuffixTrie = PrefixTree.fromWords([...CURRENCY_CODES, ...convertUnits]);
+const unitsPrefixTrie = PrefixTree.fromWords([...CURRENCY_CODES, ...convertUnits]);
 
 function isIdentifierChar(code: number) {
   return (
@@ -46,7 +45,7 @@ function isStandaloneInKeyword(input: InputStream, len: number) {
 
 export function createUnitTokenizer(terms: UnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
-    const suffixLen = unitSuffixTrie.longestMatchUtf16((rel) => input.peek(rel));
+    const suffixLen = unitsPrefixTrie.longestMatchUtf16((rel) => input.peek(rel));
 
     if (suffixLen === 0) return;
     if (!hasUnitSuffixBoundary(input, suffixLen)) return;

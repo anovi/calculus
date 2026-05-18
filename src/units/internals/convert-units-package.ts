@@ -1,7 +1,7 @@
 import configureMeasurements from 'convert-units';
 import allMeasures from 'convert-units/definitions/all';
 import Decimal from 'decimal.js';
-import type { UnitsConverter } from './unit-converter';
+import type { UnitsConverter } from '../types';
 
 export const convertUnits = configureMeasurements(allMeasures);
 

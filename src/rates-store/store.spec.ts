@@ -1,8 +1,8 @@
 import assert from "node:assert";
 import { RatesStore, type RatesFetcher, type RatesPersistence } from "./store";
+import type { CurrencyCode } from '../units/currency';
 import {
 	STALE_AFTER_MS,
-	type CurrencyCode,
 	type PairEntry,
 	type PairKey,
 	type PairState,
@@ -79,6 +79,19 @@ describe("RatesStore", () => {
 		assert.strictEqual(store.isFetching("EUR", "USD"), false);
 		assert.strictEqual(store.getRate("EUR", "USD"), 1.08);
 		assert.strictEqual(fetcher.fetchPair.mock.calls.length, 1);
+	});
+
+	it("returns 1 for identical currencies without calling fetchPair", () => {
+		const fetcher = makeFetcher();
+		const store = new RatesStore({
+			fetcher,
+			persistence: makePersistence(),
+			now: () => 1_000,
+		});
+
+		assert.strictEqual(store.getRate("USD", "USD"), 1);
+		assert.strictEqual(store.getRate("usd" as CurrencyCode, "USD"), 1);
+		assert.strictEqual(fetcher.fetchPair.mock.calls.length, 0);
 	});
 
 	it("returns the cached value without fetching when fresh", () => {

@@ -3,7 +3,7 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
 import { parser } from './language'
-import { calcRanges, calcResultsPlugin } from './editor'
+import { calcRanges, calcResultsPlugin, unitAutocompletion } from './editor'
 import './editor.css'
 import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
@@ -60,7 +60,15 @@ new EditorView({
   parent: root,
   state: EditorState.create({
     doc: loadDoc(),
-    extensions: [basicSetup, calculus(), calcRanges(), calcResultsPlugin, persist, syntaxHighlighting(calculusHighlightStyle)],
+    extensions: [
+      basicSetup,
+      calculus(),
+      unitAutocompletion(),
+      calcRanges(),
+      calcResultsPlugin,
+      persist,
+      syntaxHighlighting(calculusHighlightStyle),
+    ],
   }),
 })
 

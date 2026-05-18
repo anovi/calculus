@@ -127,4 +127,30 @@ describe("PrefixTree", () => {
 			assert.strictEqual(trie.getWordValue("x"), undefined);
 		});
 	});
+
+	describe("searchByPrefix", () => {
+		it("returns [] when no words share the prefix", () => {
+			const trie = PrefixTree.fromWords(["usd", "eur"]);
+			assert.deepStrictEqual(trie.searchByPrefix("gb"), []);
+		});
+
+		it("returns all words under a prefix (case-insensitive) in DFS (newest-sibling-first) order", () => {
+			const trie = PrefixTree.fromWords(["ab", "abc", "abd"]);
+			const words = trie.searchByPrefix("ab").map((e) => e.word);
+			assert.deepStrictEqual(words, ["ab", "abd", "abc"]);
+		});
+
+		it("includes stored values", () => {
+			const trie = PrefixTree.empty<number>();
+			trie.addWord("usd", 840);
+			trie.addWord("eur", 978);
+			assert.deepStrictEqual(trie.searchByPrefix("u"), [{ word: "usd", value: 840 }]);
+		});
+
+		it("with empty prefix lists every word", () => {
+			const trie = PrefixTree.fromWords(["a", "b"]);
+			const words = trie.searchByPrefix("").map((e) => e.word).sort();
+			assert.deepStrictEqual(words, ["a", "b"]);
+		});
+	});
 });

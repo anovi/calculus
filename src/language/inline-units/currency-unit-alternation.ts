@@ -1,4 +1,4 @@
-import { CURRENCY_CODES } from '../../currencies/currencies-list.ts'
+import { CURRENCY_CODES } from '../../units'
 
 /**
  * Body of the Lezer `Unit { ... }` token rule: string literals joined by `|`,
