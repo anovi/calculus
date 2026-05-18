@@ -1,10 +1,10 @@
-import { showPanel, type Panel } from "@codemirror/view"
-import { type SyntaxNode, TreeCursor, type NodeIterator } from '@lezer/common'
+import { showPanel, type Panel } from "@codemirror/view";
+import { type NodeIterator } from '@lezer/common';
 import { syntaxTree } from '@codemirror/language';
-import { EditorView } from "@codemirror/view"
-import { StateField, StateEffect } from "@codemirror/state"
+import { EditorView } from "@codemirror/view";
+import { StateField, StateEffect } from "@codemirror/state";
 
-import { isAtomicSelection } from "../lib/codemirror"
+import { isAtomicSelection } from "../lib/codemirror";
 import { terms } from "../language";
 
 const toggleHelp = StateEffect.define<boolean>();
