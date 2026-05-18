@@ -11,6 +11,7 @@ import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { basicSetup } from './editor/basic-setup'
+import { helpPanel } from './editor/panel'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -71,6 +72,7 @@ new EditorView({
       calcResultsPlugin,
       persist,
       syntaxHighlighting(calculusHighlightStyle),
+      helpPanel(),
     ],
   }),
 })
