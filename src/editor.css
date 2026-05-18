@@ -10,6 +10,7 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 16px;
   line-height: 1.5;
+  color-scheme: dark;
 }
 
 *,
@@ -41,6 +42,7 @@ body {
   height: 100svh;
   background: var(--surface);
   color: var(--text);
+  color-scheme: dark;  
 }
 
 #editor .cm-editor.cm-focused {
