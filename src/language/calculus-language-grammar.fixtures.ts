@@ -2,6 +2,8 @@ export type ParseFixture = {
 	name: string;
 	doc: string;
 	expectedTree: string;
+  only?: boolean;
+  skip?: boolean;
 };
 
 export const parseFixtures: readonly ParseFixture[] = [
@@ -239,5 +241,24 @@ expectedTree: `CalcDoc
           Number
         Literal
           Number`,
+},
+
+{
+name: 'incomplete expression',
+doc: `some =
+
+13 usd in rub`,
+expectedTree: `CalcDoc
+  Binding
+    Identifier
+    ⚠
+  NoBinding
+    ConvertExpression
+      Literal
+        NumberWithUnit
+          Number
+          Unit
+      ConvertOp
+      Unit`,
 },
 ];

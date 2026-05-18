@@ -10,17 +10,17 @@
 @top CalcDoc { pipeline }
 
 pipeline {
-	clause+
+	(statement | lineEnd)*
 }
 
-clause {
+statement {
 	Binding
 	| NoBinding
 	| Comment
 }
 
-Binding { Identifier "=" expression lineEnd}
-NoBinding { expression lineEnd}
+Binding { Identifier "=" expression end }
+NoBinding { expression end }
 
 expression {
   AddExpression
@@ -47,6 +47,7 @@ ConvertOp { in }
 
 @precedence {
 	// Results deeper in AST
+	lineEnd,
 	Identifier,
 	FunctionCall,
 	_parenthesized @left, // need to be deepest?
@@ -88,19 +89,22 @@ ConvertOp { in }
 	// Comment
 	Comment { "//" ![\n]* }
 
-	lineEnd { "\n" | @eof }
 
 	@precedence { lineEnd, space }
 
 	@precedence { Comment, TimesBinaryOp }
 
 	// Whitespace
-	space { @whitespace+ }
+	space { $[ \t]+ }
+	lineEnd { "\n" | "\r" }
 
 	@precedence {
 		in,
 		Identifier
 	}
+
+	end { lineEnd | @eof }
+
 }
 
 @skip { space }

@@ -16,15 +16,18 @@ function assertMatchTree(tree: Tree, expected: string) {
 
 describe('CalcDoc grammar', () => {
 	
+	const configuredParser = calculusParser.configure({ /* strict: true */ })
+
 	it('should build parser', () => {
 		assert.ok(calculusParser);
 	})
 
-	for (const { name, doc, expectedTree } of parseFixtures) {
-		it(name, () => {
-			const result = calculusParser.parse(doc);
+	for (const fx of parseFixtures) {
+		const test = fx.only ? it.only : fx.skip ? it.skip : it;
+		test(fx.name, () => {
+			const result = configuredParser.parse(fx.doc);
 			assert.ok(result instanceof Tree);
-			assertMatchTree(result, expectedTree);
+			assertMatchTree(result, fx.expectedTree);
 		});
 	}
 })
