@@ -1,3 +1,5 @@
+import { registerSW } from 'virtual:pwa-register'
+
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
@@ -71,5 +73,7 @@ new EditorView({
     ],
   }),
 })
+
+registerSW({ immediate: true })
 
 void initializeRatesStore()

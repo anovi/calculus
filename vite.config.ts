@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { fileURLToPath } from 'node:url'
 
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
@@ -29,14 +28,6 @@ function injectInlineUnitsCurrencyGrammar(): Plugin {
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
   base: './',
-  build: {
-    rollupOptions: {
-      input: {
-        main: fileURLToPath(new URL('./index.html', import.meta.url)),
-        rates: fileURLToPath(new URL('./rates.html', import.meta.url)),
-      },
-    },
-  },
   test: {
     globals: true,
     environment: 'node',
@@ -48,9 +39,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons.svg'],
       manifest: {
-        name: 'EUR exchange rates',
-        short_name: 'EUR rates',
-        description: 'EUR to major world currencies from Frankfurter, with offline support.',
+        name: 'Calculus',
+        short_name: 'Calculus',
+        description: 'A tiny notebook editor for everyday math.',
         theme_color: '#0c1222',
         background_color: '#0c1222',
         display: 'standalone',
@@ -68,6 +59,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: ({ url }) =>
