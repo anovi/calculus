@@ -99,3 +99,10 @@ body {
   border: 1px solid rgba(125, 211, 252, 0.25);
   font-variant-numeric: tabular-nums;
 }
+
+#cm-suggestions-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}

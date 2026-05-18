@@ -1,4 +1,4 @@
-import { showPanel, type Panel } from "@codemirror/view";
+import { showPanel, ViewPlugin, type Panel } from "@codemirror/view";
 import { type NodeIterator } from '@lezer/common';
 import { syntaxTree } from '@codemirror/language';
 import { EditorView } from "@codemirror/view";
@@ -74,12 +74,19 @@ function button(op: Operation) {
 }
 
 function createHelpPanel(_view: EditorView): Panel {
-    let dom = document.createElement("div");
-    dom.textContent = "F1: Toggle the help panel"
-    dom.className = "cm-help-panel"
+    const dom = document.createElement("div");
+    const fakeDom = document.createElement("div");
+    dom.className = "cm-help-panel";
+    dom.id = "cm-suggestions-panel";
     return {
         top: false,
-        dom,
+        dom: fakeDom,
+        mount: () => {
+            document.body.appendChild(dom);
+        },
+        destroy: () => {
+            dom.remove();
+        },
         update: (update) => {
             dom.innerHTML = '';
             const suggestions = update.state.field(SuggestionsStateField);
@@ -87,13 +94,12 @@ function createHelpPanel(_view: EditorView): Panel {
                 const operation = suggestions[index];
                 dom.appendChild(button(operation));
             }
+            fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
         },
     };
 }
 
-export function helpPanel() {
-    return [helpPanelState, SuggestionsStateField]
-}
+
 
 type Operation = { sign: string, operation: string };
 
@@ -135,3 +141,46 @@ const superMap: Record<number, SuggestionRule[]> = {
         in: [terms.NoBinding],
     }]
 };
+
+
+// Positioning for iOS
+const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
+
+    #dock: HTMLDivElement;
+
+    constructor() {
+        const elem = document.getElementById('cm-suggestions-panel') as HTMLDivElement | null;
+        if (!elem) throw 'Should be a panel!';
+        this.#dock = elem;
+        console.log(elem)
+        this.fixPosition();
+    }
+    
+    fixPosition() {
+        const vv = window.visualViewport!;
+        const ih = window.innerHeight;
+        this.#dock.style.bottom = `${Math.max(0, ih - vv.height - vv.offsetTop)}px`;
+        window.visualViewport?.addEventListener("resize", this.resizeHandler.bind(this));
+    }
+
+    resizeHandler() {
+        const vv = window.visualViewport!;
+        const ih = window.innerHeight;
+        // if (!/iPhone|iPad|iPod/.test(window.navigator.userAgent)) {
+            // this.#height = ;
+            console.log(window.visualViewport!.height)
+            console.log(Math.max(0, ih - vv.height - vv.offsetTop))
+            
+        // }
+        // this.#dock.style.bottom = `${window.innerHeight - window.visualViewport!.height + 10}px`;
+        this.#dock.style.bottom = `${Math.max(0, ih - vv.height - vv.offsetTop)}px`;
+
+        // `${Math.max(0, ih - vv.height - vv.offsetTop)}px`;
+    }
+})
+
+
+
+export function helpPanel() {
+    return [helpPanelState, SuggestionsStateField, HelpPanelViewPlugin]
+}
