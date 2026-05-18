@@ -13,6 +13,16 @@
   color-scheme: dark;
 }
 
+.viewport-experiment {
+  position: fixed;
+  top: 5dvh;
+  right: 10px;
+  height: 90dvh;
+  width: 5px;
+  background-color: rgb(47, 117, 247);
+  z-index: 99;
+}
+
 *,
 *::before,
 *::after {
