@@ -6,7 +6,7 @@ import { type MeasureEntry, UnitType } from "./types"
 
 export const allUnitVocabluary = PrefixTree.empty<MeasureEntry>();
 
-const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })
+// const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })
 
 // Build units
 for (const entry of units) {
