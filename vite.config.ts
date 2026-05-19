@@ -28,6 +28,9 @@ function injectInlineUnitsCurrencyGrammar(): Plugin {
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
   base: './',
+  server: {
+    allowedHosts: ["cramp-shrapnel-encircle.ngrok-free.dev"]
+  },
   test: {
     globals: true,
     environment: 'node',

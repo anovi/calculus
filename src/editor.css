@@ -37,19 +37,24 @@ body {
 }
 
 body {
-  min-height: 100svh;
-  display: flex;
+  /* min-height: 100svh; */
+  /* display: flex; */
 }
 
 #editor {
   flex: 1 1 auto;
-  min-height: 100svh;
+  /* min-height: 100svh; */
   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 #editor .cm-editor {
   flex: 1 1 auto;
-  height: 100svh;
+  /* height: 100svh; */
   background: var(--surface);
   color: var(--text);
   color-scheme: dark;  
@@ -87,6 +92,10 @@ body {
   background: rgba(125, 211, 252, 0.22);
 }
 
+#editor .cm-content {
+  padding-bottom: 534px;
+}
+
 /*
  * The outer wrapper carries no visible chrome — only transparent left padding
  * that creates the gap between the last character and the pill. This keeps the
@@ -114,7 +123,16 @@ body {
 
 #cm-suggestions-panel {
   position: fixed;
-  left: 0;
   right: 0;
+  bottom: 0;
   z-index: 9999;
+}
+
+#cm-suggestions-panel {
+  button {
+    height: 40px;
+    width: 40px;
+    background: orange;
+    color: white;
+  }
 }

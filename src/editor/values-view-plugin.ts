@@ -1,6 +1,8 @@
 import type { Range } from '@codemirror/state'
 import {
   Decoration,
+  gutter,
+  GutterMarker,
   ViewPlugin,
   WidgetType,
   type DecorationSet,
@@ -138,3 +140,42 @@ export const calcResultsPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   },
 )
+
+const emptyMarker = new class extends GutterMarker {
+  toDOM() { return document.createTextNode("1000000") }
+}
+
+class ValueMarker extends GutterMarker {
+  public value: CalcValue;
+  constructor(
+    value: CalcValue
+  ) {
+    super();
+    this.value = value;
+  }
+  toDOM() {
+    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';  
+    const value = `${formatResult(this.value.result)}${unitSuffix}`;
+    return document.createTextNode(value);
+  }
+}
+
+export const emptyLineGutter = gutter({
+  lineMarker(view, line) {
+    const values = view.state.field(calcRangesField)
+    // const cur = value.ranges.iter();
+    // while (cur.value) {
+    //   cur.next();
+    // }
+    let value: CalcValue|undefined = undefined;
+    values.ranges.between(line.from, line.to, (from, to, val) => {
+      // console.log(line.from, line.to, val.result.toNumber())
+      // console.log('value', from, to)
+      if (line.from === from) value = val;
+    });
+    console.log(value)
+    return value ? new ValueMarker(value) : null
+  },
+  initialSpacer: () => emptyMarker,
+  side: 'after',
+})
