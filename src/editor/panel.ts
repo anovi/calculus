@@ -12,11 +12,11 @@ const toggleHelp = StateEffect.define<boolean>();
 
 const NONE: Operation[] = [];
 const WHITESPACE_EXCEPT_NEWLINE = /^[^\S\r\n]+$/
-const APPLE_DEVICE_REGEX = /iPhone|iPad|iPod|iOS/;
 
-function isAppleDevice(): boolean {
-    return APPLE_DEVICE_REGEX.test(window.navigator.userAgent)
-}
+// const APPLE_DEVICE_REGEX = /iPhone|iPad|iPod|iOS/;
+// function isAppleDevice(): boolean {
+//     return APPLE_DEVICE_REGEX.test(window.navigator.userAgent)
+// }
 
 export const helpPanelState = StateField.define<boolean>({
     create: () => true,
@@ -116,7 +116,10 @@ function createHelpPanel(view: EditorView): Panel {
         // debugger
         if (operation.insert) {
             const result = toggleInlineFormat(view.state, operation.insert);
-            if (!result.ok) console.error(result.reason);
+            if (!result.ok) {
+                console.error(result.reason);
+                return;
+            }
             view.dispatch(result.value);
         }
         // const tr = view.state.update({
@@ -219,13 +222,13 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.resizeHandler();
         window.visualViewport?.addEventListener("resize", this.resizeHandler.bind(this));
 
-        if ("virtualKeyboard" in navigator) {
-            navigator.virtualKeyboard.overlaysContent = true;
-            navigator.virtualKeyboard.addEventListener("geometrychange", (event) => {
-                const { x, y, width, height } = event.target.boundingRect;
-                console.log(event);
-            });
-        }
+        // if ("virtualKeyboard" in navigator) {
+        //     navigator.virtualKeyboard.overlaysContent = true;
+        //     navigator.virtualKeyboard.addEventListener("geometrychange", (event) => {
+        //         const { x, y, width, height } = event.target.boundingRect;
+        //         console.log(event);
+        //     });
+        // }
     }
 
     resizeHandler() {

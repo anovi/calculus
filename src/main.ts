@@ -5,7 +5,7 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
 import { parser } from './language'
-import { calcRanges, calcResultsPlugin, emptyLineGutter, unitAutocompletion } from './editor'
+import { calcRanges, emptyLineGutter, unitAutocompletion } from './editor'
 import './editor.css'
 import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'

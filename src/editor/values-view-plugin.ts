@@ -168,7 +168,7 @@ export const emptyLineGutter = gutter({
     //   cur.next();
     // }
     let value: CalcValue|undefined = undefined;
-    values.ranges.between(line.from, line.to, (from, to, val) => {
+    values.ranges.between(line.from, line.to, (from, _to, val) => {
       // console.log(line.from, line.to, val.result.toNumber())
       // console.log('value', from, to)
       if (line.from === from) value = val;
