@@ -345,8 +345,28 @@ const superMap: Record<number, SuggestionRule[]> = {
 };
 
 
-/** Space taken by the virtual keyboard (layout viewport vs visual viewport). */
-function keyboardInset(): number {
+/** Minimal Virtual Keyboard API surface (Chrome Android; not in all TS libs). */
+interface VirtualKeyboard {
+    readonly boundingRect: DOMRectReadOnly;
+    overlaysContent: boolean;
+    addEventListener(type: 'geometrychange', listener: () => void): void;
+    removeEventListener(type: 'geometrychange', listener: () => void): void;
+}
+
+type PanelKeyboardLayout = 'virtual-keyboard-api' | 'visual-viewport';
+
+function getVirtualKeyboard(): VirtualKeyboard | null {
+    if (!('virtualKeyboard' in navigator)) return null;
+    return (navigator as Navigator & { virtualKeyboard: VirtualKeyboard })
+        .virtualKeyboard;
+}
+
+function resolvePanelKeyboardLayout(): PanelKeyboardLayout {
+    return getVirtualKeyboard() ? 'virtual-keyboard-api' : 'visual-viewport';
+}
+
+/** WebKit / iOS: keyboard inset from layout vs visual viewport. */
+function keyboardInsetFromVisualViewport(): number {
     const vv = window.visualViewport;
     if (!vv) return 0;
     return Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
@@ -358,18 +378,26 @@ const KEYBOARD_INSET_THRESHOLD = 50;
 /** Re-read inset after iOS keyboard animation (resize fires early/late). */
 const SYNC_FOLLOW_UP_MS = [100, 250, 400, 600] as const;
 
-// Positioning + visibility for mobile virtual keyboard (iOS visualViewport timing:
-// resize on show = start of animation; resize on hide = after animation ends).
+// Mobile panel keyboard layout: one strategy per browser, not both.
+// - virtual-keyboard-api (Chrome Android): overlaysContent=false shrinks layout so
+//   fixed bottom:0 sits above the keyboard; geometrychange drives visibility.
+// - visual-viewport (iOS Safari): visualViewport resize/scroll + bottom inset.
 const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
     #dock: HTMLDivElement;
     #view: EditorView;
+    #layout: PanelKeyboardLayout;
+    #virtualKeyboard: VirtualKeyboard | null;
     #rafId: number | null = null;
     #followUpTimers: ReturnType<typeof setTimeout>[] = [];
-    #onViewportChange = () => this.#scheduleSync();
+    #onKeyboardGeometryChange = () => this.#scheduleSync();
     #onEditorFocusIn = () => this.#scheduleSync();
 
     constructor(view: EditorView) {
         this.#view = view;
+        this.#layout = resolvePanelKeyboardLayout();
+        this.#virtualKeyboard =
+            this.#layout === 'virtual-keyboard-api' ? getVirtualKeyboard() : null;
+
         const elem = document.getElementById('cm-suggestions-panel') as HTMLDivElement | null;
         if (!elem) throw new Error('Suggestions panel element missing');
         this.#dock = elem;
@@ -377,18 +405,18 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         view.dom.addEventListener('focusin', this.#onEditorFocusIn);
         view.dom.addEventListener('focusout', this.#onEditorFocusOut);
 
-        const vv = window.visualViewport;
-        vv?.addEventListener('resize', this.#onViewportChange);
-        vv?.addEventListener('scroll', this.#onViewportChange);
-
-        // KEEP IT FOR LATER
-        // if ("virtualKeyboard" in navigator) {
-        //     navigator.virtualKeyboard.overlaysContent = true;
-        //     navigator.virtualKeyboard.addEventListener("geometrychange", (event) => {
-        //         const { x, y, width, height } = event.target.boundingRect;
-        //         console.log(event);
-        //     });
-        // }
+        if (this.#virtualKeyboard) {
+            // false = browser resizes layout; content (and fixed panel) stay above keyboard.
+            this.#virtualKeyboard.overlaysContent = false;
+            this.#virtualKeyboard.addEventListener(
+                'geometrychange',
+                this.#onKeyboardGeometryChange,
+            );
+        } else {
+            const vv = window.visualViewport;
+            vv?.addEventListener('resize', this.#onKeyboardGeometryChange);
+            vv?.addEventListener('scroll', this.#onKeyboardGeometryChange);
+        }
 
         this.#scheduleSync();
     }
@@ -425,12 +453,30 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#followUpTimers = [];
     }
 
+    #keyboardOpen(): boolean {
+        if (this.#virtualKeyboard) {
+            return (
+                this.#virtualKeyboard.boundingRect.height >
+                KEYBOARD_INSET_THRESHOLD
+            );
+        }
+        return (
+            keyboardInsetFromVisualViewport() > KEYBOARD_INSET_THRESHOLD
+        );
+    }
+
+    #panelBottomInset(): number {
+        if (this.#layout === 'virtual-keyboard-api') {
+            return 0;
+        }
+        return keyboardInsetFromVisualViewport();
+    }
+
     #applySync() {
-        const inset = keyboardInset();
-        const keyboardOpen = inset > KEYBOARD_INSET_THRESHOLD;
+        const keyboardOpen = this.#keyboardOpen();
         const visible = this.#view.hasFocus && keyboardOpen;
 
-        this.#dock.style.bottom = `${inset}px`;
+        this.#dock.style.bottom = `${this.#panelBottomInset()}px`;
         this.#dock.classList.toggle('cm-suggestions-panel--visible', visible);
         this.#dock.setAttribute('aria-hidden', visible ? 'false' : 'true');
     }
@@ -439,9 +485,16 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#cancelScheduledSync();
         this.#view.dom.removeEventListener('focusin', this.#onEditorFocusIn);
         this.#view.dom.removeEventListener('focusout', this.#onEditorFocusOut);
-        const vv = window.visualViewport;
-        vv?.removeEventListener('resize', this.#onViewportChange);
-        vv?.removeEventListener('scroll', this.#onViewportChange);
+        if (this.#virtualKeyboard) {
+            this.#virtualKeyboard.removeEventListener(
+                'geometrychange',
+                this.#onKeyboardGeometryChange,
+            );
+        } else {
+            const vv = window.visualViewport;
+            vv?.removeEventListener('resize', this.#onKeyboardGeometryChange);
+            vv?.removeEventListener('scroll', this.#onKeyboardGeometryChange);
+        }
     }
 });
 
