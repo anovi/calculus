@@ -51,7 +51,7 @@ export default defineConfig({
         name: 'Calculus',
         short_name: 'Calculus',
         description: 'A tiny notebook editor for everyday math.',
-        theme_color: '#d98600',
+        theme_color: '#141c2e',
         background_color: '#141c2e',
         display: 'standalone',
         orientation: 'portrait-primary',

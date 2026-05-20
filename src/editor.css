@@ -116,7 +116,7 @@ body {
   visibility: hidden;
   pointer-events: none;
 
-  --button-bg: var(--toolbar-bg);
+  --button-bg: rgb(217, 134, 0);
   --button-hover-bg: oklch(from var(--button-bg) calc(l - 0.05) c h);
   --main-button-bg: rgb(178, 108, 28);
   --main-button-hover-bg: oklch(from var(--main-button-bg) calc(l - 0.05) c h);
@@ -228,7 +228,6 @@ body {
 
   --bg: #141c2e;
   --surface: #141c2e;
-  --toolbar-bg: #d98600; /* rgb(217, 134, 0); keep theme-color in index.html in sync */
   --border: rgba(255, 255, 255, 0.08);
   --text: #c8d1e0;
   --heading: #f1f5ff;
