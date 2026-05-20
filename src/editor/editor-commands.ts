@@ -1,4 +1,3 @@
-import { syntaxTree } from '@codemirror/language';
 import { type SyntaxNode } from '@lezer/common'
 import { type TransactionSpec, EditorState, Transaction, EditorSelection, ChangeSet, type ChangeSpec } from "@codemirror/state";
 
@@ -112,7 +111,7 @@ export function toggleInlineFormat(
 
 const WHITESPACE_EXCEPT_NEWLINE = /^[^\S\r\n]+$/
 
-function skipWhiteSpaceBackward(state: EditorState, from: number) {
+export function skipWhiteSpaceBackward(state: EditorState, from: number) {
     let point = from;
     while (point > 0) {
         const textBeforeSelection = state.sliceDoc(point - 1, from);

@@ -3,18 +3,17 @@ import { undo, redo } from "@codemirror/commands";
 import { type NodeIterator } from '@lezer/common';
 import { syntaxTree } from '@codemirror/language';
 import { EditorView } from "@codemirror/view";
-import { StateField, StateEffect, EditorState } from "@codemirror/state";
+import { StateField, StateEffect } from "@codemirror/state";
 
 import { isAtomicSelection } from "../lib/codemirror";
 import { terms } from "../language";
-import { toggleInlineFormat  } from "./editor-commands";
+import { skipWhiteSpaceBackward, toggleInlineFormat } from "./editor-commands";
 import { OperationsDictionary, type Operation, type OperationDef } from "./operations-dictionary";
 // import styles from '../editor.module.css'
 
 const toggleHelp = StateEffect.define<boolean>();
 
 const NONE: OperationDef[] = [];
-const WHITESPACE_EXCEPT_NEWLINE = /^[^\S\r\n]+$/
 
 // const APPLE_DEVICE_REGEX = /iPhone|iPad|iPod|iOS/;
 // function isAppleDevice(): boolean {
@@ -30,15 +29,7 @@ export const helpPanelState = StateField.define<boolean>({
     provide: () => showPanel.of(createHelpPanel)
 })
 
-function skipWhiteSpaceBackward(state: EditorState, from: number) {
-    let point = from;
-    while (point > 0) {
-        const textBeforeSelection = state.sliceDoc(point - 1, from);
-        if (!textBeforeSelection.match(WHITESPACE_EXCEPT_NEWLINE)) break;
-        point--;
-    }
-    return point;
-}
+
 
 export const SuggestionsStateField = StateField.define<OperationDef[]>({
     create: (_state) => NONE,
@@ -181,7 +172,7 @@ function createButtonHandler<H extends (...bindings: any[]) => void>(
     });
 }
 
-function mainButton(onclick?: (e: MouseEvent) => void) {
+/* function mainButton(onclick?: (e: MouseEvent) => void) {
     const dom = document.createElement('button');
     dom.classList.add('cm-suggestions-main-button');
     dom.innerHTML = '…';
@@ -191,7 +182,7 @@ function mainButton(onclick?: (e: MouseEvent) => void) {
         releasePanelButtonFocus(dom);
     });
     return dom;
-}
+} */
 
 function dismissEditorFocus(view: EditorView) {
     view.contentDOM.blur();
