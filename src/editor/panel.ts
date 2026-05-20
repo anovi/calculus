@@ -374,7 +374,7 @@ function keyboardInsetFromVisualViewport(): number {
 const KEYBOARD_INSET_THRESHOLD = 50;
 
 /** Re-read inset after iOS keyboard animation (resize fires early/late). */
-const SYNC_FOLLOW_UP_MS = [100, 250, 400, 600] as const;
+// const SYNC_FOLLOW_UP_MS = [100, 250, 400, 600] as const;
 
 // Mobile panel keyboard layout: one strategy per browser, not both.
 // - virtual-keyboard-api (Chrome Android): overlaysContent=false shrinks layout so
@@ -429,7 +429,7 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#applySync();
     };
 
-    #onKeyboardGeometryChange(e: Event) {
+    #onKeyboardGeometryChange() {
         this.#scheduleSync();
     }
 
@@ -458,6 +458,7 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#followUpTimers = [];
     }
 
+    // @ts-ignore
     #keyboardOpen(): boolean {
         if (this.#virtualKeyboard) {
             // return (
@@ -485,7 +486,7 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
     }
 
     #applySync() {
-        const keyboardOpen = this.#keyboardOpen();
+        // const keyboardOpen = this.#keyboardOpen();
         const visible = this.#view.hasFocus;
 
         const inset = this.#panelBottomInset();
