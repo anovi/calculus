@@ -39,7 +39,7 @@ class ResultWidget extends WidgetType {
     );
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     // Two-element layout: the outer span has no visible style and sits flush
     // against the line's last character so the caret (which CodeMirror draws
     // at the widget's outer-left edge for `side: 1`) lands on the real text
@@ -48,6 +48,26 @@ class ResultWidget extends WidgetType {
     const wrap = document.createElement('span');
     wrap.className = 'cm-calc-result';
     wrap.setAttribute('aria-hidden', 'true');
+    wrap.addEventListener('touchend', (e) => {
+      e.preventDefault()
+      console.log(e)
+      const values = view.state.field(calcRangesField);
+      const cur = values.ranges.iter();
+      while (cur.value) {
+        if (cur.value === this.value) {
+          view.dispatch({
+            selection: { anchor: cur.to - 1 }
+          });
+          if (!view.hasFocus) view.focus();
+          break;
+        }
+        cur.next();
+      }
+    })
+    wrap.addEventListener('touchend', (e) => {
+      e.preventDefault()
+      console.log(e)
+    })
 
     const pill = document.createElement('span');
     pill.className = 'cm-calc-result__pill';

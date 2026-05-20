@@ -36,6 +36,12 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.spec.ts'],
   },
+  css: {
+    // https://vite.dev/config/shared-options.html#css-modules
+    modules: {
+      scopeBehaviour: 'local',
+    }
+  },
   plugins: [
     injectInlineUnitsCurrencyGrammar(),
     VitePWA({

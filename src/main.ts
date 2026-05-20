@@ -5,13 +5,15 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
 import { parser } from './language'
-import { calcRanges, emptyLineGutter, unitAutocompletion } from './editor'
+import { calcRanges, calcResultsPlugin, unitAutocompletion } from './editor'
+import './assets/normalize.css'
 import './editor.css'
 import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { basicSetup } from './editor/basic-setup'
 import { helpPanel } from './editor/panel'
+import { editorTheme } from './editor/base-theme'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -69,11 +71,12 @@ new EditorView({
       calculus(),
       unitAutocompletion(),
       calcRanges(),
-      // calcResultsPlugin,
+      calcResultsPlugin,
       persist,
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
-      emptyLineGutter,
+      editorTheme,
+      // emptyLineGutter,
     ],
   }),
 })

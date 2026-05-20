@@ -1,4 +1,5 @@
 import { showPanel, ViewPlugin, type Panel } from "@codemirror/view";
+import { undo, redo } from "@codemirror/commands";
 import { type NodeIterator } from '@lezer/common';
 import { syntaxTree } from '@codemirror/language';
 import { EditorView } from "@codemirror/view";
@@ -6,11 +7,13 @@ import { StateField, StateEffect, EditorState } from "@codemirror/state";
 
 import { isAtomicSelection } from "../lib/codemirror";
 import { terms } from "../language";
-import { toggleInlineFormat, type Format } from "./editor-commands";
+import { toggleInlineFormat  } from "./editor-commands";
+import { OperationsDictionary, type Operation, type OperationDef } from "./operations-dictionary";
+// import styles from '../editor.module.css'
 
 const toggleHelp = StateEffect.define<boolean>();
 
-const NONE: Operation[] = [];
+const NONE: OperationDef[] = [];
 const WHITESPACE_EXCEPT_NEWLINE = /^[^\S\r\n]+$/
 
 // const APPLE_DEVICE_REGEX = /iPhone|iPad|iPod|iOS/;
@@ -37,7 +40,7 @@ function skipWhiteSpaceBackward(state: EditorState, from: number) {
     return point;
 }
 
-export const SuggestionsStateField = StateField.define<Operation[]>({
+export const SuggestionsStateField = StateField.define<OperationDef[]>({
     create: (_state) => NONE,
     update(_value, tr) {
         const selection = tr.state.selection;
@@ -76,30 +79,162 @@ export const SuggestionsStateField = StateField.define<Operation[]>({
     // provide: () => showPanel.of(createHelpPanel)
 })
 
-function button(op: Operation, onclick: (op: Operation) => void) {
-    const dom = document.createElement('button');
-    dom.innerHTML = op.sign;
-    dom.setAttribute('data-operation', op.operation);
-    dom.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        onclick(op);
-    });
-    dom.addEventListener('click', (e) => {
-        e.preventDefault();
-        onclick(op);
-    });
-    // dom.addEventListener('click', (e) => console.log(e.type, e));
-    // dom.addEventListener('touchend', (e) => console.log(e.type, e));
-    // dom.addEventListener('touchstart', (e) => console.log(e.type, e));
+
+for (const key in OperationsDictionary) {
+    if (Object.prototype.hasOwnProperty.call(OperationsDictionary, key)) {
+        const op = OperationsDictionary[key as Operation];
+        const html = `<button data-operation="${op.operation}"><div class="op ${op.operation}">${op.sign}</div></button>`;
+        const template = document.createElement('template');
+        template.innerHTML = html.trim();
+    }
+}
+
+/** Finger movement above this is a scroll/swipe, not a panel button tap (iOS). */
+const TAP_MOVE_THRESHOLD_PX = 10;
+
+type TouchTapStart = { x: number; y: number; scrollLeft: number };
+
+function touchMovedBeyondTap(
+    x: number,
+    y: number,
+    start: TouchTapStart,
+): boolean {
+    const dx = x - start.x;
+    const dy = y - start.y;
+    return Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX;
+}
+
+function button(
+    op: OperationDef,
+    onclick: (op: OperationDef) => void,
+    scrollContainer?: HTMLElement,
+) {
+    const template = document.createElement('template');
+    template.innerHTML = `<button data-operation="${op.operation}"><div class="op ${op.operation}">${op.sign}</div></button>`;
+    const dom = template.content.firstElementChild as HTMLButtonElement;
+    createButtonHandler(dom, onclick.bind(null, op), scrollContainer);
     return dom;
+}
+
+/** Drop focus after tap so iOS Safari does not keep a shaded :focus state on the button. */
+function releasePanelButtonFocus(element: HTMLButtonElement) {
+    element.blur();
+}
+
+function createButtonHandler<H extends (...bindings: any[]) => void>(
+    element: HTMLButtonElement,
+    onclick: H,
+    scrollContainer?: HTMLElement,
+) {
+    let touchStart: TouchTapStart | null = null;
+    let suppressClick = false;
+
+    element.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) {
+            touchStart = null;
+            return;
+        }
+        const t = e.touches[0];
+        touchStart = {
+            x: t.clientX,
+            y: t.clientY,
+            scrollLeft: scrollContainer?.scrollLeft ?? 0,
+        };
+    }, { passive: true });
+
+    element.addEventListener('touchmove', (e) => {
+        if (!touchStart || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        if (touchMovedBeyondTap(t.clientX, t.clientY, touchStart)) {
+            touchStart = null;
+        }
+    }, { passive: true });
+
+    element.addEventListener('touchend', (e) => {
+        const start = touchStart;
+        touchStart = null;
+        if (!start) return;
+
+        const t = e.changedTouches[0];
+        if (!t || touchMovedBeyondTap(t.clientX, t.clientY, start)) return;
+        if (
+            scrollContainer &&
+            Math.abs(scrollContainer.scrollLeft - start.scrollLeft) > 1
+        ) {
+            return;
+        }
+
+        e.preventDefault();
+        suppressClick = true;
+        onclick();
+        releasePanelButtonFocus(element);
+    });
+
+    element.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (suppressClick) {
+            suppressClick = false;
+            return;
+        }
+        onclick();
+        releasePanelButtonFocus(element);
+    });
 }
 
 function mainButton(onclick?: (e: MouseEvent) => void) {
     const dom = document.createElement('button');
     dom.classList.add('cm-suggestions-main-button');
     dom.innerHTML = '…';
-    if (onclick) dom.addEventListener('click', onclick);
+    dom.addEventListener('click', (e) => {
+        e.preventDefault();
+        onclick?.(e);
+        releasePanelButtonFocus(dom);
+    });
     return dom;
+}
+
+function dismissEditorFocus(view: EditorView) {
+    view.contentDOM.blur();
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && view.dom.contains(active)) {
+        active.blur();
+    }
+}
+
+function dismissKeyboardButton(view: EditorView): HTMLButtonElement {
+    const btn = document.createElement('button');
+    btn.classList.add('cm-suggestions-main-button');
+    btn.setAttribute('aria-label', 'Dismiss keyboard');
+    btn.innerHTML = '⌄';
+    createButtonHandler(btn, () => dismissEditorFocus(view));
+    return btn;
+}
+
+function undoRedoButtons(
+    view: EditorView,
+    scrollContainer: HTMLElement,
+): [HTMLButtonElement, HTMLButtonElement] {
+    const undoButton = document.createElement('button');
+    undoButton.innerHTML = "\u293A";
+    createButtonHandler(undoButton, () => {
+        undo({
+            state: view.state,
+            dispatch(transaction) {
+                view.dispatch(transaction);
+            },
+        })
+    }, scrollContainer)
+    const redoButton = document.createElement('button');
+    redoButton.innerHTML = "\u293B";
+    createButtonHandler(redoButton, () => {
+        redo({
+            state: view.state,
+            dispatch(transaction) {
+                view.dispatch(transaction);
+            },
+        })
+    }, scrollContainer)
+    return [undoButton, redoButton];
 }
 
 function createHelpPanel(view: EditorView): Panel {
@@ -107,13 +242,21 @@ function createHelpPanel(view: EditorView): Panel {
     const fakeDom = document.createElement("div");
     dom.className = "cm-help-panel";
     dom.id = "cm-suggestions-panel";
-    const mainBtn = mainButton();
-    dom.appendChild(mainBtn);
+    dom.setAttribute('aria-hidden', 'true');
+    const dismissBtn = dismissKeyboardButton(view);
+    // dom.appendChild(dismissBtn);
+    const buttonsEl = document.createElement('div');
+    buttonsEl.classList.add('suggestion-panel-buttons');
+    dom.appendChild(buttonsEl);
+    buttonsEl.append(...undoRedoButtons(view, buttonsEl));
+
+    // HIDE FOR NOW
+    // const mainBtn = mainButton(); 
+
+    dom.appendChild(dismissBtn);
+
     const buttons: HTMLButtonElement[] = [];
-    const dispatch = (operation: Operation) => {
-        // const selectionFrom = view.state.selection.main.head;
-        // const from = skipWhiteSpaceBackward(view.state, selectionFrom);
-        // debugger
+    const dispatch = (operation: OperationDef) => {
         if (operation.insert) {
             const result = toggleInlineFormat(view.state, operation.insert);
             if (!result.ok) {
@@ -122,16 +265,26 @@ function createHelpPanel(view: EditorView): Panel {
             }
             view.dispatch(result.value);
         }
-        // const tr = view.state.update({
-        //     changes: { insert, from: selectionFrom },
-        // })
-        // const newSelection = view.state.selection.map(tr.changes)
-        // view.dispatch({
-        //     changes: { insert, from: selectionFrom },
-        //     selection: newSelection,
-        //     // newSelection: newSelection,
-        // })
     }
+
+    function renderAllButtons () {
+        buttons.forEach(btn => btn.remove());
+        buttons.splice(0, button.length);
+        for (const key in OperationsDictionary) {
+            if (Object.prototype.hasOwnProperty.call(OperationsDictionary, key)) {
+                const operation = OperationsDictionary[key as Operation];
+                const btn = button(operation, (operation) => {
+                    if (operation.insert) dispatch(operation);
+                }, buttonsEl);
+                buttons.push(btn);
+                buttonsEl.appendChild(btn);    
+            }
+        }
+        fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
+    }
+
+    renderAllButtons();
+
     return {
         top: false,
         dom: fakeDom,
@@ -141,46 +294,29 @@ function createHelpPanel(view: EditorView): Panel {
         destroy: () => {
             dom.remove();
         },
-        update: (update) => {
-            buttons.forEach(btn => btn.remove());
-            buttons.splice(0, button.length);
-            const suggestions = update.state.field(SuggestionsStateField);
-            for (let index = 0; index < suggestions.length; index++) {
-                const operation = suggestions[index];
-                const btn = button(operation, (operation) => {
-                    if (operation.insert) dispatch(operation);
-                });
-                buttons.push(btn);
-                dom.appendChild(btn);
-            }
-            fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
-        },
+        // update: (update) => {
+        //     buttons.forEach(btn => btn.remove());
+        //     buttons.splice(0, button.length);
+        //     const suggestions = update.state.field(SuggestionsStateField);
+        //     for (let index = 0; index < suggestions.length; index++) {
+        //         const operation = suggestions[index];
+        //         const btn = button(operation, (operation) => {
+        //             if (operation.insert) dispatch(operation);
+        //         });
+        //         buttons.push(btn);
+        //         dom.appendChild(btn);
+        //     }
+        //     fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
+        // },
     };
 }
 
 
 
-type Operation = {
-    sign: string,
-    operation: 'plus'|'multiply'|'euqal'
-    insert?: Format,
-};
 
-const binaryOps: Operation[] = [{
-    sign: '+',
-    insert: { open: '+', block: false },
-    operation: 'plus',
-}, {
-    sign: '*',
-    insert:  { open: '*', block: false },
-    operation: 'multiply',
-}];
+const binaryOps: OperationDef[] = [OperationsDictionary.division, OperationsDictionary.minus, OperationsDictionary.plus, OperationsDictionary.multiplication];
 
-const equal: Operation = {
-    sign: '=',
-    insert: { open: '=', block: false},
-    operation: 'euqal',
-}
+const equal = OperationsDictionary.euqal;
 
 const NodeTypes = {
     containers: [terms.AddExpression, terms.MulExpression, terms.ConvertExpression],
@@ -192,7 +328,7 @@ type SuggestionRule = {
     in?: number[],
     notIn?: number[],
     siblingBefore?: number,
-    suggest: Operation[],
+    suggest: OperationDef[],
 };
 
 const superMap: Record<number, SuggestionRule[]> = {
@@ -209,19 +345,43 @@ const superMap: Record<number, SuggestionRule[]> = {
 };
 
 
-// Positioning for iOS
+/** Space taken by the virtual keyboard (layout viewport vs visual viewport). */
+function keyboardInset(): number {
+    const vv = window.visualViewport;
+    if (!vv) return 0;
+    return Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+}
+
+/** Ignore browser chrome / rounding; real mobile keyboards are much larger. */
+const KEYBOARD_INSET_THRESHOLD = 50;
+
+/** Re-read inset after iOS keyboard animation (resize fires early/late). */
+const SYNC_FOLLOW_UP_MS = [100, 250, 400, 600] as const;
+
+// Positioning + visibility for mobile virtual keyboard (iOS visualViewport timing:
+// resize on show = start of animation; resize on hide = after animation ends).
 const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
-
     #dock: HTMLDivElement;
+    #view: EditorView;
+    #rafId: number | null = null;
+    #followUpTimers: ReturnType<typeof setTimeout>[] = [];
+    #onViewportChange = () => this.#scheduleSync();
+    #onEditorFocusIn = () => this.#scheduleSync();
 
-    constructor() {
+    constructor(view: EditorView) {
+        this.#view = view;
         const elem = document.getElementById('cm-suggestions-panel') as HTMLDivElement | null;
-        if (!elem) throw 'Should be a panel!';
+        if (!elem) throw new Error('Suggestions panel element missing');
         this.#dock = elem;
-        console.log(elem)
-        this.resizeHandler();
-        window.visualViewport?.addEventListener("resize", this.resizeHandler.bind(this));
 
+        view.dom.addEventListener('focusin', this.#onEditorFocusIn);
+        view.dom.addEventListener('focusout', this.#onEditorFocusOut);
+
+        const vv = window.visualViewport;
+        vv?.addEventListener('resize', this.#onViewportChange);
+        vv?.addEventListener('scroll', this.#onViewportChange);
+
+        // KEEP IT FOR LATER
         // if ("virtualKeyboard" in navigator) {
         //     navigator.virtualKeyboard.overlaysContent = true;
         //     navigator.virtualKeyboard.addEventListener("geometrychange", (event) => {
@@ -229,23 +389,72 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         //         console.log(event);
         //     });
         // }
+
+        this.#scheduleSync();
     }
 
-    resizeHandler() {
-        const vv = window.visualViewport!;
-        const ih = window.innerHeight;
-        // if (!isAppleDevice()) {
-            // this.#height = ;
-            console.log(window.visualViewport!.height)
-            console.log(Math.max(0, ih - vv.height - vv.offsetTop))
-            
-        // }
-        this.#dock.style.bottom = `${Math.max(0, ih - vv.height - vv.offsetTop)}px`;
+    #onEditorFocusOut = () => {
+        // Blur hides the panel immediately; iOS reports keyboard shrink only after
+        // the hide animation, so we must not wait for the next resize here.
+        this.#cancelScheduledSync();
+        this.#applySync();
+    };
+
+    #scheduleSync() {
+        this.#cancelScheduledSync();
+
+        this.#rafId = requestAnimationFrame(() => {
+            this.#rafId = null;
+            this.#applySync();
+            requestAnimationFrame(() => this.#applySync());
+        });
+
+        for (const delay of SYNC_FOLLOW_UP_MS) {
+            this.#followUpTimers.push(
+                setTimeout(() => this.#applySync(), delay),
+            );
+        }
     }
-})
+
+    #cancelScheduledSync() {
+        if (this.#rafId !== null) {
+            cancelAnimationFrame(this.#rafId);
+            this.#rafId = null;
+        }
+        for (const id of this.#followUpTimers) clearTimeout(id);
+        this.#followUpTimers = [];
+    }
+
+    #applySync() {
+        const inset = keyboardInset();
+        const keyboardOpen = inset > KEYBOARD_INSET_THRESHOLD;
+        const visible = this.#view.hasFocus && keyboardOpen;
+
+        this.#dock.style.bottom = `${inset}px`;
+        this.#dock.classList.toggle('cm-suggestions-panel--visible', visible);
+        this.#dock.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    }
+
+    destroy() {
+        this.#cancelScheduledSync();
+        this.#view.dom.removeEventListener('focusin', this.#onEditorFocusIn);
+        this.#view.dom.removeEventListener('focusout', this.#onEditorFocusOut);
+        const vv = window.visualViewport;
+        vv?.removeEventListener('resize', this.#onViewportChange);
+        vv?.removeEventListener('scroll', this.#onViewportChange);
+    }
+});
 
 
-
+// const helpTheme = EditorView.baseTheme({
+//     ".cm-help-panel": {
+//       padding: "5px 10px",
+//       backgroundColor: "#fffa8f",
+//       fontFamily: "monospace"
+//     }
+// })
+  
 export function helpPanel() {
     return [helpPanelState, SuggestionsStateField, HelpPanelViewPlugin]
 }
+
