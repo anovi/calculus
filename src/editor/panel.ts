@@ -340,8 +340,8 @@ const superMap: Record<number, SuggestionRule[]> = {
 interface VirtualKeyboard {
     readonly boundingRect: DOMRectReadOnly;
     overlaysContent: boolean;
-    addEventListener(type: 'geometrychange', listener: () => void): void;
-    removeEventListener(type: 'geometrychange', listener: () => void): void;
+    addEventListener(type: 'geometrychange', listener: (e: Event) => void): void;
+    removeEventListener(type: 'geometrychange', listener: (e: Event) => void): void;
 }
 
 type PanelKeyboardLayout = 'virtual-keyboard-api' | 'visual-viewport';
@@ -356,7 +356,14 @@ function resolvePanelKeyboardLayout(): PanelKeyboardLayout {
     return getVirtualKeyboard() ? 'virtual-keyboard-api' : 'visual-viewport';
 }
 
-/** WebKit / iOS: keyboard inset from layout vs visual viewport. */
+/**
+ * WebKit / iOS: distance from the layout viewport bottom to the visual viewport bottom.
+ * Equals the on-screen keyboard height when the keyboard is open.
+ *
+ * Do not subtract visualViewport.offsetTop. When the caret sits below the keyboard,
+ * Safari raises offsetTop to scroll the focused line into view and shifts layout-fixed
+ * UI with that pan; subtracting offsetTop again pushes the panel under the keyboard.
+ */
 function keyboardInsetFromVisualViewport(): number {
     const vv = window.visualViewport;
     if (!vv) return 0;
@@ -380,7 +387,6 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
     #virtualKeyboard: VirtualKeyboard | null;
     #rafId: number | null = null;
     #followUpTimers: ReturnType<typeof setTimeout>[] = [];
-    #onKeyboardGeometryChange = () => this.#scheduleSync();
     #onEditorFocusIn = () => this.#scheduleSync();
 
     constructor(view: EditorView) {
@@ -393,20 +399,24 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         if (!elem) throw new Error('Suggestions panel element missing');
         this.#dock = elem;
 
-        view.dom.addEventListener('focusin', this.#onEditorFocusIn);
-        view.dom.addEventListener('focusout', this.#onEditorFocusOut);
+        // view.dom.addEventListener('focusin', this.#onEditorFocusIn);
+        // view.dom.addEventListener('focusout', this.#onEditorFocusOut);
 
+        
+        
         if (this.#virtualKeyboard) {
             // false = browser resizes layout; content (and fixed panel) stay above keyboard.
             this.#virtualKeyboard.overlaysContent = false;
-            this.#virtualKeyboard.addEventListener(
-                'geometrychange',
-                this.#onKeyboardGeometryChange,
-            );
+            // this.#virtualKeyboard.addEventListener(
+                //     'geometrychange',
+                //     (e) => this.#onKeyboardGeometryChange(e),
+                // );
         } else {
             const vv = window.visualViewport;
-            vv?.addEventListener('resize', this.#onKeyboardGeometryChange);
-            vv?.addEventListener('scroll', this.#onKeyboardGeometryChange);
+            document.addEventListener("gesturechange", this.#onKeyboardGeometryChange.bind(this));
+            document.addEventListener("focusout", this.#onKeyboardGeometryChange.bind(this));
+            vv?.addEventListener('resize', this.#onKeyboardGeometryChange.bind(this));
+            vv?.addEventListener('scroll', this.#onKeyboardGeometryChange.bind(this));
         }
 
         this.#scheduleSync();
@@ -419,6 +429,10 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#applySync();
     };
 
+    #onKeyboardGeometryChange(e: Event) {
+        this.#scheduleSync();
+    }
+
     #scheduleSync() {
         this.#cancelScheduledSync();
 
@@ -428,11 +442,11 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
             requestAnimationFrame(() => this.#applySync());
         });
 
-        for (const delay of SYNC_FOLLOW_UP_MS) {
-            this.#followUpTimers.push(
-                setTimeout(() => this.#applySync(), delay),
-            );
-        }
+        // for (const delay of SYNC_FOLLOW_UP_MS) {
+        //     this.#followUpTimers.push(
+        //         setTimeout(() => this.#applySync(), delay),
+        //     );
+        // }
     }
 
     #cancelScheduledSync() {
@@ -446,10 +460,17 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
 
     #keyboardOpen(): boolean {
         if (this.#virtualKeyboard) {
-            return (
-                this.#virtualKeyboard.boundingRect.height >
-                KEYBOARD_INSET_THRESHOLD
-            );
+            // return (
+            //     this.#virtualKeyboard.boundingRect.height >
+            //     KEYBOARD_INSET_THRESHOLD
+            // );
+            const { height } = this.#virtualKeyboard.boundingRect;
+            if (height > 0) {
+                console.log('Virtual keyboard is open');
+            } else {
+                console.log('Virtual keyboard is closed');
+            }
+            return height > 0;
         }
         return (
             keyboardInsetFromVisualViewport() > KEYBOARD_INSET_THRESHOLD
@@ -465,9 +486,11 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
 
     #applySync() {
         const keyboardOpen = this.#keyboardOpen();
-        const visible = this.#view.hasFocus && keyboardOpen;
+        const visible = this.#view.hasFocus;
 
-        this.#dock.style.bottom = `${this.#panelBottomInset()}px`;
+        const inset = this.#panelBottomInset();
+        console.log('inset', inset);
+        this.#dock.style.bottom = `${inset}px`;
         this.#dock.classList.toggle('cm-suggestions-panel--visible', visible);
         this.#dock.setAttribute('aria-hidden', visible ? 'false' : 'true');
     }
