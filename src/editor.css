@@ -1,20 +1,10 @@
-:root {
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
   color: var(--text);
-  /* background: var(--bg); */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;  
-  font-size: 16px;
-  line-height: 1.5;
-  color-scheme: dark;
-}
-
-.viewport-experiment {
-  position: fixed;
-  top: 5dvh;
-  right: 10px;
-  height: 90dvh;
-  width: 5px;
-  background-color: rgb(47, 117, 247);
-  z-index: 99;
 }
 
 *,
@@ -22,19 +12,6 @@
 *::after {
   box-sizing: border-box;
 }
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
-body {
-  /* min-height: 100svh; */
-  /* display: flex; */
-}
-
 
 /*=============================================
 =                  Editor                     =
@@ -239,22 +216,21 @@ body {
 }
 
 
-
 /*=============================================
 =                     Theme                   =
 =============================================*/
 
-/* Common  */
 :root {
-  --bg: #0c1222;
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+
+  --bg: #141c2e;
   --surface: #141c2e;
   --border: rgba(255, 255, 255, 0.08);
   --text: #c8d1e0;
   --heading: #f1f5ff;
-}
-
-/* Editor UI variables */
-:root {
   --panel-text-color: black;
   --panel-bg-color: transparent;
   --panel-border-color: transparent;

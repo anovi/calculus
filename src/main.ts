@@ -6,9 +6,6 @@ import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/lan
 
 import { parser } from './language'
 import { calcRanges, calcResultsPlugin, unitAutocompletion } from './editor'
-import './assets/normalize.css'
-import './editor.css'
-import './editor/calculus-syntax-highlight.css'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { basicSetup } from './editor/basic-setup'
