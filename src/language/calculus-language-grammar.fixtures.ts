@@ -13,6 +13,7 @@ doc: 'some = 123',
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     Literal
       Number`,
 },
@@ -42,6 +43,7 @@ doc: 'w = 12 EUR',
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     Literal
       NumberWithUnit
         Number
@@ -122,6 +124,7 @@ doc: 'some = 2+2',
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     AddExpression
       Literal
         Number
@@ -153,12 +156,14 @@ doc: '(3 + 2) * 10',
 expectedTree: `CalcDoc
   NoBinding
     MulExpression
+      Opr
       AddExpression
         Literal
           Number
         PlusBinaryOp
         Literal
           Number
+      Cpr
       TimesBinaryOp
       Literal
         Number`,
@@ -169,6 +174,7 @@ doc: 'some = 2 + 2\n10',
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     AddExpression
       Literal
         Number
@@ -185,10 +191,12 @@ doc: 'some = 10\nother = some + 2',
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     Literal
       Number
   Binding
     Identifier
+    EqualSign
     AddExpression
       Identifier
       PlusBinaryOp
@@ -202,9 +210,11 @@ expectedTree: `CalcDoc
   NoBinding
     FunctionCall
       Identifier
+      Opr
       ArgList
         Literal
-          Number`,
+          Number
+      Cpr`,
 },
 {
   name: 'function call with no args',
@@ -212,7 +222,9 @@ expectedTree: `CalcDoc
   expectedTree: `CalcDoc
   NoBinding
     FunctionCall
-      Identifier`,
+      Identifier
+      Opr
+      Cpr`,
 },
 {
   name: 'function call in addition',
@@ -225,9 +237,11 @@ expectedTree: `CalcDoc
       PlusBinaryOp
       FunctionCall
         Identifier
+        Opr
         ArgList
           Literal
-            Number`,
+            Number
+        Cpr`,
 },
 {
   name: 'function call multiple args',
@@ -236,11 +250,13 @@ expectedTree: `CalcDoc
   NoBinding
     FunctionCall
       Identifier
+      Opr
       ArgList
         Literal
           Number
         Literal
-          Number`,
+          Number
+      Cpr`,
 },
 
 {
@@ -251,6 +267,7 @@ doc: `some =
 expectedTree: `CalcDoc
   Binding
     Identifier
+    EqualSign
     ⚠
   NoBinding
     ConvertExpression

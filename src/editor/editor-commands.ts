@@ -1,5 +1,7 @@
-import { type SyntaxNode } from '@lezer/common'
+import { type SyntaxNode, Tree } from '@lezer/common'
 import { type TransactionSpec, EditorState, Transaction, EditorSelection, ChangeSet, type ChangeSpec } from "@codemirror/state";
+
+import { terms } from '../language';
 
 
 
@@ -119,4 +121,90 @@ export function skipWhiteSpaceBackward(state: EditorState, from: number) {
         point--;
     }
     return point;
+}
+
+export function formatCurrentLine(state: EditorState): void {
+	const selection = state.selection.main;
+	if (!selection) return;
+	const line = state.doc.lineAt(selection.anchor);
+	if (!line) return;
+	line.text
+}
+
+export function formatTextLine(
+	tree: Tree,
+	from: number,
+	to: number,
+	docLength: number = to,
+): TransactionSpec[] {
+	const gaps: number[] = [];
+	let prevEnd = -1;
+	let prevId = -1;
+
+	tree.iterate({
+		from,
+		to,
+		enter: (nodeRef) => {
+			const id = nodeRef.type.id;
+			if (!participatesInSpacing(id)) return;
+
+			if (prevEnd === nodeRef.from && shouldInsertSpace(prevId, id)) {
+				gaps.push(prevEnd);
+			}
+			prevEnd = nodeRef.to;
+			prevId = id;
+		},
+	});
+
+	if (!gaps.length) return [];
+
+	gaps.sort((a, b) => a - b);
+	const transactionSpecs: TransactionSpec[] = [];
+	const pending: ChangeSpec[] = [];
+
+	for (const pos of gaps) {
+		const insertAt = pending.length
+			? ChangeSet.of(pending, docLength).mapPos(pos)
+			: pos;
+		transactionSpecs.push({ changes: [{ from: insertAt, insert: ' ' }] });
+		pending.push({ from: pos, insert: ' ' });
+	}
+
+	return transactionSpecs;
+}
+
+/** Apply format specs one at a time (positions in each spec are mapped for the current doc). */
+export function applyFormatSpecs(state: EditorState, specs: TransactionSpec[]): EditorState {
+	let current = state;
+	for (const spec of specs) {
+		current = current.update(spec).state;
+	}
+	return current;
+}
+
+function isAtomicNode(id: number): boolean {
+	switch (id) {
+		case terms.Identifier:
+		case terms.Number:
+		case terms.Unit:
+		case terms.EqualSign:
+		case terms.PlusBinaryOp:
+		case terms.TimesBinaryOp:
+		case terms.ConvertOp:
+			return true
+		default:
+			return false
+	}
+}
+
+function participatesInSpacing(id: number): boolean {
+	return isAtomicNode(id) || id === terms.Opr || id === terms.Cpr;
+}
+
+/** Parentheses are not spaced; atoms still space after `)` before operators. */
+function shouldInsertSpace(prevId: number, currentId: number): boolean {
+	if (currentId === terms.Opr || currentId === terms.Cpr) return false;
+	if (prevId === terms.Opr) return false;
+	if (currentId === terms.Cpr) return false;
+	return true;
 }
