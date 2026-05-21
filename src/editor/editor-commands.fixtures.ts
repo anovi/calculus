@@ -8,7 +8,7 @@ export type FormatLineFixture = {
 
 /**
  * Single-line inputs with tight spacing.
- * `expected` is the line after applying `formatTextLine` transaction specs.
+ * `expected` is the line after applying `formatTextLine` changes.
  */
 export const formatLineFixtures: readonly FormatLineFixture[] = [
 	{

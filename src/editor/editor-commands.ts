@@ -135,8 +135,7 @@ export function formatTextLine(
 	tree: Tree,
 	from: number,
 	to: number,
-	docLength: number = to,
-): TransactionSpec[] {
+): ChangeSpec[] {
 	const gaps: number[] = [];
 	let prevEnd = -1;
 	let prevId = -1;
@@ -159,27 +158,13 @@ export function formatTextLine(
 	if (!gaps.length) return [];
 
 	gaps.sort((a, b) => a - b);
-	const transactionSpecs: TransactionSpec[] = [];
-	const pending: ChangeSpec[] = [];
-
-	for (const pos of gaps) {
-		const insertAt = pending.length
-			? ChangeSet.of(pending, docLength).mapPos(pos)
-			: pos;
-		transactionSpecs.push({ changes: [{ from: insertAt, insert: ' ' }] });
-		pending.push({ from: pos, insert: ' ' });
-	}
-
-	return transactionSpecs;
+	return gaps.map((pos) => ({ from: pos, insert: ' ' }));
 }
 
-/** Apply format specs one at a time (positions in each spec are mapped for the current doc). */
-export function applyFormatSpecs(state: EditorState, specs: TransactionSpec[]): EditorState {
-	let current = state;
-	for (const spec of specs) {
-		current = current.update(spec).state;
-	}
-	return current;
+/** Apply format changes to a document. */
+export function applyFormatSpecs(state: EditorState, changes: ChangeSpec[]): EditorState {
+	if (!changes.length) return state;
+	return state.update({ changes }).state;
 }
 
 function isAtomicNode(id: number): boolean {

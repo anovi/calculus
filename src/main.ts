@@ -5,7 +5,7 @@ import { EditorState } from '@codemirror/state'
 import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
 
 import { parser } from './language'
-import { calcRanges, calcResultsPlugin, unitAutocompletion } from './editor'
+import { calcRanges, calcResultsPlugin, formatOnType, unitAutocompletion } from './editor'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { basicSetup } from './editor/basic-setup'
@@ -67,6 +67,7 @@ new EditorView({
       basicSetup(),
       calculus(),
       unitAutocompletion(),
+      formatOnType(),
       calcRanges(),
       calcResultsPlugin,
       persist,

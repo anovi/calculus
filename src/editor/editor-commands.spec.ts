@@ -9,9 +9,9 @@ import { formatLineFixtures } from './editor-commands.fixtures';
 function applyFormatLine(doc: string): string {
 	const tree = calculusParser.configure({}).parse(doc);
 	assert.ok(tree instanceof Tree);
-	const specs = formatTextLine(tree, 0, doc.length);
+	const changes = formatTextLine(tree, 0, doc.length);
 	const state = EditorState.create({ doc });
-	return applyFormatSpecs(state, specs).doc.toString();
+	return applyFormatSpecs(state, changes).doc.toString();
 }
 
 function assertFormattedLine(doc: string, expected: string) {
