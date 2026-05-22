@@ -1,7 +1,7 @@
 import { type Format } from "./editor-commands";
 
 
-export type Operation = 'plus'|'multiplication'|'division'|'euqal'|'minus'|'parentheses'
+export type Operation = 'plus'|'multiplication'|'division'|'exponent'|'euqal'|'minus'|'parentheses';
 
 export type OperationDef = {
     sign: string,
@@ -34,6 +34,19 @@ export const OperationsDictionary: Record<Operation, OperationDef> = {
         sign: '\u00F7',
         insert:  { open: '/', block: false, selection: singleOperatorSelection },
         operation: 'division',
+    },
+    exponent: {
+        sign: 'x\u207F',
+        insert: {
+            open: '^2',
+            block: false,
+            selection(_text, from, to) {
+                const caret = from + 2;
+                if (from === to) return { from: caret, to: caret };
+                return { from: caret, to: to + 2 };
+            },
+        },
+        operation: 'exponent',
     },
     euqal: {
         sign: '=',

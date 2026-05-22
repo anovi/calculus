@@ -65,6 +65,7 @@ export class MathCalculator {
         [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
         [terms.AddExpression, (cursor) => this.processAddExpression(cursor)],
         [terms.MulExpression, (cursor) => this.processMulExpression(cursor)],
+        [terms.ExpExpression, (cursor) => this.processExpExpression(cursor)],
         [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
         [terms.String, (cursor) => this.processString(cursor)],
         [terms.Number, (cursor) => this.processNumber(cursor)],
@@ -115,6 +116,9 @@ export class MathCalculator {
             [terms.MulExpression, (childCursor) => {
                 result = this.callHandler<ExpressionResult>(terms.MulExpression, childCursor);
             }],
+            [terms.ExpExpression, (childCursor) => {
+                result = this.callHandler<ExpressionResult>(terms.ExpExpression, childCursor);
+            }],
             [terms.AddExpression, (childCursor) => {
                 result = this.callHandler<ExpressionResult>(terms.AddExpression, childCursor);
             }],
@@ -133,7 +137,7 @@ export class MathCalculator {
         return value;
     }
     // reducer: (...values: number[]) => number
-    private processExpression(cursor: TreeCursor, type: 'plus'|'times'|'convert'): ExpressionResult | null {
+    private processExpression(cursor: TreeCursor, type: 'plus'|'times'|'pow'|'convert'): ExpressionResult | null {
         const pipeline: ExpressionResult[] = [];
         let operator: Operator = '+';
         let convertToUnit: string|undefined = undefined;
@@ -145,6 +149,10 @@ export class MathCalculator {
             }],
             [terms.MulExpression, (nestedCursor) => {
                 const value = this.callHandler<ExpressionResult>(terms.MulExpression, nestedCursor);
+                if (value !== null) pipeline.push(value);
+            }],
+            [terms.ExpExpression, (nestedCursor) => {
+                const value = this.callHandler<ExpressionResult>(terms.ExpExpression, nestedCursor);
                 if (value !== null) pipeline.push(value);
             }],
             [terms.ConvertExpression, (nestedCursor) => {
@@ -174,7 +182,10 @@ export class MathCalculator {
                 operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
             }],
             [terms.TimesBinaryOp, () => {
-                operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
+                if (type === 'times') operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
+            }],
+            [terms.PowBinaryOp, () => {
+                if (type === 'pow') operator = '^';
             }],
         ]));
 
@@ -225,6 +236,10 @@ export class MathCalculator {
 
     private processMulExpression(cursor: TreeCursor): ExpressionResult|null {
         return this.processExpression(cursor, 'times');
+    }
+
+    private processExpExpression(cursor: TreeCursor): ExpressionResult|null {
+        return this.processExpression(cursor, 'pow');
     }
 
     private processConvertExpression(cursor: TreeCursor): ExpressionResult | null {
@@ -283,6 +298,8 @@ export class MathCalculator {
                 return this.processAddExpression(cursor);
             case terms.MulExpression:
                 return this.processMulExpression(cursor);
+            case terms.ExpExpression:
+                return this.processExpExpression(cursor);
             case terms.Identifier: {
                 const id = this.sliceDoc(cursor.from, cursor.to);
                 const value = this.bindings.get(id);

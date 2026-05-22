@@ -133,6 +133,34 @@ expectedTree: `CalcDoc
         Number`,
 },
 {
+name: 'exponent',
+doc: '2^4',
+expectedTree: `CalcDoc
+  NoBinding
+    ExpExpression
+      Literal
+        Number
+      PowBinaryOp
+      Literal
+        Number`,
+},
+{
+name: 'precedence exponent over multiply',
+doc: '2 * 2 ^ 3',
+expectedTree: `CalcDoc
+  NoBinding
+    MulExpression
+      Literal
+        Number
+      TimesBinaryOp
+      ExpExpression
+        Literal
+          Number
+        PowBinaryOp
+        Literal
+          Number`,
+},
+{
 name: 'precedence with times',
 doc: '- 3 + 2 * 10',
 expectedTree: `CalcDoc

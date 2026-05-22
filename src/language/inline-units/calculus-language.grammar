@@ -19,6 +19,7 @@ NoBinding { expression lineEnd}
 expression {
   AddExpression
   | MulExpression
+  | ExpExpression
   | ConvertExpression
   | FunctionCall
   | Literal
@@ -28,6 +29,7 @@ expression {
 
 AddExpression { expression? !_add PlusBinaryOp expression }
 MulExpression{ expression !_mul TimesBinaryOp expression }
+ExpExpression { expression !_pow PowBinaryOp expression }
 ConvertExpression { expression !_convert convertOp Unit }
 
 FunctionCall { Identifier opr ArgList? cpr }
@@ -42,6 +44,7 @@ convertOp { in }
 	Identifier,
 	FunctionCall,
 	_parenthesized @left,
+	_pow @right,
 	_mul @left,
 	_add @left,
 	_convert @left,
@@ -56,7 +59,8 @@ convertOp { in }
 
 	// Arithmetic
 
-	TimesBinaryOp { "/" | "*" | "%" | "^" }
+	TimesBinaryOp { "/" | "*" | "%" }
+	PowBinaryOp { "^" }
 	PlusBinaryOp { "+" | "-" }
 
 	// Identifier. Need to have more symbols, like cyrrilic, and allowed YAML symbols
@@ -87,7 +91,7 @@ convertOp { in }
 
 	@precedence { lineEnd, space }
 
-	@precedence { Comment, TimesBinaryOp }
+	@precedence { Comment, TimesBinaryOp, PowBinaryOp }
 
 	// Whitespace
 	space { @whitespace+ }

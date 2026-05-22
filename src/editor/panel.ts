@@ -305,14 +305,20 @@ function createHelpPanel(view: EditorView): Panel {
 
 
 
-const binaryOps: OperationDef[] = [OperationsDictionary.division, OperationsDictionary.minus, OperationsDictionary.plus, OperationsDictionary.multiplication];
+const binaryOps: OperationDef[] = [
+    OperationsDictionary.division,
+    OperationsDictionary.minus,
+    OperationsDictionary.plus,
+    OperationsDictionary.multiplication,
+    OperationsDictionary.exponent,
+];
 
 const equal = OperationsDictionary.euqal;
 
 const NodeTypes = {
-    containers: [terms.AddExpression, terms.MulExpression, terms.ConvertExpression],
-    atomics: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.ConvertOp, terms.Unit, terms.Number],
-    binaryOperations: [terms.AddExpression, terms.MulExpression, terms.ConvertExpression],
+    containers: [terms.AddExpression, terms.MulExpression, terms.ExpExpression, terms.ConvertExpression],
+    atomics: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.PowBinaryOp, terms.ConvertOp, terms.Unit, terms.Number],
+    binaryOperations: [terms.AddExpression, terms.MulExpression, terms.ExpExpression, terms.ConvertExpression],
 }
 
 type SuggestionRule = {

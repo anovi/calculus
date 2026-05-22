@@ -47,6 +47,21 @@ export const formatLineFixtures: readonly FormatLineFixture[] = [
 		expected: '2 + 2 * 3',
 	},
 	{
+		name: 'exponent without spaces',
+		doc: '2^2',
+		expected: '2^2',
+	},
+	{
+		name: 'exponent with other operators',
+		doc: '2+2^3',
+		expected: '2 + 2^3',
+	},
+	{
+		name: 'exponent over multiply',
+		doc: '2*2^3',
+		expected: '2 * 2^3',
+	},
+	{
 		name: 'multi line doc',
 		doc: 'some=1+1\n232EUR/2 in USD',
 		expected: 'some = 1 + 1\n232 EUR / 2 in USD',

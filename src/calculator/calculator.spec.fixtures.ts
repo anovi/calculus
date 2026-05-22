@@ -59,6 +59,8 @@ export const calculatorFixtures: CalculatorFixture[] = [
   { name: 'Grouping', doc: '(2 + 2) * 3', expected: [12] },
   { name: 'Division', doc: '12 / 3', expected: [4] },
   { name: 'Exponent', doc: '2^4', expected: [16] },
+  { name: 'Exponent over multiply', doc: '2*2^3', expected: [16] },
+  { name: 'Right-associative exponent', doc: '2^3^2', expected: [512] },
   // Functions
   { name: 'sqrt', doc: 'sqrt(16)', expected: [4] },
   { name: 'sqrt in expression', doc: '2 + sqrt(16)', expected: [6] },

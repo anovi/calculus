@@ -7,6 +7,7 @@ type TermKey = keyof typeof terms;
 export const calculusLangHighlight = styleTags({
 	'Identifier': tags.variableName,
 	'TimesBinaryOp': tags.operator,
+	'PowBinaryOp': tags.operator,
 	'PlusBinaryOp': tags.operator,
 	'Number': tags.number,
 	'String': tags.string,

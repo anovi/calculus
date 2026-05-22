@@ -175,6 +175,7 @@ function isAtomicNode(id: number): boolean {
 		case terms.EqualSign:
 		case terms.PlusBinaryOp:
 		case terms.TimesBinaryOp:
+		case terms.PowBinaryOp:
 		case terms.ConvertOp:
 			return true
 		default:
@@ -186,10 +187,11 @@ function participatesInSpacing(id: number): boolean {
 	return isAtomicNode(id) || id === terms.Opr || id === terms.Cpr;
 }
 
-/** Parentheses are not spaced; atoms still space after `)` before operators. */
+/** Parentheses are not spaced; exponent operands stay tight (`2^2`). */
 function shouldInsertSpace(prevId: number, currentId: number): boolean {
 	if (currentId === terms.Opr || currentId === terms.Cpr) return false;
 	if (prevId === terms.Opr) return false;
 	if (currentId === terms.Cpr) return false;
+	if (prevId === terms.PowBinaryOp || currentId === terms.PowBinaryOp) return false;
 	return true;
 }

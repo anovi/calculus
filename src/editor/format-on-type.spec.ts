@@ -51,6 +51,26 @@ describe('formatOnType', () => {
 		assert.strictEqual(next.doc.toString(), '1+ 1');
 	});
 
+	it('does not add spaces around exponent', () => {
+		const state = EditorState.create({
+			doc: '2^',
+			selection: EditorSelection.cursor(2),
+			extensions: [calcLanguage, formatOnType()],
+		});
+		const next = typeAt(state, 2, '2');
+		assert.strictEqual(next.doc.toString(), '2^2');
+	});
+
+	it('spaces multiply but not exponent in mixed expression', () => {
+		const state = EditorState.create({
+			doc: '2*2^',
+			selection: EditorSelection.cursor(4),
+			extensions: [calcLanguage, formatOnType()],
+		});
+		const next = typeAt(state, 4, '3');
+		assert.strictEqual(next.doc.toString(), '2 * 2^3');
+	});
+
 	it('does not format on undo', () => {
 		const state = EditorState.create({
 			doc: '1 + 1',
