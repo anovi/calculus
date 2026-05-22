@@ -26,8 +26,9 @@ function assertValues(values: Range<CalcValue>[], assertions: (number | string)[
     for (let index = 0; index < values.length; index++) {
         const actual = values[index].value.result;
         const expected = new Decimal(assertions[index]);
+        const match = (actual.isNaN() && expected.isNaN()) || actual.eq(expected);
         assert.ok(
-            actual.eq(expected),
+            match,
             `Row ${index}: expected ${expected.toString()}, got ${actual.toString()}`
         );
     }

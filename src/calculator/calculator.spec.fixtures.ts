@@ -61,6 +61,109 @@ export const calculatorFixtures: CalculatorFixture[] = [
   { name: 'Exponent', doc: '2^4', expected: [16] },
   { name: 'Exponent over multiply', doc: '2*2^3', expected: [16] },
   { name: 'Right-associative exponent', doc: '2^3^2', expected: [512] },
+  // Float exponents (real powers)
+  {
+    name: 'float exponent: square root via power',
+    doc: '2^0.5',
+    expected: ['1.4142135623730950488'],
+  },
+  {
+    name: 'float exponent: half power of 16',
+    doc: '16^0.5',
+    expected: [4],
+  },
+  {
+    name: 'float exponent: half power via division',
+    doc: '16^(1/2)',
+    expected: [4],
+  },
+  {
+    name: 'float exponent with binding',
+    doc: 'tax_rate = 0.21\n100^tax_rate',
+    expected: [0.21, '2.6302679918953819173'],
+  },
+  // Negative base & non-integer exponent (undefined in reals → NaN)
+  {
+    name: 'negative base: half power of -4',
+    doc: '(-4)^0.5',
+    expected: ['NaN'],
+  },
+  {
+    name: 'negative base: half power via division',
+    doc: '(-4)^(1/2)',
+    expected: ['NaN'],
+  },
+  {
+    name: 'negative base: sqrt of -4',
+    doc: 'sqrt(-4)',
+    expected: ['NaN'],
+  },
+  // Parentheses vs unary minus on exponentiation
+  {
+    name: 'negative base: square of -4',
+    doc: '(-4)^2',
+    expected: [16],
+  },
+  {
+    name: 'unary minus binds after power: -4^2',
+    doc: '-4^2',
+    expected: [-16],
+  },
+  // Rational exponent on negative base (odd root is real; float 1/3 is approximate)
+  {
+    name: 'negative base: cube root via (1/3) expressin',
+    doc: '(-8)^(1/3)',
+    expected: [NaN],
+  },
+  // root(x, n) as x^(1/n) — not implemented yet; documents intended behavior
+  {
+    name: 'root: square root of 16',
+    doc: 'root(16, 2)',
+    expected: [4],
+    skip: true,
+  },
+  {
+    name: 'root: cube root of 27',
+    doc: 'root(27, 3)',
+    expected: [3],
+    skip: true,
+  },
+  {
+    name: 'root: in expression',
+    doc: '2 + root(81, 4)',
+    expected: [5],
+    skip: true,
+  },
+  {
+    name: 'root: with binding',
+    doc: 'x = 8\nroot(x, 3)',
+    expected: [8, 2],
+    skip: true,
+  },
+  {
+    name: 'root: odd degree of negative base',
+    doc: 'root(-8, 3)',
+    expected: [-2],
+    skip: true,
+  },
+  {
+    name: 'root: even degree of negative base (not real)',
+    doc: 'root(-4, 2)',
+    expected: ['NaN'],
+    skip: true,
+  },
+  {
+    name: 'root: second arg 1/2 means 1/n = 2, not half-degree',
+    doc: 'root(-4, 1/2)',
+    expected: [16],
+    skip: true,
+  },
+  {
+    name: 'root: degree zero',
+    doc: 'root(8, 0)',
+    expected: ['NaN'],
+    skip: true,
+  },
   // Functions
   { name: 'sqrt', doc: 'sqrt(16)', expected: [4] },
   { name: 'sqrt in expression', doc: '2 + sqrt(16)', expected: [6] },
