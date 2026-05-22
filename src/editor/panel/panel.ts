@@ -5,10 +5,10 @@ import { syntaxTree } from '@codemirror/language';
 import { EditorView } from "@codemirror/view";
 import { StateField, StateEffect } from "@codemirror/state";
 
-import { isAtomicSelection } from "../lib/codemirror";
-import { terms } from "../language";
-import { skipWhiteSpaceBackward, toggleInlineFormat } from "./editor-commands";
-import { OperationsDictionary, type Operation, type OperationDef } from "./operations-dictionary";
+import { isAtomicSelection } from '../../lib/codemirror';
+import { terms } from '../../language';
+import { skipWhiteSpaceBackward, toggleInlineFormat } from '../commands';
+import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
 // import styles from '../editor.module.css'
 
 const toggleHelp = StateEffect.define<boolean>();

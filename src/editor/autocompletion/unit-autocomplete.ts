@@ -9,10 +9,8 @@ import { syntaxTree } from '@codemirror/language';
 import type { Extension } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
-import { CURRENCIES } from '../units/currencies-list';
-import { units } from '../units/internals/convert-package';
-import type { MeasureEntry } from '../units/types';
-import { terms } from '../language';
+import { CURRENCIES, units, type MeasureEntry } from '../../units';
+import { terms } from '../../language';
 
 function canonicalApplyText(entry: MeasureEntry): string {
   return entry.symbols?.[0] ?? entry.names[0];

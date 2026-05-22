@@ -8,7 +8,7 @@ import {
 } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 
-import { formatTextLine } from './editor-commands';
+import { formatTextLine } from '../commands';
 
 /** Marks transactions produced by format-on-type so filters do not recurse. */
 const formatOnTypeAnnotation = Annotation.define<boolean>();

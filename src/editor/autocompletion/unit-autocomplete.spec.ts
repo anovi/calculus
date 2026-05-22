@@ -3,8 +3,8 @@ import { EditorState } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
 
-import { parser } from '../language';
-import { unitCompletionSite } from './unit-autocomplete';
+import { parser } from '../../language';
+import { unitCompletionSite } from '../autocompletion';
 
 const calcLanguage = LRLanguage.define({
   name: 'calculus',

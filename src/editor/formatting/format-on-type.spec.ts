@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { EditorSelection, EditorState, Transaction } from '@codemirror/state';
 import { LRLanguage } from '@codemirror/language';
 
-import { parser } from '../language';
-import { formatOnType } from './format-on-type';
+import { parser } from '../../language';
+import { formatOnType } from '../formatting';
 
 const calcLanguage = LRLanguage.define({
 	name: 'calculus',

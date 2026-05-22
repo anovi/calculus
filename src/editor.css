@@ -120,6 +120,9 @@ body {
   --button-hover-bg: oklch(from var(--button-bg) calc(l - 0.05) c h);
   --main-button-bg: rgb(178, 108, 28);
   --main-button-hover-bg: oklch(from var(--main-button-bg) calc(l - 0.05) c h);
+
+  visibility: visible;
+  pointer-events: auto;
 }
 
 #cm-suggestions-panel.cm-suggestions-panel--visible {

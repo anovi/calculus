@@ -1,4 +1,4 @@
-import { type Format } from "./editor-commands";
+import { type Format } from '../commands';
 
 
 export type Operation = 'plus'|'multiplication'|'division'|'exponent'|'euqal'|'minus'|'parentheses';

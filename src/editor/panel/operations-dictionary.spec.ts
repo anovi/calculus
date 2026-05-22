@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { EditorState } from '@codemirror/state';
 
 import { OperationsDictionary } from './operations-dictionary';
-import { toggleInlineFormat } from './editor-commands';
+import { toggleInlineFormat } from '../commands';
 
 describe('OperationsDictionary exponent', () => {
 	it('inserts ^2 with caret before exponent', () => {

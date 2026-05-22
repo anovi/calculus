@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { Tree } from '@lezer/common';
 import { EditorState } from '@codemirror/state';
 
-import { calculusParser } from '../language/baseline/parser';
-import { applyFormatSpecs, formatTextLine } from './editor-commands';
+import { calculusParser } from '../../language/baseline/parser';
+import { applyFormatSpecs, formatTextLine } from '../commands';
 import { formatLineFixtures } from './editor-commands.fixtures';
 
 function applyFormatLine(doc: string): string {

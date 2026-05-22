@@ -1,7 +1,7 @@
 import { EditorState, RangeSet, StateField, type Extension } from '@codemirror/state'
 import { syntaxTree } from '@codemirror/language'
 
-import { CalcValue, MathCalculator } from '../calculator/calculator'
+import { CalcValue, MathCalculator } from '../calculator'
 import { ratesStore } from '../rates-store'
 import { CurrencyRateUpdated } from './effects'
 
