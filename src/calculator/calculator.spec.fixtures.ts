@@ -91,12 +91,34 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [12],
     expectedUnits: ['EUR'],
   },
+  // Numbers
   {
     name: 'plain number has no unit',
     doc: '42',
     expected: [42],
     expectedUnits: [undefined],
   },
+  {
+    name: 'float',
+    doc: '0.123',
+    expected: [0.123],
+  },
+  {
+    name: 'negative',
+    doc: '-2',
+    expected: [-2],
+  },
+  {
+    name: 'negative in division',
+    doc: '-40 / 2',
+    expected: [-20],
+  },
+  {
+    name: 'negative in addition',
+    doc: '2 + -3',
+    expected: [-1],
+  },
+  // Units
   {
     name: 'float with unit',
     doc: '3.5JPY',
@@ -118,6 +140,7 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: '10 km in mi',
     expected: [6.2137119223733395],
   },
+  // Formatting
   {
     name: 'formatting',
     doc: '1 999 232',

@@ -342,6 +342,9 @@ export class MathCalculator {
     }
 
     private performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
+        if (operator === '-' && args.length === 1) {
+            return { n: args[0].n.negated(), unit: args[0].unit };
+        }
         let result = args[0].n;
         const baseUnit: string|undefined = args[0].unit;
         for (let index = 1; index < args.length; index++) {
