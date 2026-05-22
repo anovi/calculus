@@ -115,30 +115,26 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: '(-8)^(1/3)',
     expected: [NaN],
   },
-  // root(x, n) as x^(1/n) — not implemented yet; documents intended behavior
+  // root(x, n) — n-th root; degree n is the second argument
   {
     name: 'root: square root of 16',
     doc: 'root(16, 2)',
     expected: [4],
-    skip: true,
   },
   {
     name: 'root: cube root of 27',
     doc: 'root(27, 3)',
     expected: [3],
-    skip: true,
   },
   {
     name: 'root: in expression',
     doc: '2 + root(81, 4)',
     expected: [5],
-    skip: true,
   },
   {
     name: 'root: with binding',
     doc: 'x = 8\nroot(x, 3)',
     expected: [8, 2],
-    skip: true,
   },
   {
     name: 'root: odd degree of negative base',
@@ -150,19 +146,16 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'root: even degree of negative base (not real)',
     doc: 'root(-4, 2)',
     expected: ['NaN'],
-    skip: true,
   },
   {
     name: 'root: second arg 1/2 means 1/n = 2, not half-degree',
     doc: 'root(-4, 1/2)',
     expected: [16],
-    skip: true,
   },
   {
     name: 'root: degree zero',
     doc: 'root(8, 0)',
     expected: ['NaN'],
-    skip: true,
   },
   // Functions
   { name: 'sqrt', doc: 'sqrt(16)', expected: [4] },
