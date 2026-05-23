@@ -10,6 +10,7 @@ import {
   calcRanges,
   calcResultsPlugin,
   editorTheme,
+  safariFocusScrollFix,
   formatOnType,
   unitAutocompletion,
 } from './editor'
@@ -79,6 +80,7 @@ new EditorView({
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
       editorTheme,
+      safariFocusScrollFix(),
       // emptyLineGutter,
     ],
   }),
