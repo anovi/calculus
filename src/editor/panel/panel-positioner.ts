@@ -28,11 +28,11 @@ function keyboardInsetFromVisualViewport(): number {
     return Math.max(0, vv.height + vv.offsetTop);
 }
 
-function keyboardInsetFromVirtualKeyboard(): number {
-    const vk = getVirtualKeyboard();
-    if (!vk) return 0;
-    return Math.max(0, vk.boundingRect.height);
-}
+// function keyboardInsetFromVirtualKeyboard(): number {
+//     const vk = getVirtualKeyboard();
+//     if (!vk) return 0;
+//     return Math.max(0, vk.boundingRect.height);
+// }
 
 function panelBottomInset(): number {
     return Math.max(

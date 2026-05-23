@@ -10,7 +10,7 @@ import {
   calcRanges,
   calcResultsPlugin,
   editorTheme,
-  safariFocusScrollFix,
+  // safariFocusScrollFix,
   formatOnType,
   unitAutocompletion,
 } from './editor'

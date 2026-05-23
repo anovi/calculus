@@ -44,18 +44,19 @@ function formatOnTypeFilter(tr: Transaction): TransactionSpec | readonly Transac
 		if (!specs.length) continue;
 		changes.push(...specs);
 	}
-	
-	if (!changes) return tr;
+
+	if (changes.length === 0) return tr;
 
 	const changeSet = ChangeSet.of(changes, docLength);
 	const combinedChangeSet = tr.changes.compose(changeSet);
 
+	const annotations = (tr as Transaction & { annotations: Annotation<any>[] }).annotations;
 	return {
 		changes: combinedChangeSet,
 		selection: tr.selection!.map(changeSet),
 		scrollIntoView: tr.scrollIntoView,
 		effects: tr.effects,
-		annotations: formatOnTypeAnnotation.of(true),
+		annotations: [...annotations, formatOnTypeAnnotation.of(true)],
 	};
 }
 

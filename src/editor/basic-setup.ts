@@ -17,7 +17,6 @@ import {
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { searchKeymap } from "@codemirror/search"
 import {
-	autocompletion,
 	completionKeymap,
 	closeBrackets,
 	closeBracketsKeymap,
@@ -63,10 +62,11 @@ export const basicSetup: () => Extension = () => [
 	// https://codemirror.net/docs/ref/#autocomplete.closeBrackets
 	closeBrackets(),
 
+	// Autocompletion is provided by unitAutocompletion() (single autocompletion() instance).
 	// https://codemirror.net/docs/ref/#autocomplete.autocompletion
-	autocompletion({
-		maxRenderedOptions: 20,
-	}),
+	// autocompletion({
+	// 	maxRenderedOptions: 20,
+	// }),
 
 	// https://codemirror.net/docs/ref/#view.rectangularSelection
 	// rectangularSelection(),

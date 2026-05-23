@@ -215,5 +215,8 @@ export const unitCompletionSource: CompletionSource = (context): CompletionResul
 
 /** CodeMirror extension: unit/currency completions after number suffixes and convert targets. */
 export function unitAutocompletion(): Extension {
-  return autocompletion({ override: [unitCompletionSource] });
+  return autocompletion({
+    maxRenderedOptions: 20,
+    override: [unitCompletionSource],
+  });
 }

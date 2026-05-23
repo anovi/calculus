@@ -2,9 +2,10 @@ import assert from 'node:assert';
 import { EditorState } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 import { LRLanguage } from '@codemirror/language';
+import { CompletionContext } from '@codemirror/autocomplete';
 
 import { parser } from '../../language';
-import { unitCompletionSite } from '../autocompletion';
+import { unitCompletionSite, unitCompletionSource } from '../autocompletion';
 
 const calcLanguage = LRLanguage.define({
   name: 'calculus',
@@ -44,5 +45,22 @@ describe('unitCompletionSite', () => {
   it('returns null outside unit contexts', () => {
     assert.strictEqual(siteAt('tax_rate = 0.21'), null);
     assert.strictEqual(siteAt('sqrt(2)'), null);
+  });
+});
+
+describe('unitCompletionSource', () => {
+  it('returns options for a suffix unit prefix', async () => {
+    const doc = '100 us';
+    const state = EditorState.create({
+      doc,
+      extensions: [calcLanguage],
+    });
+    syntaxTree(state);
+    const result = await Promise.resolve(
+      unitCompletionSource(new CompletionContext(state, doc.length, true)),
+    );
+    assert.ok(result);
+    assert.ok(result.options.length > 0);
+    assert.strictEqual(result.from, 4);
   });
 });
