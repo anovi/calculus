@@ -45,6 +45,7 @@ export type PanelPositionerOptions = {
     dock: HTMLElement;
     getVisible: () => boolean;
     visibleClass?: string;
+    onAfterSync?: () => void;
 };
 
 export type PanelPositioner = {
@@ -57,6 +58,7 @@ export function createPanelPositioner(options: PanelPositionerOptions): PanelPos
         dock,
         getVisible,
         visibleClass = 'cm-suggestions-panel--visible',
+        onAfterSync,
     } = options;
 
     const virtualKeyboard = getVirtualKeyboard();
@@ -84,7 +86,10 @@ export function createPanelPositioner(options: PanelPositionerOptions): PanelPos
         rafId = requestAnimationFrame(() => {
             rafId = null;
             applySync();
-            requestAnimationFrame(() => applySync());
+            requestAnimationFrame(() => {
+                applySync();
+                onAfterSync?.();
+            });
         });
     }
 

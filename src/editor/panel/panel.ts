@@ -255,21 +255,54 @@ const helpPanelFocusSync = EditorView.updateListener.of((update) => {
     update.view.dispatch({ effects: toggleHelp.of(show) });
 });
 
+/** Extra space kept between the selection and the fixed suggestions panel. */
+const PANEL_SCROLL_PADDING_PX = 8;
+
+function ensureSelectionAbovePanel(view: EditorView) {
+    if (!view.hasFocus || !view.state.field(helpPanelState)) return;
+
+    const panel = document.getElementById('cm-suggestions-panel');
+    if (!panel?.classList.contains('cm-suggestions-panel--visible')) return;
+
+    const head = view.state.selection.main.head;
+    const coords = view.coordsAtPos(head);
+    if (!coords) return;
+
+    const panelTop = panel.getBoundingClientRect().top;
+    if (coords.bottom <= panelTop - PANEL_SCROLL_PADDING_PX) return;
+
+    view.scrollDOM.scrollTop += coords.bottom - panelTop + PANEL_SCROLL_PADDING_PX;
+}
+
+function scheduleEnsureSelectionAbovePanel(view: EditorView) {
+    requestAnimationFrame(() => {
+        ensureSelectionAbovePanel(view);
+        requestAnimationFrame(() => ensureSelectionAbovePanel(view));
+    });
+}
+
 /**
  * The plugin creates positioner for a panel while panel is active.
  * And destroys positioner when panel hides. It only does syncing.
  */
 const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
     #positioner: PanelPositioner | null = null;
+    #view: EditorView;
 
-    constructor() {
+    constructor(view: EditorView) {
+        this.#view = view;
         this.#syncPositioner(false);
     }
 
     update(update: ViewUpdate) {
         const wasOpen = update.startState.field(helpPanelState);
         const isOpen = update.state.field(helpPanelState);
-        if (wasOpen !== isOpen) this.#syncPositioner(isOpen);
+        if (wasOpen !== isOpen) {
+            this.#syncPositioner(isOpen);
+            if (isOpen) scheduleEnsureSelectionAbovePanel(update.view);
+        } else if (isOpen && (update.selectionSet || update.focusChanged)) {
+            scheduleEnsureSelectionAbovePanel(update.view);
+        }
     }
 
     #syncPositioner(isOpen: boolean) {
@@ -283,6 +316,7 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
         this.#positioner = createPanelPositioner({
             dock: elem,
             getVisible: () => true,
+            onAfterSync: () => scheduleEnsureSelectionAbovePanel(this.#view),
         });
     }
 
