@@ -1,17 +1,24 @@
-import { ViewPlugin, type Panel } from "@codemirror/view";
+import { ViewPlugin, type Panel, type ViewUpdate } from "@codemirror/view";
 import { undo, redo } from "@codemirror/commands";
 import { EditorView } from "@codemirror/view";
 
 import { toggleInlineFormat } from '../commands';
 import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
+import { toggleHelp } from './effects';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
+import { helpPanelState } from "./state";
 
 
 
-// const APPLE_DEVICE_REGEX = /iPhone|iPad|iPod|iOS/;
-// function isAppleDevice(): boolean {
-//     return APPLE_DEVICE_REGEX.test(window.navigator.userAgent)
-// }
+/** Finger movement above this is a scroll/swipe, not a panel button tap (iOS). */
+const TAP_MOVE_THRESHOLD_PX = 10;
+
+type TouchTapStart = { x: number; y: number; scrollLeft: number };
+
+
+/*===============================================================================
+=                                  Components                                   =
+===============================================================================*/
 
 
 // Create templates for buttons
@@ -24,21 +31,6 @@ for (const key in OperationsDictionary) {
     }
 }
 
-/** Finger movement above this is a scroll/swipe, not a panel button tap (iOS). */
-const TAP_MOVE_THRESHOLD_PX = 10;
-
-type TouchTapStart = { x: number; y: number; scrollLeft: number };
-
-function touchMovedBeyondTap(
-    x: number,
-    y: number,
-    start: TouchTapStart,
-): boolean {
-    const dx = x - start.x;
-    const dy = y - start.y;
-    return Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX;
-}
-
 function button(
     op: OperationDef,
     onclick: (op: OperationDef) => void,
@@ -49,6 +41,12 @@ function button(
     const dom = template.content.firstElementChild as HTMLButtonElement;
     createButtonHandler(dom, onclick.bind(null, op), scrollContainer);
     return dom;
+}
+
+function touchMovedBeyondTap(x: number, y: number, start: TouchTapStart): boolean {
+    const dx = x - start.x;
+    const dy = y - start.y;
+    return Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX;
 }
 
 function createButtonHandler<H extends (...bindings: any[]) => void>(
@@ -111,18 +109,6 @@ function createButtonHandler<H extends (...bindings: any[]) => void>(
     });
 }
 
-/* function mainButton(onclick?: (e: MouseEvent) => void) {
-    const dom = document.createElement('button');
-    dom.classList.add('cm-suggestions-main-button');
-    dom.innerHTML = '…';
-    dom.addEventListener('click', (e) => {
-        e.preventDefault();
-        onclick?.(e);
-        releasePanelButtonFocus(dom);
-    });
-    return dom;
-} */
-
 function dismissEditorFocus(view: EditorView) {
     view.contentDOM.blur();
     const active = document.activeElement;
@@ -167,9 +153,7 @@ function undoRedoButtons(
     return [undoButton, redoButton];
 }
 
-export function createHelpPanel(view: EditorView): Panel {
-    const fakeDom = document.createElement("div");
-
+function suggestionPanel(view: EditorView) {
     const dom = document.createElement("div");
     dom.className = "cm-help-panel";
     dom.id = "cm-suggestions-panel";
@@ -183,6 +167,27 @@ export function createHelpPanel(view: EditorView): Panel {
     
     dom.appendChild(buttonsEl);
     dom.appendChild(dismissBtn);
+
+    return {
+        panel: dom,
+        buttonsWrapper: buttonsEl,
+        remove: () => dom.remove()
+    };
+}
+
+
+/*===============================================================================
+=                             Codemirror Extensions                             =
+===============================================================================*/
+
+/**
+ * Creates Codemirror's panel.
+ */
+export function createHelpPanel(view: EditorView): Panel {
+    const fakePanel = document.createElement("div");
+    fakePanel.style.height = 48 + 'px';
+
+    const panel = suggestionPanel(view);    
 
     const buttons: HTMLButtonElement[] = [];
     const dispatch = (operation: OperationDef) => {
@@ -204,24 +209,24 @@ export function createHelpPanel(view: EditorView): Panel {
                 const operation = OperationsDictionary[key as Operation];
                 const btn = button(operation, (operation) => {
                     if (operation.insert) dispatch(operation);
-                }, buttonsEl);
+                }, panel.buttonsWrapper);
                 buttons.push(btn);
-                buttonsEl.appendChild(btn);    
+                panel.buttonsWrapper.appendChild(btn);    
             }
         }
-        fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
     }
 
     renderAllButtons();
 
     return {
         top: false,
-        dom: fakeDom,
+        dom: fakePanel,
         mount: () => {
-            document.body.appendChild(dom);
+            document.body.appendChild(panel.panel);
         },
         destroy: () => {
-            dom.remove();
+            console.log('DESTROY')
+            panel.remove();
         },
         // update: (update) => {
         //     buttons.forEach(btn => btn.remove());
@@ -235,35 +240,62 @@ export function createHelpPanel(view: EditorView): Panel {
         //         buttons.push(btn);
         //         dom.appendChild(btn);
         //     }
-        //     fakeDom.style.height = dom.getBoundingClientRect().height + 'px';
+        //     fakePanel.style.height = dom.getBoundingClientRect().height + 'px';
         // },
     };
 }
 
+/**
+ * Dispatches a toggleHelp effect when the editor's focus changes.
+ */
+const helpPanelFocusSync = EditorView.updateListener.of((update) => {
+    if (!update.focusChanged) return;
+    const show = update.view.hasFocus;
+    if (update.state.field(helpPanelState) === show) return;
+    update.view.dispatch({ effects: toggleHelp.of(show) });
+});
 
+/**
+ * The plugin creates positioner for a panel while panel is active.
+ * And destroys positioner when panel hides. It only does syncing.
+ */
 const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
-    #positioner: PanelPositioner;
+    #positioner: PanelPositioner | null = null;
 
-    constructor(view: EditorView) {
-        const panel = createHelpPanel(view);
-        if (panel.mount) panel.mount();
+    constructor() {
+        this.#syncPositioner(false);
+    }
+
+    update(update: ViewUpdate) {
+        const wasOpen = update.startState.field(helpPanelState);
+        const isOpen = update.state.field(helpPanelState);
+        if (wasOpen !== isOpen) this.#syncPositioner(isOpen);
+    }
+
+    #syncPositioner(isOpen: boolean) {
+        this.#positioner?.destroy();
+        this.#positioner = null;
+        if (!isOpen) return;
 
         const elem = document.getElementById('cm-suggestions-panel') as HTMLDivElement | null;
-        if (!elem) throw new Error('Suggestions panel element missing');
+        if (!elem) return;
 
         this.#positioner = createPanelPositioner({
             dock: elem,
-            getVisible: () => view.hasFocus,
+            getVisible: () => true,
         });
     }
 
     destroy() {
-        this.#positioner.destroy();
+        this.#positioner?.destroy();
     }
 });
 
-  
 export function helpPanel() {
-    return [/* helpPanelState,  SuggestionsStateField,*/ HelpPanelViewPlugin]
+    return [
+        helpPanelState,
+        helpPanelFocusSync,
+        HelpPanelViewPlugin,
+    ]
 }
 

@@ -10,6 +10,8 @@ function getVirtualKeyboard(): VirtualKeyboard | null {
     return (navigator as Navigator & { virtualKeyboard: VirtualKeyboard }).virtualKeyboard;
 }
 
+const TOOLBAR_HEIGHT = 48;
+
 /**
  * Distance from the layout viewport bottom to the visual viewport bottom.
  * On Chrome Android (default `interactive-widget=resizes-visual`) the layout
@@ -23,7 +25,7 @@ function getVirtualKeyboard(): VirtualKeyboard | null {
 function keyboardInsetFromVisualViewport(): number {
     const vv = window.visualViewport;
     if (!vv) return 0;
-    return Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    return Math.max(0, vv.height + vv.offsetTop);
 }
 
 function keyboardInsetFromVirtualKeyboard(): number {
@@ -35,8 +37,8 @@ function keyboardInsetFromVirtualKeyboard(): number {
 function panelBottomInset(): number {
     return Math.max(
         keyboardInsetFromVisualViewport(),
-        keyboardInsetFromVirtualKeyboard(),
-    );
+        // keyboardInsetFromVirtualKeyboard(),
+    ) - TOOLBAR_HEIGHT;
 }
 
 export type PanelPositionerOptions = {
@@ -64,7 +66,7 @@ export function createPanelPositioner(options: PanelPositionerOptions): PanelPos
     function applySync() {
         const visible = getVisible();
         const inset = panelBottomInset();
-        dock.style.bottom = `${inset}px`;
+        dock.style.top = `${inset}px`;
         dock.classList.toggle(visibleClass, visible);
         dock.setAttribute('aria-hidden', visible ? 'false' : 'true');
     }

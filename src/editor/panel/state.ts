@@ -7,9 +7,13 @@ import { isAtomicSelection } from '../../lib/codemirror';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../commands';
 import { OperationsDictionary, type OperationDef } from './operations-dictionary';
-import { toggleHelp } from './effects';
 import { createHelpPanel } from './panel';
+import { toggleHelp } from './effects';
 
+
+/*=======================================================
+=            Contextual Buttons Suggestions             =
+========================================================*/
 
 
 export type SuggestionRule = {
@@ -50,6 +54,10 @@ const superMap: Record<number, SuggestionRule[]> = {
     }]
 };
 
+/**
+ * Suggestions for buttons based on the context the editor selection currently in.
+ * Disabled: may use it in the future.
+*/
 export const SuggestionsStateField = StateField.define<OperationDef[]>({
     create: (_state) => NONE,
     update(_value, tr) {
@@ -89,11 +97,19 @@ export const SuggestionsStateField = StateField.define<OperationDef[]>({
 });
 
 
+/*=======================================================
+=                     Other fields                      =
+========================================================*/
+
+
+/**
+ * Keeps the state of the panel state: if the panel is open.
+ */
 export const helpPanelState = StateField.define<boolean>({
-    create: () => true,
+    create: () => false,
     update(value, tr) {
-        for (let e of tr.effects) if (e.is(toggleHelp)) value = e.value
+        for (let e of tr.effects) if (e.is(toggleHelp)) return e.value;
         return value
     },
-    provide: () => showPanel.of(createHelpPanel)
+    provide: f => showPanel.from(f, on => on ? createHelpPanel : null),
 });

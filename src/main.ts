@@ -80,7 +80,7 @@ new EditorView({
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
       editorTheme,
-      safariFocusScrollFix(),
+      // safariFocusScrollFix(),
       // emptyLineGutter,
     ],
   }),
