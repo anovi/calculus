@@ -11,6 +11,7 @@ import type { SyntaxNode } from '@lezer/common';
 
 import { CURRENCIES, units, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
+import { skipWhiteSpaceBackward } from '../commands';
 
 function canonicalApplyText(entry: MeasureEntry): string {
   return entry.symbols?.[0] ?? entry.names[0];
@@ -80,17 +81,8 @@ const unitCompletionOptionsForConvert: readonly Completion[] = unitCompletionOpt
   (c) => c.label.toLowerCase() !== 'in',
 );
 
-const UNIT_PREFIX = /[A-Za-z]*$/;
 /** Number + space + partial unit (e.g. `100 us`); suffix without space uses the Unit node. */
 const SUFFIX_UNIT_INPUT = /(\d+(?:\.\d+)?)\s+([A-Za-z]+)$/;
-
-function unitPrefixAt(state: CompletionContext['state'], pos: number): { from: number; text: string } {
-  const line = state.doc.lineAt(pos);
-  const before = state.sliceDoc(line.from, pos);
-  const match = before.match(UNIT_PREFIX);
-  const text = match?.[0] ?? '';
-  return { from: pos - text.length, text };
-}
 
 function unitNodeAt(state: CompletionContext['state'], pos: number): SyntaxNode | null {
   const tree = syntaxTree(state);
@@ -100,39 +92,6 @@ function unitNodeAt(state: CompletionContext['state'], pos: number): SyntaxNode 
     if (node.type.id === terms.Unit && node.from <= pos && pos <= node.to) return node;
   }
   return null;
-}
-
-/** Innermost `ConvertExpression` whose target unit is being typed at `pos`. */
-function convertExpressionAt(state: CompletionContext['state'], pos: number): SyntaxNode | null {
-  let match: SyntaxNode | null = null;
-  syntaxTree(state).iterate({
-    enter(ref) {
-      if (ref.type.id !== terms.ConvertExpression) return;
-      const convertOp = ref.node.getChild(terms.ConvertOp);
-      if (!convertOp || pos <= convertOp.to) return;
-      match = ref.node;
-    },
-  });
-  return match;
-}
-
-/** Completion range for the target unit in a `ConvertExpression` (after `ConvertOp`). */
-function convertTargetFrom(
-  state: CompletionContext['state'],
-  convert: SyntaxNode,
-  pos: number,
-): number | null {
-  const convertOp = convert.getChild(terms.ConvertOp);
-  if (!convertOp || pos <= convertOp.to) return null;
-
-  const prefix = unitPrefixAt(state, pos);
-  const targetUnit = convert.getChild(terms.Unit);
-
-  if (targetUnit && pos >= targetUnit.from) {
-    return prefix.text.length > 0 ? prefix.from : targetUnit.from;
-  }
-
-  return prefix.text.length > 0 ? prefix.from : convertOp.to;
 }
 
 export type UnitCompletionSite =
@@ -146,6 +105,7 @@ function suffixSiteFromText(state: CompletionContext['state'], pos: number): Uni
   const match = before.match(SUFFIX_UNIT_INPUT);
   if (!match) return null;
   const unitText = match[2] ?? '';
+  console.log('suffixSiteFromText')
   return { kind: 'suffix', from: pos - unitText.length };
 }
 
@@ -153,30 +113,33 @@ export function unitCompletionSite(
   state: CompletionContext['state'],
   pos: number,
 ): UnitCompletionSite | null {
+  const tree = syntaxTree(state);
+  
+  let boundaryPos = skipWhiteSpaceBackward(state, pos);
+  const node = tree.resolveInner(boundaryPos, -1);
+
+  let prevNode: SyntaxNode|undefined = undefined;
+  if (boundaryPos === pos) {
+    // icomplete units parsed as Identifier
+    if (node.type.id === terms.Identifier) {
+      boundaryPos = skipWhiteSpaceBackward(state, node.from);
+      prevNode = tree.resolveInner(boundaryPos, -1);
+    }
+  }
+
+  // Icomplete unit after a conversion expression
+  if (prevNode && prevNode.type.id === terms.ConvertOp) {
+    console.log('convert in prevNode')
+    return { kind: 'convert', from: node.from };
+  }
+
+  // Unit: exact match!
   const unit = unitNodeAt(state, pos);
   if (unit) {
     const kind =
       unit.parent?.type.id === terms.NumberWithUnit ? 'suffix' : 'convert';
+    console.log('Kind', kind)
     return { kind, from: unit.from };
-  }
-
-  const node = syntaxTree(state).resolveInner(pos, -1);
-  for (let cur: SyntaxNode | null = node; cur; cur = cur.parent) {
-    if (cur.type.id !== terms.NumberWithUnit) continue;
-    const num = cur.getChild(terms.Number);
-    if (!num || pos < num.to) continue;
-    const prefix = unitPrefixAt(state, pos);
-    if (prefix.text.length === 0 && pos > num.to) {
-      const gap = state.sliceDoc(num.to, pos);
-      if (!/^\s*$/.test(gap)) break;
-    }
-    return { kind: 'suffix', from: prefix.text.length > 0 ? prefix.from : pos };
-  }
-
-  const convert = convertExpressionAt(state, pos);
-  if (convert) {
-    const from = convertTargetFrom(state, convert, pos);
-    if (from !== null) return { kind: 'convert', from };
   }
 
   return suffixSiteFromText(state, pos);

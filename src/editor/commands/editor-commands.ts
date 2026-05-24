@@ -1,7 +1,7 @@
 import { type SyntaxNode, Tree } from '@lezer/common'
 import { type TransactionSpec, EditorState, Transaction, EditorSelection, ChangeSet, type ChangeSpec } from "@codemirror/state";
 
-import { terms } from '../../language';
+import { isAtomicNode, terms } from '../../language';
 
 
 
@@ -165,22 +165,6 @@ export function formatTextLine(
 export function applyFormatSpecs(state: EditorState, changes: ChangeSpec[]): EditorState {
 	if (!changes.length) return state;
 	return state.update({ changes }).state;
-}
-
-function isAtomicNode(id: number): boolean {
-	switch (id) {
-		case terms.Identifier:
-		case terms.Number:
-		case terms.Unit:
-		case terms.EqualSign:
-		case terms.PlusBinaryOp:
-		case terms.TimesBinaryOp:
-		case terms.PowBinaryOp:
-		case terms.ConvertOp:
-			return true
-		default:
-			return false
-	}
 }
 
 function participatesInSpacing(id: number): boolean {
