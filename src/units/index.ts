@@ -1,4 +1,4 @@
-export { canConvert, convertValue, units } from './unit-converter';
+export { canConvert, convertValue, areUnitsCompatible, units } from './unit-converter';
 export * from './types';
 export { CURRENCIES, CURRENCY_CODES } from './currencies-list';
 export { isCurrency, isCurrencyCode, type CurrencyCode, type CurrencyEntry } from './currency';

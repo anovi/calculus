@@ -3,7 +3,7 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms } from '../language';
-import { normalizeUnit, canConvert, convertValue } from '../units';
+import { normalizeUnit, areUnitsCompatible, canConvert, convertValue } from '../units';
 import { isCurrency } from '../units/currency';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
@@ -365,6 +365,9 @@ export class MathCalculator {
         for (let index = 1; index < args.length; index++) {
             let exp = args[index];
             if (baseUnit && exp.unit && baseUnit !== exp.unit) {
+                if (!areUnitsCompatible(baseUnit, exp.unit)) {
+                    return { n: new Decimal(NaN), unit: baseUnit };
+                }
                 exp = this.convert({ ...exp, unit: exp.unit }, baseUnit);
             }
             switch (operator) {
