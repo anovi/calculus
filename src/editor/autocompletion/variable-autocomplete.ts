@@ -30,6 +30,8 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     const identifier = context.state.sliceDoc(node.from, node.to);
     if (!identifier && !context.explicit) return null;
 
+    if (node.parent?.type.id === terms.FunctionCall) return null;
+
     const variableNames = getIdentifierNames(context.state, node);
     const options: Completion[] = [];
     for (let index = 0; index < variableNames.length; index++) {
