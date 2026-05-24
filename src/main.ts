@@ -12,11 +12,13 @@ import {
   editorTheme,
   // safariFocusScrollFix,
   formatOnType,
-  unitAutocompletion,
+  unitCompletionSource,
+  variableCompletionSource,
 } from './editor'
 import { helpPanel } from './editor/panel'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
+import { autocompletion } from '@codemirror/autocomplete'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -72,7 +74,10 @@ new EditorView({
     extensions: [
       basicSetup(),
       calculus(),
-      unitAutocompletion(),
+      autocompletion({
+        maxRenderedOptions: 20,
+        override: [unitCompletionSource, variableCompletionSource],
+      }),
       formatOnType(),
       calcRanges(),
       calcResultsPlugin,

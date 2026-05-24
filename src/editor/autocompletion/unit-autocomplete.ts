@@ -12,6 +12,7 @@ import type { SyntaxNode } from '@lezer/common';
 import { CURRENCIES, units, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../commands';
+import { variableCompletionSource } from './variable-autocomplete';
 
 function canonicalApplyText(entry: MeasureEntry): string {
   return entry.symbols?.[0] ?? entry.names[0];
@@ -175,11 +176,3 @@ export const unitCompletionSource: CompletionSource = (context): CompletionResul
 
   return unitCompletionResult(site, context.explicit);
 };
-
-/** CodeMirror extension: unit/currency completions after number suffixes and convert targets. */
-export function unitAutocompletion(): Extension {
-  return autocompletion({
-    maxRenderedOptions: 20,
-    override: [unitCompletionSource],
-  });
-}
