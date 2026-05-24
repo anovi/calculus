@@ -6,9 +6,9 @@ import { terms } from '../language';
 import { normalizeUnit, canConvert, convertValue } from '../units';
 import { isCurrency } from '../units/currency';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
-
-type ExpressionResult = { n: Decimal; unit?: string };
-
+import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
+import { builtinHandlers } from './builtin-handlers';
+import type { ExpressionResult } from './types';
 
 /** Represents a row of calculation; can be binded to a name or not */
 export class CalcValue extends RangeValue {
@@ -317,11 +317,12 @@ export class MathCalculator {
                 args = this.processArgList(childCursor);
             }],
         ]));
-        if (name === 'sqrt') {
-            if (args.length !== 1) return null;
-            return { n: args[0].n.sqrt(), unit: args[0].unit };
-        }
-        return null;
+        const def = BUILTIN_FUNCTION_BY_NAME.get(name);
+        if (!def) return null;
+        if (args.length !== def.arity) return null;
+        const handler = builtinHandlers.get(name);
+        if (!handler) return null;
+        return handler(args);
     }
 
     private performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
