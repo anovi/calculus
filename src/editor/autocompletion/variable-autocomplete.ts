@@ -3,11 +3,12 @@ import {
     type CompletionSource
 } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
-import type { EditorState } from '@codemirror/state';
+import { EditorSelection, type EditorState } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
 import { terms } from '../../language';
 import { calcRangesField } from '../values-field';
+import { BUILTIN_FUNCTIONS } from '../../functions';
   
 
 function getIdentifierNames(state: EditorState, exclude: SyntaxNode): string[] {
@@ -15,7 +16,7 @@ function getIdentifierNames(state: EditorState, exclude: SyntaxNode): string[] {
     const cur = fieldValue.ranges.iter();
     const res: string[] = [];
     while (cur.value) {
-        if (cur.value.name && cur.from != exclude.from && cur.to != exclude.to) res.push(cur.value.name);
+        if (cur.value.name /* && cur.from != exclude.from && cur.to != exclude.to */) res.push(cur.value.name);
         cur.next();
     }
     return res;
@@ -30,19 +31,55 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     const identifier = context.state.sliceDoc(node.from, node.to);
     if (!identifier && !context.explicit) return null;
 
-    if (node.parent?.type.id === terms.FunctionCall) return null;
-
-    const variableNames = getIdentifierNames(context.state, node);
     const options: Completion[] = [];
+    const isEditingFunctionCall = node.parent?.type.id === terms.FunctionCall;
+
+    // Alwais add functions
+    for (let index = 0; index < BUILTIN_FUNCTIONS.length; index++) {
+        const fnDef = BUILTIN_FUNCTIONS[index];
+
+        if (isEditingFunctionCall)
+            options.push({ label: fnDef.name, detail: fnDef.doc, type: 'function' })
+        else
+            options.push({
+                label: fnDef.name,
+                detail: fnDef.doc,
+                type: 'function',
+                apply: (view, _completion, from, to) => {
+                    const insert = `${fnDef.name}()`;
+                    const length = to - from;
+                    view.dispatch({
+                        changes: {
+                            insert, from, to,
+                        },
+                        selection: EditorSelection.cursor(to + insert.length - length - 1),
+                    })
+                },
+            })
+    }
+
+    // Editing funciton call, so no variables
+    if (isEditingFunctionCall) {
+        return {
+            from: node.from,
+            to: node.to,
+            options,
+            update: (_current, from, to) => ({ from, to, options }),
+        }
+    }
+
+    // Add variables names
+    const variableNames = getIdentifierNames(context.state, node);    
     for (let index = 0; index < variableNames.length; index++) {
         const name = variableNames[index];
-        options.push({ label: name });
+        options.push({ label: name, type: 'variable' });
     }
 
     return {
       from: node.from,
       to: node.to,
-      options: options,
+      options,
+      update: (_current, from, to) => ({ from, to, options }),
     //   update(_current, _from, _to, context) {
     //     const pos = context.pos;
     //     const tree = syntaxTree(context.state);
