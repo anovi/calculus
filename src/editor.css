@@ -236,4 +236,12 @@ body {
   --panel-text-color: black;
   --panel-bg-color: transparent;
   --panel-border-color: transparent;
+
+  --autocomplete-bg: #1a2438;
+  --autocomplete-fg: var(--text);
+  --autocomplete-border: var(--border);
+  --autocomplete-selected-bg: rgba(125, 211, 252, 0.12);
+  --autocomplete-selected-fg: var(--heading);
+  --autocomplete-detail-fg: rgba(200, 209, 224, 0.55);
+  --autocomplete-matched-fg: var(--accent);
 }
