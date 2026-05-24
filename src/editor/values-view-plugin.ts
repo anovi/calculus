@@ -49,25 +49,15 @@ class ResultWidget extends WidgetType {
     wrap.className = 'cm-calc-result';
     wrap.setAttribute('aria-hidden', 'true');
     wrap.addEventListener('touchend', (e) => {
-      e.preventDefault()
-      console.log(e)
-      const values = view.state.field(calcRangesField);
-      const cur = values.ranges.iter();
-      while (cur.value) {
-        if (cur.value === this.value) {
-          view.dispatch({
-            selection: { anchor: cur.to - 1 }
-          });
-          if (!view.hasFocus) view.focus();
-          break;
-        }
-        cur.next();
-      }
-    })
-    wrap.addEventListener('touchend', (e) => {
-      e.preventDefault()
-      console.log(e)
-    })
+      e.preventDefault();
+      console.log(e);
+      this.#focusLine(view);
+    });
+    wrap.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log(e);
+      this.#focusLine(view);
+    });
 
     const pill = document.createElement('span');
     pill.className = 'cm-calc-result__pill';
@@ -78,8 +68,24 @@ class ResultWidget extends WidgetType {
     return wrap;
   }
 
+  
   ignoreEvent(): boolean {
     return true;
+  }
+
+  #focusLine(view: EditorView) {
+    const values = view.state.field(calcRangesField);
+    const cur = values.ranges.iter();
+    while (cur.value) {
+      if (cur.value === this.value) {
+        view.dispatch({
+          selection: { anchor: cur.to - 1 }
+        });
+        if (!view.hasFocus) view.focus();
+        break;
+      }
+      cur.next();
+    }
   }
 }
 
