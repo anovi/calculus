@@ -2,7 +2,7 @@ import { ViewPlugin, type Panel, type ViewUpdate } from "@codemirror/view";
 import { undo, redo } from "@codemirror/commands";
 import { EditorView } from "@codemirror/view";
 
-import { toggleInlineFormat } from '../commands';
+import { toggleInlineFormat } from '../editor-commands';
 import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
 import { toggleHelp } from './effects';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";

@@ -5,7 +5,7 @@ import { showPanel } from "@codemirror/view";
 
 import { isAtomicSelection } from '../../lib/codemirror';
 import { terms } from '../../language';
-import { skipWhiteSpaceBackward } from '../commands';
+import { skipWhiteSpaceBackward } from '../editor-commands';
 import { OperationsDictionary, type OperationDef } from './operations-dictionary';
 import { createHelpPanel } from './panel';
 import { toggleHelp } from './effects';

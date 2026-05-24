@@ -11,7 +11,7 @@ import type { SyntaxNode } from '@lezer/common';
 
 import { CURRENCIES, units, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
-import { skipWhiteSpaceBackward } from '../commands';
+import { skipWhiteSpaceBackward } from '../editor-commands';
 import { variableCompletionSource } from './variable-autocomplete';
 
 function canonicalApplyText(entry: MeasureEntry): string {
