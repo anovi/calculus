@@ -2,13 +2,13 @@ import { registerSW } from 'virtual:pwa-register'
 
 import { EditorView } from 'codemirror'
 import { EditorState } from '@codemirror/state'
-import { LRLanguage, LanguageSupport, syntaxHighlighting } from '@codemirror/language'
+import { syntaxHighlighting } from '@codemirror/language'
 
-import { parser } from './language'
 import {
   basicSetup,
   calcRanges,
   calcResultsPlugin,
+  calculus,
   editorTheme,
   // safariFocusScrollFix,
   formatOnType,
@@ -30,15 +30,6 @@ tax_rate = 0.21
 net = 100
 gross = net + net * tax_rate
 `
-
-const calcLanguage = LRLanguage.define({
-  name: 'calculus',
-  parser,
-})
-
-function calculus(): LanguageSupport {
-  return new LanguageSupport(calcLanguage)
-}
 
 function loadDoc(): string {
   try {
