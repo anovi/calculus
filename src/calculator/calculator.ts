@@ -205,8 +205,11 @@ export class MathCalculator {
 
         if (pipeline.length > 0) {
             const result = this.performOperation(operator, ...pipeline);
-            if (convertToUnit && this.isResultWithUnit(result)) {
-                return this.convert(result, convertToUnit);
+            if (convertToUnit) {
+                if (this.isResultWithUnit(result)) {
+                    return this.convert(result, convertToUnit);
+                }
+                return { n: result.n, unit: convertToUnit };
             }
             return result;
         }
@@ -360,16 +363,30 @@ export class MathCalculator {
         if (operator === '-' && args.length === 1) {
             return { n: args[0].n.negated(), unit: args[0].unit };
         }
-        let result = args[0].n;
-        const baseUnit: string|undefined = args[0].unit;
-        for (let index = 1; index < args.length; index++) {
-            let exp = args[index];
-            if (baseUnit && exp.unit && baseUnit !== exp.unit) {
-                if (!areUnitsCompatible(baseUnit, exp.unit)) {
+
+        let baseUnit: string | undefined;
+        for (let i = args.length - 1; i >= 0; i--) {
+            if (args[i].unit) {
+                baseUnit = args[i].unit;
+                break;
+            }
+        }
+
+        const normalized: ExpressionResult[] = [];
+        for (const arg of args) {
+            if (baseUnit && arg.unit && arg.unit !== baseUnit) {
+                if (!areUnitsCompatible(baseUnit, arg.unit)) {
                     return { n: new Decimal(NaN), unit: baseUnit };
                 }
-                exp = this.convert({ ...exp, unit: exp.unit }, baseUnit);
+                normalized.push(this.convert({ ...arg, unit: arg.unit }, baseUnit));
+            } else {
+                normalized.push(arg);
             }
+        }
+
+        let result = normalized[0].n;
+        for (let index = 1; index < normalized.length; index++) {
+            const exp = normalized[index];
             switch (operator) {
                 case '-':
                     result = result.minus(exp.n);

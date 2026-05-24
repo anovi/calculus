@@ -229,7 +229,8 @@ export const calculatorFixtures: CalculatorFixture[] = [
   {
     name: 'currency convertion via expression',
     doc: '10 USD + 1 EUR',
-    expected: [11.12],
+    expected: [10],
+    expectedUnits: ['EUR'],
   },
   {
     name: 'units convertion',
@@ -239,26 +240,32 @@ export const calculatorFixtures: CalculatorFixture[] = [
   {
     name: 'compatible units: length addition with conversion',
     doc: '10 cm + 1 m',
-    expected: [110],
-    expectedUnits: ['cm'],
+    expected: [1.1],
+    expectedUnits: ['m'],
+  },
+  {
+    name: 'convertion of number with no unit',
+    doc: '10 in EUR',
+    expected: [10],
+    expectedUnits: ['EUR'],
   },
   {
     name: 'incompatible units: length + currency',
     doc: '20 cm + 10 EUR',
     expected: ['NaN'],
-    expectedUnits: ['cm'],
+    expectedUnits: ['EUR'],
   },
   {
     name: 'incompatible units: length + mass',
     doc: '10 kg + 5 m',
     expected: ['NaN'],
-    expectedUnits: ['kg'],
+    expectedUnits: ['m'],
   },
   {
     name: 'incompatible units: length * currency',
     doc: '10 cm * 2 EUR',
     expected: ['NaN'],
-    expectedUnits: ['cm'],
+    expectedUnits: ['EUR'],
   },
   // Formatting
   {
