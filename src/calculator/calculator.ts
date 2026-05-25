@@ -27,20 +27,6 @@ export class CalcValue extends RangeValue {
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 
-/**
- * n-th root of x (degree n in `root(x, n)`). Differs from `^`: odd integer roots
- * of negative bases are real; `(-8)^(1/3)` still uses Decimal.pow and yields NaN.
- */
-function nthRoot(x: Decimal, n: Decimal): Decimal {
-    if (n.isZero()) return new Decimal(NaN);
-    const inv = new Decimal(1).div(n);
-    if (x.gte(0)) return x.pow(inv);
-    if (n.isInteger() && n.gt(0) && n.mod(2).eq(1)) {
-        return x.abs().pow(inv).negated();
-    }
-    return x.pow(inv);
-}
-
 export class MathCalculator {
 
     rates: RatesStore;

@@ -3,6 +3,7 @@ import { registerSW } from 'virtual:pwa-register'
 import { EditorView } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
+import { syntaxTree } from '@codemirror/language'
 
 import {
   basicSetup,
@@ -19,6 +20,7 @@ import { helpPanel } from './editor/panel'
 import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { autocompletion } from '@codemirror/autocomplete'
+import { printTree } from './lib/tree'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -58,7 +60,8 @@ const persist = EditorView.updateListener.of((update) => {
   if (update.docChanged) saveDoc(update.state.doc.toString())
 })
 
-new EditorView({
+{(() => {
+const view = new EditorView({
   parent: root,
   state: EditorState.create({
     doc: loadDoc(),
@@ -81,6 +84,10 @@ new EditorView({
     ],
   }),
 })
+
+// @ts-ignore
+globalThis.printTree = () => printTree(syntaxTree(view.state))
+})()}
 
 registerSW({ immediate: true })
 
