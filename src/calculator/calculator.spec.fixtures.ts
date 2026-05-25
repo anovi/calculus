@@ -267,6 +267,13 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: ['NaN'],
     expectedUnits: ['EUR'],
   },
+  {
+    name: 'incompatible units as variables',
+    doc: 'length = 10 kg\nmass = 5 m\nlength + mass',
+    expected: [10, 5, 'NaN'],
+    expectedUnits: ['kg', 'm', 'm'],
+    only: true
+  },
   // Formatting
   {
     name: 'formatting',
