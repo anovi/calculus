@@ -1,18 +1,15 @@
 import {
-  autocompletion,
   type Completion,
   type CompletionContext,
   type CompletionResult,
-  type CompletionSource,
+  type CompletionSource
 } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
-import type { Extension } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
 import { CURRENCIES, units, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../editor-commands';
-import { variableCompletionSource } from './variable-autocomplete';
 
 function canonicalApplyText(entry: MeasureEntry): string {
   return entry.symbols?.[0] ?? entry.names[0];

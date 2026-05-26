@@ -11,12 +11,15 @@ import { calcRangesField } from '../values-field';
 import { BUILTIN_FUNCTIONS } from '../../functions';
   
 
-function getIdentifierNames(state: EditorState, exclude: SyntaxNode): string[] {
+function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {
     const fieldValue = state.field(calcRangesField);
     const cur = fieldValue.ranges.iter();
     const res: string[] = [];
     while (cur.value) {
-        if (cur.value.name /* && cur.from != exclude.from && cur.to != exclude.to */) res.push(cur.value.name);
+        if (
+            cur.value.name &&
+            !(exclude && cur.from === exclude.from && cur.to === exclude.to)
+        ) res.push(cur.value.name);
         cur.next();
     }
     return res;
@@ -69,7 +72,7 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     }
 
     // Add variables names
-    const variableNames = getIdentifierNames(context.state, node);    
+    const variableNames = getIdentifierNames(context.state);
     for (let index = 0; index < variableNames.length; index++) {
         const name = variableNames[index];
         options.push({ label: name, type: 'variable' });
