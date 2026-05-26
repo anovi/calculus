@@ -32,11 +32,11 @@ class ResultWidget extends WidgetType {
   }
 
   eq(other: ResultWidget): boolean {
-    return (
-      other.value.result.eq(this.value.result) &&
-      other.value.name === this.value.name &&
-      other.value.unit === this.value.unit
-    );
+    const a = this.value;
+    const b = other.value;
+    if (a.error !== b.error || a.name !== b.name || a.unit !== b.unit) return false;
+    if (a.error != null) return true;
+    return a.result != null && b.result != null && a.result.eq(b.result);
   }
 
   toDOM(view: EditorView): HTMLElement {
@@ -60,9 +60,15 @@ class ResultWidget extends WidgetType {
     });
 
     const pill = document.createElement('span');
-    pill.className = 'cm-calc-result__pill';
-    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
-    pill.textContent = `= ${formatResult(this.value.result)}${unitSuffix}`;
+    if (this.value.error != null) {
+      pill.className = 'cm-calc-result__pill cm-calc-result__pill--error';
+      pill.textContent = '= Error';
+      pill.title = this.value.error;
+    } else {
+      pill.className = 'cm-calc-result__pill';
+      const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
+      pill.textContent = `= ${formatResult(this.value.result)}${unitSuffix}`;
+    }
     wrap.appendChild(pill);
 
     return wrap;
@@ -89,7 +95,8 @@ class ResultWidget extends WidgetType {
   }
 }
 
-function formatResult(n: Decimal): string {
+function formatResult(n: Decimal | undefined): string {
+  if (n == null) return 'NaN';
   if (!n.isFinite()) return n.toString();
   if (n.isInteger()) return n.toString();
   return n.toDecimalPlaces(6).toString();
@@ -180,9 +187,11 @@ class ValueMarker extends GutterMarker {
     this.value = value;
   }
   toDOM() {
-    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';  
-    const value = `${formatResult(this.value.result)}${unitSuffix}`;
-    return document.createTextNode(value);
+    if (this.value.error != null) {
+      return document.createTextNode('Error');
+    }
+    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
+    return document.createTextNode(`${formatResult(this.value.result)}${unitSuffix}`);
   }
 }
 

@@ -10,19 +10,34 @@ import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
 import { builtinHandlers } from './builtin-handlers';
 import type { ExpressionResult } from './types';
 
-/** Represents a row of calculation; can be binded to a name or not */
+/** Represents line's calculation result; can be binded to a name */
 export class CalcValue extends RangeValue {
     readonly result: Decimal;
     readonly dependencies?: string[];
     readonly name?: string;
     readonly unit?: string;
-    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string) {
+    readonly error?: string;
+    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string, error?: string) {
         super();
         this.result = result;
         this.name = name;
         this.dependencies = dependencies;
         this.unit = unit;
+        this.error = error;
     }
+}
+
+function expressionError(message: string, unit?: string): ExpressionResult {
+    return { n: new Decimal(NaN), unit, error: message };
+}
+
+function findFirstOperandError(...operands: ExpressionResult[]): ExpressionResult | undefined {
+    return operands.find((op) => op && op.error != null);
+}
+
+function calcValueFromExpr(expr: ExpressionResult, name?: string): CalcValue {
+    const n = expr.n ?? new Decimal(NaN);
+    return new CalcValue(n, name, undefined, expr.unit, expr.error);
 }
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
@@ -38,11 +53,11 @@ type Ctx = {
     performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult,
 }
 
-// Props defaults to `any` so decision-tree handlers can declare narrow prop shapes.
-type Handler<Props = any> = (ctx: Ctx, props: Props) => unknown;
+// Props defaults to `any` so decision-tree processors declare narrow prop shapes.
+type Processor<Props = any> = (ctx: Ctx, props: Props) => unknown;
 
-type CalcDesecionPoint = null | TermValue | { slice: boolean } | {
-    process: Handler,
+type CalcDecisionPoint = null | TermValue | { slice: boolean } | {
+    process: Processor,
     props?: {
         [key: string]: { expect: TermValue[] } | { expectMany: TermValue[] }
     }
@@ -61,16 +76,16 @@ const IdentifierEvalContext: TermValue[] = [
 ]
 
 /**
- * Actions:
- * - pipeline: accumulate values and process
- * - process: get named params and call handler with params
- * - slice: take raw string
+ * This config defines how to process node values.
  * 
- * Need to track stack?
+ * If node's processor is `null` the node will be skipped.
  * 
- * `null` is skip.
+ * When `{slice: true}` it will be taken as string as is.
+ * 
+ * If `props` is present, they will be calculated and passed to `process`, see {@link CalcDecisionPoint} type.
 */
-const desecionTree: Record<TermValue, CalcDesecionPoint> = {
+// decision
+const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.CalcDoc]: null,
     [terms.Comment]: null,
     [terms.Cpr]: null,
@@ -115,12 +130,15 @@ const desecionTree: Record<TermValue, CalcDesecionPoint> = {
     // ID of a variable or a function
     [terms.Identifier]: {
         process: (ctx): undefined|string|ExpressionResult => {
-            const parent: TermValue|undefined = ctx.parentNodeType();
-            const id = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
-            if (IdentifierEvalContext.includes(parent)) {
-                return ctx.bindings.get(id);
+            const name = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
+            if (IdentifierEvalContext.includes(ctx.parentNodeType())) {
+                const val = ctx.bindings.get(name);
+                if (!val) {
+                    return expressionError(`Variable ${name} is not defined or used before its declaration.`);
+                }
+                return val;
             }
-            return id;
+            return name;
         }
     },
 
@@ -130,7 +148,9 @@ const desecionTree: Record<TermValue, CalcDesecionPoint> = {
             id: { expect: [terms.Identifier] },
             args: { expect: [ terms.ArgList ] }
         },
-        process: (_ctx, props: {id: string, args: ExpressionResult[]}): ExpressionResult|null => {
+        process: (_ctx, props: { id: string, args: ExpressionResult[] }): ExpressionResult|null => {
+            const argError = findFirstOperandError(...props.args);
+            if (argError) return argError;
             const def = BUILTIN_FUNCTION_BY_NAME.get(props.id);
             if (!def) return null;
             if (props.args.length !== def.arity) return null;
@@ -156,7 +176,27 @@ const desecionTree: Record<TermValue, CalcDesecionPoint> = {
     },
 
     // Top level statements
-    [terms.NoBinding]: terms.Binding,
+    [terms.NoBinding]: {
+        props: {
+            result: {
+                expect: [
+                    terms.Literal,
+                    terms.MulExpression,
+                    terms.ExpExpression,
+                    terms.AddExpression,
+                    terms.FunctionCall,
+                    terms.ConvertExpression
+                ]
+            }
+        },
+        process: (ctx, props: {result: null | ExpressionResult}): Range<CalcValue>|null => {
+            const result = props.result
+            if (result == null) return null;
+            const value = calcValueFromExpr(result)
+                .range(ctx.cursor.from, ctx.cursor.to);
+            return value;
+        },
+    },
     [terms.Binding]: {
         props: {
             id: {
@@ -173,13 +213,10 @@ const desecionTree: Record<TermValue, CalcDesecionPoint> = {
                 ]
             }
         },
-        process: (ctx, props: {id: string|undefined, result: null | ExpressionResult}): Range<CalcValue>|null => {
-            let value: Range<CalcValue>|null = null;
-            const {result, id} = props;
-            if (result !== null) {
-                value = new CalcValue(result.n, id, undefined, result.unit).range(ctx.cursor.from, ctx.cursor.to);
-                if (id != null) ctx.bindings.set(id, result);
-            }
+        process: (ctx, props: {id: string|undefined, result: ExpressionResult}): Range<CalcValue>|null => {
+            const { result, id } = props;
+            const value = calcValueFromExpr(result, id).range(ctx.cursor.from, ctx.cursor.to);
+            if (id != null && result.error == null) ctx.bindings.set(id, result);
             return value;
         },
     },
@@ -244,6 +281,7 @@ const desecionTree: Record<TermValue, CalcDesecionPoint> = {
             ctx,
             params: { value: ExpressionResult & {unit: string}, toUnit: string }
         ): ExpressionResult => {
+            if (params.value.error) return params.value;
             return ctx.convert(params.value, params.toUnit);
         }
     },
@@ -288,27 +326,17 @@ export class MathCalculator implements Ctx {
     
     sliceDoc: (from: number, to: number) => string;
 
-    assemble(cursor: TreeCursor, throwErrors: boolean = false): Range<CalcValue>[]|null {
+    assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
         this.cursor = cursor;
-		try {
-            if (cursor.type.id === terms.CalcDoc) {
-                return this.processRows(cursor);
-            }
-            throw Error(`Cursor is not on CalcDoc root node!`);	
-		} catch (error) {
-			if (throwErrors) {
-				console.error(error);
-				throw error;
-			}
-			else if (error instanceof Error) {
-				console.error(error);
-			}
-		}
-
-		return null;
+        if (cursor.type.id !== terms.CalcDoc) {
+            console.error('Cursor is not on CalcDoc root node!');
+            return null;
+        }
+        return this.processRows(cursor);
 	}
 
     convert(value: ExpressionResult, toUnit: string): ExpressionResult {
+        if (value.error) return value;
         let rate: number = 1;
         const unitA = value.unit;
         const unitB = toUnit;
@@ -338,6 +366,9 @@ export class MathCalculator implements Ctx {
     }
 
     performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
+        const operandError = findFirstOperandError(...args);
+        if (operandError) return operandError;
+
         if (operator === '-' && args.length === 1) {
             return { n: args[0].n.negated(), unit: args[0].unit };
         }
@@ -385,7 +416,7 @@ export class MathCalculator implements Ctx {
                     result = result.pow(exp.n);
                     break;
                 default:
-                    throw Error(`Unknown operator ${operator}`)
+                    return expressionError(`Unknown operator ${operator}`);
             }
         }
         return { n: result, unit: baseUnit };
@@ -396,21 +427,27 @@ export class MathCalculator implements Ctx {
 		const pipeline: Range<CalcValue>[] = [];
 		if (cursor.firstChild()) {
 			do {
-                const node: CalcDesecionPoint = desecionTree[cursor.type.id as TermValue];
-                const value = this.handle(cursor, node) as Range<CalcValue>;
-                if (value) pipeline.push(value);
+                const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
+                const value = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
+                if (value && 'value' in value && value.value instanceof CalcValue) {
+                    pipeline.push(value);
+                } else if (value && typeof value === 'object' && 'n' in value) {
+                    const expr = value as ExpressionResult;
+                    pipeline.push(calcValueFromExpr(expr).range(cursor.from, cursor.to));
+                }
 			} while (cursor.nextSibling());
 			cursor.parent();
 		}
 		return pipeline;
 	}
 
-    private handle(cursor: TreeCursor, node: CalcDesecionPoint): unknown | null {
+    private handle(cursor: TreeCursor, node: CalcDecisionPoint): unknown | null {
+        this.isErrorNode(cursor)
+
         if (node === null) return null;
 
         if (typeof node === 'number') {
-            const val = this.handle(cursor, desecionTree[node as TermValue]);
-            return val;
+            return this.handle(cursor, decisionTree[node as TermValue]);
         }
 
         if (typeof node !== 'object') {
@@ -431,12 +468,21 @@ export class MathCalculator implements Ctx {
             for (const key in node.props) {
                 if (Object.prototype.hasOwnProperty.call(node.props, key)) {
                     const propDev = node.props[key];
+                    let result: unknown = undefined;
 
                     if ('expect' in propDev) {
-                        props[key] = this.getFirstChildTypeValue(cursor, propDev.expect);
+                        result = this.getValueOfFirstChildType(cursor, propDev.expect);
                     } else if ('expectMany' in propDev) {
-                        props[key] =  this.collectChildValues(cursor, propDev.expectMany);
+                        result =  this.collectChildValues(cursor, propDev.expectMany);
                     }
+
+                    // prevent processing, or else it forces us to handle `null` props in processors
+                    if (result == null) {
+                        this.stack.pop();
+                        return null;            
+                    }
+
+                    props[key] = result;
                 }
             }
 
@@ -456,33 +502,46 @@ export class MathCalculator implements Ctx {
     }
 
     private collectChildValues(cursor: TreeCursor, types: TermValue[]): unknown[] {
+        this.isErrorNode(cursor)
         if (!cursor.firstChild()) return [];
         const values: unknown[] = [];
         do {
             const type = cursor.type.id as TermValue;
             if (types.includes(type)) {
-                const node: CalcDesecionPoint = desecionTree[cursor.type.id as TermValue];
-                values.push(this.handle(cursor, node));
-            }
+                const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
+                const val = this.handle(cursor, node);
+                if (val == null) {
+                    cursor.parent();
+                    return [];
+                }
+                values.push(val);
+            } 
+            else this.isErrorNode(cursor)
         } while (cursor.nextSibling());
         cursor.parent();
         return values;
     }
 
-    private getFirstChildTypeValue(cursor: TreeCursor, types: TermValue[]): unknown {
+    private getValueOfFirstChildType(cursor: TreeCursor, types: TermValue[]): unknown | null {
+        this.isErrorNode(cursor)
         if (!cursor.firstChild()) return null;
         let value: unknown = null;
         do {
             const type = cursor.type.id as TermValue;
             if (types.includes(type)) {
-                const node: CalcDesecionPoint = desecionTree[type];
+                const node: CalcDecisionPoint = decisionTree[type];
                 value = this.handle(cursor, node);
                 break;
             }
+            else this.isErrorNode(cursor)
         } while (cursor.nextSibling());
         cursor.parent();
         return value;
     }
 
-    
+    private isErrorNode(cursor: TreeCursor) {
+        if (cursor.type.id === 0) {
+            console.log('ERROR NODE:', this.sliceDoc(cursor.from, cursor.to), cursor.from, cursor.to);
+        }
+    }    
 }

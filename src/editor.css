@@ -98,6 +98,12 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+#editor .cm-calc-result__pill--error {
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.12);
+  border-color: rgba(251, 146, 60, 0.35);
+}
+
 
 
 /*=============================================
