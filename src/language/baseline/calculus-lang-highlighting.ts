@@ -2,7 +2,8 @@ import { styleTags, Tag, tags } from "@lezer/highlight"
 import { HighlightStyle } from "@codemirror/language"
 import * as terms from './calculus-language.terms'
 
-type TermKey = keyof typeof terms;
+export type TermKey = keyof typeof terms;
+export type TermValue = typeof terms[keyof typeof terms];
 
 export const calculusLangHighlight = styleTags({
 	'Identifier': tags.variableName,

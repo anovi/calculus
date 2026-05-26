@@ -272,7 +272,27 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: 'length = 10 kg\nmass = 5 m\nlength + mass',
     expected: [10, 5, 'NaN'],
     expectedUnits: ['kg', 'm', 'm'],
-    only: true
+  },
+  // Wrong conversions
+  {
+    name: 'nonsense conversion: into a number',
+    doc: '222 m² in 2',
+    expected: ['NaN'],
+    expectedUnits: ['m²'],
+    skip: true,
+  },
+  {
+    name: 'nonsense expression: two expressions over comma',
+    doc: '23 + 3, 3 + 3',
+    expected: ['NaN'],
+    skip: true,
+  },
+  {
+    name: 'several conversions in a row',
+    doc: '100 cm in m in km',
+    expected: ['0.001'],
+    expectedUnits: ['km'],
+    skip: true,
   },
   // Formatting
   {

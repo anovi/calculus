@@ -2,7 +2,7 @@ import Decimal from 'decimal.js';
 import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
-import { terms } from '../language';
+import { terms, type TermValue } from '../language';
 import { normalizeUnit, areUnitsCompatible, canConvert, convertValue } from '../units';
 import { isCurrency } from '../units/currency';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
@@ -27,6 +27,23 @@ export class CalcValue extends RangeValue {
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
 
+type Ctx = {
+    cursor: TreeCursor,
+    sliceDoc: (from: number, to: number) => string,
+    stack: TermValue[],
+}
+
+type Handler = (ctx: Ctx, props: Record<string, unknown>) => unknown;
+
+type CalcDesecionPoint = null | TermValue | { slice: boolean } | {
+    process: Handler,
+    props?: {
+        [key: string]: { eval: TermValue[] } | { collect: TermValue[] }
+    }
+};
+
+const BindingEvalExpreesions: TermValue[] = [terms.ExpExpression, terms.AddExpression, terms.MulExpression, terms.ExpExpression, terms.ArgList]
+
 export class MathCalculator {
 
     rates: RatesStore;
@@ -39,9 +56,12 @@ export class MathCalculator {
     
     bindings: Map<string, ExpressionResult> = new Map();
 
+    private stack: TermValue[] = [];
+
     sliceDoc: (from: number, to: number) => string;
 
     assemble(cursor: TreeCursor, throwErrors: boolean = false): Range<CalcValue>[]|null {
+
 		try {
             if (cursor.type.id === terms.CalcDoc) {
                 return this.processRows(cursor);
@@ -56,27 +76,222 @@ export class MathCalculator {
 				console.error(error);
 			}
 		}
+
 		return null;
 	}
 
-    private readonly nodeHandlers: Map<number, (cursor: TreeCursor) => unknown> = new Map<number, (cursor: TreeCursor) => unknown>([
-        [terms.Binding, (cursor) => this.processBinding(cursor)],
-        [terms.NoBinding, (cursor) => this.processBinding(cursor)],
-        [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
-        [terms.AddExpression, (cursor) => this.processAddExpression(cursor)],
-        [terms.MulExpression, (cursor) => this.processMulExpression(cursor)],
-        [terms.ExpExpression, (cursor) => this.processExpExpression(cursor)],
-        [terms.ConvertExpression, (cursor) => this.processConvertExpression(cursor)],
-        [terms.String, (cursor) => this.processString(cursor)],
-        [terms.Number, (cursor) => this.processNumber(cursor)],
-        [terms.FunctionCall, (cursor) => this.processFunctionCall(cursor)],
-    ]);
+    /**
+     * Actions required:
+     * - pipeline: accumulate values and process
+     * - process: get named params and call handler with params
+     * - slice: take raw string
+     * 
+     * Need to track stack?
+     * 
+     * `null` is skip.
+    */
+    desecionTree: Record<TermValue, CalcDesecionPoint> = {
+        [terms.CalcDoc]: null,
+        [terms.Comment]: null,
+        [terms.Cpr]: null,
+        [terms.Opr]: null,
+        [terms.Date]: null,
+        [terms.String]: null,
+        [terms.EqualSign]: null,
+        
+        // Operators
+        [terms.ConvertOp]: null,
+        [terms.TimesBinaryOp]: {slice: true},
+        [terms.PlusBinaryOp]: {slice: true},
+        [terms.PowBinaryOp]: {slice: true},
+
+        // Numbers
+        [terms.Number]: {
+            process: (ctx): ExpressionResult | null => {
+                const raw = this.sliceDoc(ctx.cursor.from, ctx.cursor.to).replaceAll(' ', '');
+                try {
+                    return { n: new Decimal(raw) };
+                } catch {
+                    return null;
+                }
+            }
+        },
+        [terms.NumberWithUnit]: {
+            props: {
+                number: { eval: [terms.Number] },
+                unit: { eval: [terms.Unit] }
+            },
+            process: (
+                _ctx,
+                props: { number: ExpressionResult|null, unit: string|undefined }
+            ): ExpressionResult|null => {
+                if (props.number !== null && props.unit) {
+                    return { n: props.number.n, unit: props.unit } as ExpressionResult;
+                }
+                return null;
+            }
+        },
+
+        // ID of a variable or a function
+        [terms.Identifier]: {
+            process: (ctx) => {
+                const parent: TermValue|undefined = ctx.stack[ctx.stack.length - 2];
+                const id = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
+                if (BindingEvalExpreesions.includes(parent)) {
+                    return this.bindings.get(id);
+                }
+                return id;
+            }
+        },
+
+        // Function
+        [terms.FunctionCall]: {
+            props: {
+                id: { eval: [terms.Identifier] },
+                args: { eval: [ terms.ArgList ] }
+            },
+            process: (_ctx, props: {id: string, args: ExpressionResult[]}): ExpressionResult|null => {
+                const def = BUILTIN_FUNCTION_BY_NAME.get(props.id);
+                if (!def) return null;
+                if (props.args.length !== def.arity) return null;
+                const handler = builtinHandlers.get(props.id);
+                if (!handler) return null;
+                return handler(props.args);
+            }
+        },
+        [terms.ArgList]: {
+            props: {
+                args: {
+                    collect: [
+                        terms.Literal,
+                        terms.Identifier,
+                        terms.MulExpression,
+                        terms.ExpExpression,
+                        terms.AddExpression,
+                        terms.FunctionCall,
+                    ],
+                }
+            },
+            process: (_ctx, props: { args: ExpressionResult[] }) => props.args,
+        },
+
+        // Top level statements
+        [terms.NoBinding]: terms.Binding,
+        [terms.Binding]: {
+            props: {
+                id: {
+                    eval: [terms.Identifier],
+                },
+                result: {
+                    eval: [
+                        terms.Literal,
+                        terms.MulExpression,
+                        terms.ExpExpression,
+                        terms.AddExpression,
+                        terms.FunctionCall,
+                        terms.ConvertExpression
+                    ]
+                }
+            },
+            process: (ctx, props: {id: string|undefined, result: null | ExpressionResult}): Range<CalcValue>|null => {
+                let value: Range<CalcValue>|null = null;
+                const {result, id} = props;
+                if (result !== null) {
+                    value = new CalcValue(result.n, id, undefined, result.unit).range(ctx.cursor.from, ctx.cursor.to);
+                    if (id != null) this.bindings.set(id, result);
+                }
+                return value;
+            },
+        },
+        
+        // Expressions
+        [terms.MulExpression]: terms.AddExpression,
+        [terms.ExpExpression]: terms.AddExpression,
+        [terms.AddExpression]: {
+            props: {
+                operator: {
+                    eval: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.PowBinaryOp]
+                },
+                operands: {
+                    collect: [
+                        terms.Literal,
+                        terms.AddExpression,
+                        terms.MulExpression,
+                        terms.ExpExpression,
+                        terms.Identifier,
+                        terms.FunctionCall,
+                    ]
+                },
+            },
+            process: (_ctx, params: { operator: Operator|null, operands: ExpressionResult[] }) => {
+                const pipeline: ExpressionResult[] = params.operands;
+                let operator: Operator = params.operator || '+';
+                let convertToUnit: string|undefined = undefined;
+
+                if (pipeline.length > 0) {
+                    const result = this.performOperation(operator, ...pipeline);
+                    if (convertToUnit) {
+                        if (this.isResultWithUnit(result)) {
+                            return this.convert(result, convertToUnit);
+                        }
+                        return { n: result.n, unit: convertToUnit };
+                    }
+                    return result;
+                }
+                return null;
+            },
+        },
+        [terms.ConvertExpression]: {
+            props: {
+                toUnit: {
+                    eval: [terms.Unit]
+                },
+                value: {
+                    eval: [
+                        terms.Literal,
+                        terms.AddExpression,
+                        terms.MulExpression,
+                        terms.ExpExpression,
+                        terms.Identifier,
+                        terms.FunctionCall,
+                    ]
+                },
+            },
+            process: (_ctx, params: { value: ExpressionResult & {unit: string}, toUnit: string }) => {
+                return this.convert(params.value, params.toUnit);
+            }
+        },
+
+        // Literal
+        [terms.Literal]: {
+            props: {
+                value: {
+                    eval: [terms.NumberWithUnit, terms.Number]
+                }
+            },
+            process: (_ctx, params) => params.value,
+        },
+
+        // Unit
+        [terms.Unit]: {
+            process: (ctx): string|undefined => {
+                const raw = this.sliceDoc(ctx.cursor.from, ctx.cursor.to);
+                const unit = normalizeUnit(raw) ?? undefined;
+                return unit;
+            }
+        }
+    }
+
+
+    // type: 'plus'|'times'|'pow'|'convert'
+    trackInStack = new Set([terms.AddExpression, terms.MulExpression, terms.ExpExpression, terms.ConvertExpression]);
 
 	private processRows(cursor: TreeCursor): Range<CalcValue>[] {
 		const pipeline: Range<CalcValue>[] = [];
 		if (cursor.firstChild()) {
 			do {
-                const value = this.callHandler<Range<CalcValue> | null>(cursor.type.id, cursor);
+                const node: CalcDesecionPoint = this.desecionTree[cursor.type.id as TermValue];
+                const value = this.handle(cursor, node) as Range<CalcValue>;
                 if (value) pipeline.push(value);
 			} while (cursor.nextSibling());
 			cursor.parent();
@@ -84,132 +299,101 @@ export class MathCalculator {
 		return pipeline;
 	}
 
-    private callHandler<T>(termId: number, cursor: TreeCursor): T | null {
-        const handler = this.nodeHandlers.get(termId);
-        if (!handler) return null;
-        return handler(cursor) as T;
+    private handle(cursor: TreeCursor, node: CalcDesecionPoint): unknown | null {
+        if (node === null) return null;
+
+        if (typeof node === 'number') {
+            const val = this.handle(cursor, this.desecionTree[node as TermValue]);
+            return val;
+        }
+
+        if (typeof node !== 'object') {
+            return null;
+        }
+
+        if ('slice' in node) {
+            this.stack.push(cursor.type.id as TermValue);
+            const val = this.sliceDoc(cursor.from, cursor.to);
+            this.stack.pop();
+            return val;
+        }
+        
+        if ('props' in node) {
+            const props: Record<string, unknown> = {};
+            this.stack.push(cursor.type.id as TermValue);
+
+            for (const key in node.props) {
+                if (Object.prototype.hasOwnProperty.call(node.props, key)) {
+                    const propDev = node.props[key];
+
+                    if ('eval' in propDev) {
+                        props[key] = this.getFirstChildTypeValue(cursor, propDev.eval);
+                    } else if ('collect' in propDev) {
+                        props[key] =  this.collectChildValues(cursor, propDev.collect);
+                    }
+                }
+            }
+
+            const val = node.process({ cursor, sliceDoc: this.sliceDoc, stack: this.stack }, props);
+            this.stack.pop();
+            return val;
+        }
+
+        if ('process' in node) {
+            this.stack.push(cursor.type.id as TermValue);
+            const val = node.process({ cursor, sliceDoc: this.sliceDoc, stack: this.stack }, {});
+            this.stack.pop();
+            return val;
+        }
+
+        return null;
     }
 
-    private forEachChild(
-        cursor: TreeCursor,
-        handlers: ReadonlyMap<number, (cursor: TreeCursor) => void>
-    ): void {
-        if (!cursor.firstChild()) return;
+    // private callHandler<T>(termId: number, cursor: TreeCursor): T | null {
+    //     const handler = this.nodeHandlers.get(termId);
+    //     if (!handler) return null;
+    //     return handler(cursor) as T;
+    // }
+
+    private collectChildValues(cursor: TreeCursor, types: TermValue[]): unknown[] {
+        if (!cursor.firstChild()) return [];
+        const values: unknown[] = [];
         do {
-            handlers.get(cursor.type.id)?.(cursor);
+            const type = cursor.type.id as TermValue;
+            if (types.includes(type)) {
+                const node: CalcDesecionPoint = this.desecionTree[cursor.type.id as TermValue];
+                values.push(this.handle(cursor, node));
+            }
         } while (cursor.nextSibling());
         cursor.parent();
+        return values;
     }
 
-    private processBinding(cursor: TreeCursor): Range<CalcValue>|null {
-        let value: Range<CalcValue>|null = null;
-        let id: string|undefined = undefined;
-        let result: null | ExpressionResult = null as null | ExpressionResult;
-
-        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
-            [terms.Identifier, (childCursor) => {
-                id = this.sliceDoc(childCursor.from, childCursor.to);
-            }],
-            [terms.Literal, (childCursor) => {
-                result = this.processLiteral(childCursor);
-            }],
-            [terms.MulExpression, (childCursor) => {
-                result = this.callHandler<ExpressionResult>(terms.MulExpression, childCursor);
-            }],
-            [terms.ExpExpression, (childCursor) => {
-                result = this.callHandler<ExpressionResult>(terms.ExpExpression, childCursor);
-            }],
-            [terms.AddExpression, (childCursor) => {
-                result = this.callHandler<ExpressionResult>(terms.AddExpression, childCursor);
-            }],
-            [terms.FunctionCall, (childCursor) => {
-                result = this.callHandler<ExpressionResult>(terms.FunctionCall, childCursor);
-            }],
-            [terms.ConvertExpression, (childCursor) => {
-                result = this.callHandler<ExpressionResult>(terms.ConvertExpression, childCursor);
-            }],
-        ]));
-
-        if (result !== null) {
-            value = new CalcValue(result.n, id, undefined, result.unit).range(cursor.from, cursor.to);
-            if (id !== undefined) this.bindings.set(id, result);
-        }
-        return value;
-    }
-    // reducer: (...values: number[]) => number
-    private processExpression(cursor: TreeCursor, type: 'plus'|'times'|'pow'|'convert'): ExpressionResult | null {
-        const pipeline: ExpressionResult[] = [];
-        let operator: Operator = '+';
-        let convertToUnit: string|undefined = undefined;
-
-        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
-            [terms.AddExpression, (nestedCursor) => {
-                const value = this.callHandler<ExpressionResult>(terms.AddExpression, nestedCursor);
-                if (value !== null) pipeline.push(value);
-            }],
-            [terms.MulExpression, (nestedCursor) => {
-                const value = this.callHandler<ExpressionResult>(terms.MulExpression, nestedCursor);
-                if (value !== null) pipeline.push(value);
-            }],
-            [terms.ExpExpression, (nestedCursor) => {
-                const value = this.callHandler<ExpressionResult>(terms.ExpExpression, nestedCursor);
-                if (value !== null) pipeline.push(value);
-            }],
-            [terms.ConvertExpression, (nestedCursor) => {
-                const res = this.processConvertExpression(nestedCursor)
-                if (res) pipeline.push(res);
-            }],
-            [terms.Unit, (nestedCursor) => {
-                if (type === 'convert') {
-                    const raw = this.sliceDoc(nestedCursor.from, nestedCursor.to);
-                    convertToUnit = normalizeUnit(raw) ?? undefined;
-                }
-            }],
-            [terms.Identifier, (nestedCursor) => {
-                const id = this.sliceDoc(nestedCursor.from, nestedCursor.to);
-                const value = this.bindings.get(id)
-                if (value) pipeline.push(value);
-            }],
-            [terms.Literal, (nestedCursor) => {
-                const lit = this.processLiteral(nestedCursor);
-                if (lit) pipeline.push(lit);
-            }],
-            [terms.FunctionCall, (nestedCursor) => {
-                const value = this.callHandler<ExpressionResult>(terms.FunctionCall, nestedCursor);
-                if (value) pipeline.push(value);
-            }],
-            [terms.PlusBinaryOp, (cursor) => {
-                operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
-            }],
-            [terms.TimesBinaryOp, () => {
-                if (type === 'times') operator = this.sliceDoc(cursor.from, cursor.to) as Operator;
-            }],
-            [terms.PowBinaryOp, () => {
-                if (type === 'pow') operator = '^';
-            }],
-        ]));
-
-        if (pipeline.length > 0) {
-            const result = this.performOperation(operator, ...pipeline);
-            if (convertToUnit) {
-                if (this.isResultWithUnit(result)) {
-                    return this.convert(result, convertToUnit);
-                }
-                return { n: result.n, unit: convertToUnit };
+    private getFirstChildTypeValue(cursor: TreeCursor, types: TermValue[]): unknown {
+        if (!cursor.firstChild()) return null;
+        let value: unknown = null;
+        do {
+            const type = cursor.type.id as TermValue;
+            if (types.includes(type)) {
+                const node: CalcDesecionPoint = this.desecionTree[type];
+                value = this.handle(cursor, node);
+                break;
             }
-            return result;
-        }
-        return null;
+        } while (cursor.nextSibling());
+        cursor.parent();
+        return value;
     }
 
     private isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
         return Boolean(expr.unit && typeof expr.unit === 'string');
     }
 
-    private convert(value: ExpressionResult & {unit: string}, toUnit: string): ExpressionResult {
+    private convert(value: ExpressionResult, toUnit: string): ExpressionResult {
         let rate: number = 1;
         const unitA = value.unit;
         const unitB = toUnit;
+
+        if (!unitA) return { n: value.n, unit: unitB };
 
         if (isCurrency(unitA) && isCurrency(unitB)) {
             const currencyRate = this.rates.getRate(unitA, unitB);
@@ -224,125 +408,13 @@ export class MathCalculator {
                 unit: unitB,
             }
         }
-
+        
         if (canConvert(unitA, unitB)) {
             const newVal = convertValue(value.n, unitA, unitB);
             return { n: newVal, unit: unitB };
         }
 
         return value;
-    }
-
-    private processAddExpression(cursor: TreeCursor): ExpressionResult|null {
-        return this.processExpression(cursor, 'plus');
-    }
-
-    private processMulExpression(cursor: TreeCursor): ExpressionResult|null {
-        return this.processExpression(cursor, 'times');
-    }
-
-    private processExpExpression(cursor: TreeCursor): ExpressionResult|null {
-        return this.processExpression(cursor, 'pow');
-    }
-
-    private processConvertExpression(cursor: TreeCursor): ExpressionResult | null {
-        return this.processExpression(cursor, 'convert');
-    }
-
-    private processLiteral(cursor: TreeCursor): ExpressionResult | null {
-        let result: ExpressionResult | null = null;
-
-        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
-            [terms.Number, (childCursor) => {
-                const v = this.callHandler<ExpressionResult>(terms.Number, childCursor);
-                if (v !== null) result = v;
-            }],
-            [terms.NumberWithUnit, (childCursor) => {
-                let n: Decimal | null = null;
-                let unit: string | undefined;
-                this.forEachChild(childCursor, new Map<number, (childCursor: TreeCursor) => void>([
-                    [terms.Number, (numCursor) => {
-                        const v = this.processNumber(numCursor);
-                        if (v) n = v.n;
-                    }],
-                    [terms.Unit, (unitCursor) => {
-                        const raw = this.sliceDoc(unitCursor.from, unitCursor.to);
-                        unit = normalizeUnit(raw) ?? undefined;
-                    }],
-                ]));
-                if (n !== null && unit) {
-                    result = { n, unit };
-                }
-            }],
-        ]));
-
-        if (result === null) return null;
-        return result;
-    }
-
-    private processString(_cursor: TreeCursor): null {
-        return null;
-    }
-
-    private processNumber(cursor: TreeCursor): ExpressionResult | null {
-        const raw = this.sliceDoc(cursor.from, cursor.to).replaceAll(' ', '');
-        try {
-            return { n: new Decimal(raw) };
-        } catch {
-            return null;
-        }
-    }
-
-    private evalExpressionValue(cursor: TreeCursor): ExpressionResult | null {
-        switch (cursor.type.id) {
-            case terms.Literal:
-                return this.processLiteral(cursor) ?? null;
-            case terms.AddExpression:
-                return this.processAddExpression(cursor);
-            case terms.MulExpression:
-                return this.processMulExpression(cursor);
-            case terms.ExpExpression:
-                return this.processExpExpression(cursor);
-            case terms.Identifier: {
-                const id = this.sliceDoc(cursor.from, cursor.to);
-                const value = this.bindings.get(id);
-                return value ? value : null;
-            }
-            case terms.FunctionCall:
-                return this.processFunctionCall(cursor);
-            default:
-                return null;
-        }
-    }
-
-    private processArgList(cursor: TreeCursor): ExpressionResult[] {
-        const args: ExpressionResult[] = [];
-        if (!cursor.firstChild()) return args;
-        do {
-            const value = this.evalExpressionValue(cursor);
-            if (value !== null) args.push(value);
-        } while (cursor.nextSibling());
-        cursor.parent();
-        return args;
-    }
-
-    private processFunctionCall(cursor: TreeCursor): ExpressionResult | null {
-        let name = '';
-        let args: ExpressionResult[] = [];
-        this.forEachChild(cursor, new Map<number, (childCursor: TreeCursor) => void>([
-            [terms.Identifier, (childCursor) => {
-                name = this.sliceDoc(childCursor.from, childCursor.to).toLowerCase();
-            }],
-            [terms.ArgList, (childCursor) => {
-                args = this.processArgList(childCursor);
-            }],
-        ]));
-        const def = BUILTIN_FUNCTION_BY_NAME.get(name);
-        if (!def) return null;
-        if (args.length !== def.arity) return null;
-        const handler = builtinHandlers.get(name);
-        if (!handler) return null;
-        return handler(args);
     }
 
     private performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
