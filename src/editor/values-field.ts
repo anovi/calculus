@@ -11,7 +11,11 @@ import { CurrencyRateUpdated } from './effects'
  */
 function computeRanges(state: EditorState): FieldValue {
   const tree = syntaxTree(state)
-  const calculator = new MathCalculator((from, to) => state.sliceDoc(from, to), ratesStore)
+  const calculator = new MathCalculator(
+    (from, to) => state.sliceDoc(from, to),
+    ratesStore,
+    state.doc,
+  )
   const ranges = calculator.assemble(tree.cursor()) ?? []
 
   if (ranges.length === 0) return {

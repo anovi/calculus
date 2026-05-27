@@ -44,7 +44,7 @@ function assertUnits(values: Range<CalcValue>[], expected: (string | undefined)[
 describe('CalcDoc grammar', () => {
 
     let doc = '';
-    const sliceDoc = (from: number, to: number) => doc.slice(from, to);
+    const sliceDoc = (from: number, to?: number) => doc.slice(from, to);
 
 	for (const fx of calculatorFixtures) {
         const test = fx.only ? it.only : fx.skip ? it.skip : it;
@@ -52,7 +52,7 @@ describe('CalcDoc grammar', () => {
             doc = fx.doc;
             const result = parser.parse(doc);
             const cursor = result.cursor();
-            const calculator = new MathCalculator(sliceDoc, createMockRatesStore());
+            const calculator = new MathCalculator(sliceDoc, createMockRatesStore(), doc);
             const res = calculator.assemble(cursor);
 
             try {
@@ -62,7 +62,7 @@ describe('CalcDoc grammar', () => {
                 if (fx.expectedUnits) assertUnits(res, fx.expectedUnits)
             } catch (error) {
                 printTree(result);
-                console.log(res);
+                console.log('Result values:', res);
                 throw error;
             }
         });

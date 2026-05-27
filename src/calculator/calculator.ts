@@ -8,7 +8,7 @@ import { isCurrency } from '../units/currency';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
 import { builtinHandlers } from './builtin-handlers';
-import type { ExpressionResult } from './types';
+import { isExpressionResultError, type ExpressionResult, type ExpressionResultError } from './types';
 
 /** Represents line's calculation result; can be binded to a name */
 export class CalcValue extends RangeValue {
@@ -27,7 +27,8 @@ export class CalcValue extends RangeValue {
     }
 }
 
-function expressionError(message: string, unit?: string): ExpressionResult {
+function expressionError(message: string, unit?: string): ExpressionResultError {
+    console.log(message)
     return { n: new Decimal(NaN), unit, error: message };
 }
 
@@ -58,10 +59,12 @@ type Processor<Props = any> = (ctx: Ctx, props: Props) => unknown;
 
 type CalcDecisionPoint = null | TermValue | { slice: boolean } | {
     process: Processor,
-    props?: {
-        [key: string]: { expect: TermValue[] } | { expectMany: TermValue[] }
-    }
+    props?: (
+        | { key: string, expect: TermValue[], optional?: boolean }
+        | { key: string, expectMany: TermValue[] }
+    )[]
 };
+type CalcDecisionPointWithExpectations = Required<Exclude<CalcDecisionPoint, null | TermValue | { slice: boolean }>>
 
 function isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
     return Boolean(expr.unit && typeof expr.unit === 'string');
@@ -112,10 +115,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
         }
     },
     [terms.NumberWithUnit]: {
-        props: {
-            number: { expect: [terms.Number] },
-            unit: { expect: [terms.Unit] }
-        },
+        props: [
+            { key: 'number', expect: [terms.Number] },
+            { key: 'unit', expect: [terms.Unit] }
+        ],
         process: (
             _ctx,
             props: { number: ExpressionResult|null, unit: string|undefined }
@@ -131,6 +134,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.Identifier]: {
         process: (ctx): undefined|string|ExpressionResult => {
             const name = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
+            console.log('stack', ctx.stack);
             if (IdentifierEvalContext.includes(ctx.parentNodeType())) {
                 const val = ctx.bindings.get(name);
                 if (!val) {
@@ -144,51 +148,49 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
 
     // Function
     [terms.FunctionCall]: {
-        props: {
-            id: { expect: [terms.Identifier] },
-            args: { expect: [ terms.ArgList ] }
-        },
+        props: [
+            { key: 'id', expect: [terms.Identifier] },
+            { key: 'args', expect: [ terms.ArgList ] }
+        ],
         process: (_ctx, props: { id: string, args: ExpressionResult[] }): ExpressionResult|null => {
             const argError = findFirstOperandError(...props.args);
             if (argError) return argError;
             const def = BUILTIN_FUNCTION_BY_NAME.get(props.id);
             if (!def) return null;
             if (props.args.length !== def.arity) return null;
-            const handler = builtinHandlers.get(props.id);
-            if (!handler) return null;
-            return handler(props.args);
+            const builtinHandler = builtinHandlers.get(props.id);
+            if (!builtinHandler) return null;
+            return builtinHandler(props.args);
         }
     },
     [terms.ArgList]: {
-        props: {
-            args: {
-                expectMany: [
-                    terms.Literal,
-                    terms.Identifier,
-                    terms.MulExpression,
-                    terms.ExpExpression,
-                    terms.AddExpression,
-                    terms.FunctionCall,
-                ],
-            }
-        },
+        props: [{
+            key: 'args',
+            expectMany: [
+                terms.Literal,
+                terms.Identifier,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.AddExpression,
+                terms.FunctionCall,
+            ],
+        }],
         process: (_ctx, props: { args: ExpressionResult[] }): ExpressionResult[] => props.args,
     },
 
     // Top level statements
     [terms.NoBinding]: {
-        props: {
-            result: {
-                expect: [
-                    terms.Literal,
-                    terms.MulExpression,
-                    terms.ExpExpression,
-                    terms.AddExpression,
-                    terms.FunctionCall,
-                    terms.ConvertExpression
-                ]
-            }
-        },
+        props: [{
+            key: 'result',
+            expect: [
+                terms.Literal,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.AddExpression,
+                terms.FunctionCall,
+                terms.ConvertExpression
+            ]
+        }],
         process: (ctx, props: {result: null | ExpressionResult}): Range<CalcValue>|null => {
             const result = props.result
             if (result == null) return null;
@@ -198,21 +200,21 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
         },
     },
     [terms.Binding]: {
-        props: {
-            id: {
-                expect: [terms.Identifier],
-            },
-            result: {
-                expect: [
-                    terms.Literal,
-                    terms.MulExpression,
-                    terms.ExpExpression,
-                    terms.AddExpression,
-                    terms.FunctionCall,
-                    terms.ConvertExpression
-                ]
-            }
+        props: [{
+            key: 'id',
+            expect: [terms.Identifier],
         },
+        {
+            key: 'result',
+            expect: [
+                terms.Literal,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.AddExpression,
+                terms.FunctionCall,
+                terms.ConvertExpression
+            ]
+        }],
         process: (ctx, props: {id: string|undefined, result: ExpressionResult}): Range<CalcValue>|null => {
             const { result, id } = props;
             const value = calcValueFromExpr(result, id).range(ctx.cursor.from, ctx.cursor.to);
@@ -225,58 +227,84 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.MulExpression]: terms.AddExpression,
     [terms.ExpExpression]: terms.AddExpression,
     [terms.AddExpression]: {
-        props: {
-            operator: {
-                expect: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.PowBinaryOp]
-            },
-            operands: {
-                expectMany: [
-                    terms.Literal,
-                    terms.AddExpression,
-                    terms.MulExpression,
-                    terms.ExpExpression,
-                    terms.Identifier,
-                    terms.FunctionCall,
-                ]
-            },
+        props: [{
+            key: 'operatorBefore',
+            optional: true,
+            expect: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.PowBinaryOp]
+        },{
+            key: 'operand1',
+            expect: [
+                terms.Literal,
+                terms.AddExpression,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.Identifier,
+                terms.FunctionCall,
+            ]
+        }, {
+            key: 'operator',
+            optional: true,
+            expect: [terms.PlusBinaryOp, terms.TimesBinaryOp, terms.PowBinaryOp]
         },
+        {
+            key: 'operand2',
+            optional: true,
+            expect: [
+                terms.Literal,
+                terms.AddExpression,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.Identifier,
+                terms.FunctionCall,
+            ]
+        }],
         process: (
             ctx,
-            params: { operator: Operator|null, operands: ExpressionResult[] }
+            params: {
+                operatorBefore?: Operator|void,
+                operand1: ExpressionResult,
+                operator?: Operator|null,
+                operand2?: ExpressionResult
+            }
         ): null|ExpressionResult => {
-            const pipeline: ExpressionResult[] = params.operands;
             let operator: Operator = params.operator || '+';
             let convertToUnit: string|undefined = undefined;
 
-            if (pipeline.length > 0) {
-                const result = ctx.performOperation(operator, ...pipeline);
-                if (convertToUnit) {
-                    if (isResultWithUnit(result)) {
-                        return ctx.convert(result, convertToUnit);
-                    }
-                    return { n: result.n, unit: convertToUnit };
-                }
-                return result;
+            if (params.operatorBefore) {
+                params.operand1 = { ...params.operand1, n: params.operand1.n.negated() }
             }
-            return null;
+
+            if (!params.operatorBefore && (!params.operator || !params.operand2)) return null;
+            if ((params.operator && !params.operand2)) return null;
+
+            const operands = [params.operand1];
+            if (params.operand2) operands.push(params.operand2);
+            
+            const result = ctx.performOperation(operator, ...operands);
+            if (convertToUnit) {
+                if (isResultWithUnit(result)) {
+                    return ctx.convert(result, convertToUnit);
+                }
+                return { n: result.n, unit: convertToUnit };
+            }
+            return result;
         },
     },
     [terms.ConvertExpression]: {
-        props: {
-            toUnit: {
-                expect: [terms.Unit]
-            },
-            value: {
-                expect: [
-                    terms.Literal,
-                    terms.AddExpression,
-                    terms.MulExpression,
-                    terms.ExpExpression,
-                    terms.Identifier,
-                    terms.FunctionCall,
-                ]
-            },
-        },
+        props: [{
+            key: 'value',
+            expect: [
+                terms.Literal,
+                terms.AddExpression,
+                terms.MulExpression,
+                terms.ExpExpression,
+                terms.Identifier,
+                terms.FunctionCall,
+            ]
+        }, {
+            key: 'toUnit',
+            expect: [terms.Unit]
+        }],
         process: (
             ctx,
             params: { value: ExpressionResult & {unit: string}, toUnit: string }
@@ -288,11 +316,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
 
     // Literal
     [terms.Literal]: {
-        props: {
-            value: {
-                expect: [terms.NumberWithUnit, terms.Number]
-            }
-        },
+        props: [{
+            key: 'value',
+            expect: [terms.NumberWithUnit, terms.Number]
+        }],
         process: (_ctx, params): ExpressionResult => params.value,
     },
 
@@ -306,13 +333,47 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     }
 }
 
+/** Minimal line API shared by CodeMirror `Text` and plain-string construction. */
+type LineDoc = { lines: number; line(n: number): { from: number; to: number } };
+
+function lineIndexesFromString(text: string): number[] {
+    const indexes: number[] = [];
+    let from = 0;
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === '\n') {
+            indexes.push(from, i);
+            from = i + 1;
+        }
+    }
+    indexes.push(from, text.length);
+    return indexes;
+}
+
+function lineIndexesFromDoc(doc: LineDoc): number[] {
+    const indexes: number[] = [];
+    for (let n = 1; n <= doc.lines; n++) {
+        const line = doc.line(n);
+        indexes.push(line.from, line.to);
+    }
+    return indexes;
+}
+
+export function buildLineIndexes(doc: LineDoc | string): number[] {
+    return typeof doc === 'string' ? lineIndexesFromString(doc) : lineIndexesFromDoc(doc);
+}
+
 
 export class MathCalculator implements Ctx {
 
-	constructor(sliceDoc: (from: number, to: number) => string, ratesStore: RatesStore) {
+	constructor(
+        sliceDoc: (from: number, to?: number) => string,
+        ratesStore: RatesStore,
+        doc?: LineDoc | string,
+    ) {
 		this.sliceDoc = sliceDoc;
         this.rates = ratesStore;
         this.cursor = null as unknown as TreeCursor;
+        this.lineIndexes = doc != null ? buildLineIndexes(doc) : [0, 0];
 	}
 
     stack: TermValue[] = [];
@@ -320,11 +381,14 @@ export class MathCalculator implements Ctx {
     ratesAwaited: PairKey[] = [];
     bindings: Map<string, ExpressionResult> = new Map();
     cursor: TreeCursor;
-
+    
     currentNodeType(): TermValue { return this.stack[this.stack.length - 1] }
     parentNodeType(): TermValue { return this.stack[this.stack.length - 2] }
     
-    sliceDoc: (from: number, to: number) => string;
+    sliceDoc: (from: number, to?: number) => string;
+    
+    private lineIndexes: number[];
+    private currentLine: [number, number] = [-1, -1];
 
     assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
         this.cursor = cursor;
@@ -332,7 +396,7 @@ export class MathCalculator implements Ctx {
             console.error('Cursor is not on CalcDoc root node!');
             return null;
         }
-        return this.processRows(cursor);
+        return this.processLines(cursor);
 	}
 
     convert(value: ExpressionResult, toUnit: string): ExpressionResult {
@@ -422,126 +486,208 @@ export class MathCalculator implements Ctx {
         return { n: result, unit: baseUnit };
     }
 
+    private setLine(cursor: TreeCursor) {
+        for (let i = 0; i < this.lineIndexes.length; i++) {
+            const from = this.lineIndexes[i];
+            const nextLineFrom = this.lineIndexes[i + 2] || this.lineIndexes[i + 1];
+            if (cursor.from >= from &&
+                cursor.to <= nextLineFrom
+            ) {
+                this.currentLine = [from, nextLineFrom];
+                break;
+            }
+        }
+    }
 
-	private processRows(cursor: TreeCursor): Range<CalcValue>[] {
+	private processLines(cursor: TreeCursor): Range<CalcValue>[] {
 		const pipeline: Range<CalcValue>[] = [];
-		if (cursor.firstChild()) {
+        let skipLineFrom: number = -1;
+		if (this.moveToFirstChild(cursor)) {
 			do {
+                console.log('LINE:', cursor.type.name)
+                this.setLine(cursor);
+                if (this.currentLine[0] === skipLineFrom) continue;
+                skipLineFrom = -1;
                 const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
-                const value = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
-                if (value && 'value' in value && value.value instanceof CalcValue) {
-                    pipeline.push(value);
-                } else if (value && typeof value === 'object' && 'n' in value) {
-                    const expr = value as ExpressionResult;
-                    pipeline.push(calcValueFromExpr(expr).range(cursor.from, cursor.to));
+                const range = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
+                if (range === null) {
+                    continue;
                 }
-			} while (cursor.nextSibling());
-			cursor.parent();
+                if ('value' in range && range.value instanceof CalcValue) {
+                    pipeline.push(range);
+                    if (range.value.error) {
+                        skipLineFrom = this.currentLine[0];
+                        continue;
+                    }
+                }
+                else if (typeof range === 'object' && 'n' in range) {
+                    const expr = range as ExpressionResult;
+                    pipeline.push(calcValueFromExpr(expr).range(cursor.from, cursor.to));
+                    if (expr.error) {
+                        skipLineFrom = this.currentLine[0];
+                        continue;
+                    }
+                }
+			} while (this.moveToNextSibling(cursor));
+			this.moveToParent(cursor);
 		}
 		return pipeline;
 	}
 
-    private handle(cursor: TreeCursor, node: CalcDecisionPoint): unknown | null {
-        this.isErrorNode(cursor)
+    private handle(cursor: TreeCursor, point: CalcDecisionPoint): unknown | null {
+        console.log('handle()', cursor.type.name);
 
-        if (node === null) return null;
+        if (point === null) return null;
 
-        if (typeof node === 'number') {
-            return this.handle(cursor, decisionTree[node as TermValue]);
+        if (typeof point === 'number') return this.handle(cursor, decisionTree[point as TermValue]);
+
+        if (typeof point !== 'object') return null;
+
+        if ('slice' in point) return this.sliceDoc(cursor.from, cursor.to);
+
+        let propsResult: Record<string, unknown> | null | ExpressionResultError = {};
+
+        if ('props' in point && point.props != undefined) {
+            propsResult = this.expectChildren(cursor, point as CalcDecisionPointWithExpectations);
         }
 
-        if (typeof node !== 'object') {
-            return null;
-        }
+        if (isExpressionResultError(propsResult)) return propsResult;
+        if (propsResult === null) return null;
 
-        if ('slice' in node) {
+        return point.process(this, propsResult);
+    }
+
+    private moveToFirstChild(cursor: TreeCursor): boolean {
+        if (cursor.firstChild()) {
             this.stack.push(cursor.type.id as TermValue);
-            const val = this.sliceDoc(cursor.from, cursor.to);
+            return true;
+        }
+        return false;
+    }
+
+    private moveToParent(cursor: TreeCursor): boolean {
+        if (cursor.parent()) {
             this.stack.pop();
-            return val;
+            return true;
         }
-        
-        if ('props' in node) {
-            const props: Record<string, unknown> = {};
+        return false;
+    }
+
+    private moveToNextSibling(cursor: TreeCursor): boolean {
+        if (cursor.nextSibling()) {
+            this.stack.pop();
             this.stack.push(cursor.type.id as TermValue);
+            return true;
+        }
+        return false;
+    }
 
-            for (const key in node.props) {
-                if (Object.prototype.hasOwnProperty.call(node.props, key)) {
-                    const propDev = node.props[key];
-                    let result: unknown = undefined;
+    private expectChildren(cursor: TreeCursor, point: CalcDecisionPointWithExpectations): Record<string, unknown>|null|ExpressionResultError {
+        if (!this.moveToFirstChild(cursor)) return null;
+        console.group('expect()');
 
-                    if ('expect' in propDev) {
-                        result = this.getValueOfFirstChildType(cursor, propDev.expect);
-                    } else if ('expectMany' in propDev) {
-                        result =  this.collectChildValues(cursor, propDev.expectMany);
+        const props: Record<string, unknown> = {};
+
+        let ret: undefined|null|Record<string, unknown>|ExpressionResultError = undefined;
+
+        for (let index = 0; index < point.props.length; index++) {
+            const propDef = point.props[index];
+            const isOptionalParam = Boolean('expect' in propDef && propDef.optional);
+            let propResult: unknown = undefined;
+            console.group('PROP', propDef.key)
+            // if (propDef.key ==='operator')debugger;
+            
+            if ('expect' in propDef) {
+                // propResult = null;
+                do {
+                    const type = cursor.type.id as TermValue;
+                    if (decisionTree[type] === null) {
+                        continue;
                     }
-
-                    // prevent processing, or else it forces us to handle `null` props in processors
-                    if (result == null) {
-                        this.stack.pop();
-                        return null;            
+                    if (propDef.expect.includes(type)) {
+                        const node: CalcDecisionPoint = decisionTree[type];
+                        propResult = this.handle(cursor, node);
+                        break; // FIXME: in this case cursor does not move to next sibling
                     }
+                    if (isOptionalParam) {
+                        // skip to the next prop
+                        break;
+                    }
+                    propResult = expressionError(`Unexpected ${cursor.type.name}.`)
+                    break;
+                } while (this.moveToNextSibling(cursor));
 
-                    props[key] = result;
-                }
+            } else if ('expectMany' in propDef) {
+                let values: unknown[] = [];
+                do {
+                    const type = cursor.type.id as TermValue;
+                    if (propDef.expectMany.includes(type)) {
+                        const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
+                        const val = this.handle(cursor, node);
+                        if (val == null) {
+                            values = [];
+                            break;
+                        }
+                        values.push(val);
+                    } 
+                } while (this.moveToNextSibling(cursor));
+
+                propResult = values;
             }
 
-            const val = node.process(this, props);
-            this.stack.pop();
-            return val;
-        }
-
-        if ('process' in node) {
-            this.stack.push(cursor.type.id as TermValue);
-            const val = node.process(this, {});
-            this.stack.pop();
-            return val;
-        }
-
-        return null;
-    }
-
-    private collectChildValues(cursor: TreeCursor, types: TermValue[]): unknown[] {
-        this.isErrorNode(cursor)
-        if (!cursor.firstChild()) return [];
-        const values: unknown[] = [];
-        do {
-            const type = cursor.type.id as TermValue;
-            if (types.includes(type)) {
-                const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
-                const val = this.handle(cursor, node);
-                if (val == null) {
-                    cursor.parent();
-                    return [];
+            // prevent processing, or else it forces us to handle `null` props in processors
+            if (propResult == null) {
+                if (isOptionalParam) {
+                    // because it's optinal we just skip it
+                    // if (!this.moveToNextSibling(cursor)) throw 'What to do next?';
+                    continue;
                 }
-                values.push(val);
-            } 
-            else this.isErrorNode(cursor)
-        } while (cursor.nextSibling());
-        cursor.parent();
-        return values;
-    }
-
-    private getValueOfFirstChildType(cursor: TreeCursor, types: TermValue[]): unknown | null {
-        this.isErrorNode(cursor)
-        if (!cursor.firstChild()) return null;
-        let value: unknown = null;
-        do {
-            const type = cursor.type.id as TermValue;
-            if (types.includes(type)) {
-                const node: CalcDecisionPoint = decisionTree[type];
-                value = this.handle(cursor, node);
+                ret = null;
+                console.groupEnd();
                 break;
             }
-            else this.isErrorNode(cursor)
-        } while (cursor.nextSibling());
-        cursor.parent();
-        return value;
-    }
 
-    private isErrorNode(cursor: TreeCursor) {
-        if (cursor.type.id === 0) {
-            console.log('ERROR NODE:', this.sliceDoc(cursor.from, cursor.to), cursor.from, cursor.to);
+            if (isExpressionResultError(propResult)) {
+                const err = propResult as ExpressionResultError;
+                // const valueProp = props
+                // if (valueProp?.unit && !err.unit) {
+                //     ret = { ...err, unit: valueProp.unit };
+                //     console.groupEnd();
+                //     break;
+                // }
+                ret = err;
+                console.groupEnd();
+                break;
+            }
+            
+
+            props[propDef.key] = propResult;
+            console.groupEnd();
+
+            if (!this.moveToNextSibling(cursor)) {
+                ret = props;
+                // Check if all required params are collected
+                for (let index = 0; index < point.props.length; index++) {
+                    const propDef = point.props[index];
+                    if (!(propDef.key in props) && !('optional' in propDef && propDef.optional)) {
+                        ret = null;
+                        break;
+                    }
+                }
+                break;
+            };
         }
-    }    
+
+        // if (ret === undefined) ret = point.process(this, props);
+
+        // if (ret === undefined) throw `It's still undefined!`
+        // if (typeof ret === 'object' && ret != null && (!('n' in ret) || ret.n === undefined ) ) throw `It's still undefined!`
+        if (ret === undefined) ret = props;
+
+        this.moveToParent(cursor);
+
+        console.groupEnd()
+
+        return ret;
+    } 
 }
