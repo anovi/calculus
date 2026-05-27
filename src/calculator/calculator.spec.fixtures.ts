@@ -277,26 +277,22 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'nonsense conversion: into a number',
     doc: '222 m² in 2',
     expected: [],
-    skip: true,
   },
   {
     name: 'nonsense expression: two expressions over comma',
     doc: '3 + 3, 3 + 3\n',
     expected: [],
-    skip: true,
   },
   {
     name: 'nonsense expression: normal expression + two expressions over comma',
     doc: '1\n23 + 3, 3 + 3\n',
     expected: [1],
-    skip: true,
   },
   {
     name: 'several conversions in a row',
     doc: '100 cm in m in km',
     expected: ['0.001'],
     expectedUnits: ['km'],
-    skip: true,
   },
   // Formatting
   {

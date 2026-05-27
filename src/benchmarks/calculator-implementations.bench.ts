@@ -1,8 +1,8 @@
 import { bench, describe } from 'vitest';
 
 import { parser } from '../language/baseline/calculus-language';
-import { MathCalculator as CalculatorCurrent } from '../calculator/calculator';
-import { MathCalculator as CalculatorAfterRefactoring } from '../calculator/calculator-after-refactoring';
+import { MathCalculator as CalculatorCurrent } from '../calculator/calculator-state-machine';
+import { MathCalculator as CalculatorAfterRefactoring } from '../calculator/calculator';
 import { MathCalculator as CalculatorBeforeRefactoring } from '../calculator/calculator-before-refactoring';
 import { calculatorFixtures, createMockRatesStore } from '../calculator/calculator.spec.fixtures';
 

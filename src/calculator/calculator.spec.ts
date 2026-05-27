@@ -6,7 +6,7 @@ import Decimal from 'decimal.js';
 
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
 import { createUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
-import { CalcValue, MathCalculator } from './calculator-before-refactoring';
+import { CalcValue, MathCalculator } from './calculator';
 import { calculatorFixtures, createMockRatesStore } from './calculator.spec.fixtures';
 import { printTree } from '../lib/tree';
 
@@ -53,7 +53,7 @@ describe('CalcDoc grammar', () => {
             const result = parser.parse(doc);
             printTree(result)
             const cursor = result.cursor();
-            const calculator = new MathCalculator(sliceDoc, createMockRatesStore(), /* doc */);
+            const calculator = new MathCalculator(sliceDoc, createMockRatesStore(), doc);
             const res = calculator.assemble(cursor);
 
             try {

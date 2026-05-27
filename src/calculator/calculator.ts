@@ -74,14 +74,6 @@ type CalcDecisionPoint =
     | QuickDecision
     | TermValue;
 
-const ExpectChildrenState = {
-    Complete: 0,
-    ReadNextProp: 1,
-    ValidatePropResult: 2,
-    AdvanceCursorOrComplete: 3,
-} as const;
-type ExpectChildrenState = (typeof ExpectChildrenState)[keyof typeof ExpectChildrenState];
-
 
 function isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
     return Boolean(expr.unit && typeof expr.unit === 'string');
@@ -406,13 +398,12 @@ export class MathCalculator implements Ctx {
     sliceDoc: (from: number, to?: number) => string;
     
     private lineIndexes: number[];
-    private currentLine: [number, number] = [-1, -1];
     private currentLineIndex: number = 0;
+    private currentLine: [number, number] = [-1, -1];
 
     assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
         this.cursor = cursor;
         if (cursor.type.id !== terms.CalcDoc) {
-            console.error('Cursor is not on CalcDoc root node!');
             return null;
         }
         return this.processLines(cursor);
@@ -464,21 +455,19 @@ export class MathCalculator implements Ctx {
             }
         }
 
-        const normalized: ExpressionResult[] = [];
-        for (const arg of args) {
+        const normalizeArg = (arg: ExpressionResult): ExpressionResult => {
             if (baseUnit && arg.unit && arg.unit !== baseUnit) {
                 if (!areUnitsCompatible(baseUnit, arg.unit)) {
                     return { n: new Decimal(NaN), unit: baseUnit };
                 }
-                normalized.push(this.convert({ ...arg, unit: arg.unit }, baseUnit));
-            } else {
-                normalized.push(arg);
+                return this.convert(arg, baseUnit);
             }
-        }
+            return arg;
+        };
 
-        let result = normalized[0].n;
-        for (let index = 1; index < normalized.length; index++) {
-            const exp = normalized[index];
+        let result = normalizeArg(args[0]).n
+        for (let index = 1; index < args.length; index++) {
+            const exp = normalizeArg(args[index]);
             switch (operator) {
                 case '-':
                     result = result.minus(exp.n);
@@ -617,110 +606,88 @@ export class MathCalculator implements Ctx {
         if (!this.moveToFirstChild(cursor)) return null;
 
         const props: Record<string, unknown> = {};
-        let result: null|Record<string, unknown>|ExpressionResultError = props;
-        let state: ExpectChildrenState = ExpectChildrenState.ReadNextProp;
-        let propIndex = -1;
-        let currentPropResult: unknown = undefined;
 
-        while (state !== ExpectChildrenState.Complete) {
-            if (state === ExpectChildrenState.ReadNextProp) propIndex++;
+        let ret: undefined|null|Record<string, unknown>|ExpressionResultError = undefined;
 
-            if (propIndex >= point.props.length) {
-                state = ExpectChildrenState.Complete;
-                continue;
-            }
-
-            const propDef = point.props[propIndex];
+        for (let index = 0; index < point.props.length; index++) {
+            const propDef = point.props[index];
             const isOptionalParam = Boolean('expect' in propDef && propDef.optional);
-
-            if (state === ExpectChildrenState.ReadNextProp) {
-                currentPropResult = undefined;
-
-                if ('expect' in propDef) {
-                    do {
-                        const type = cursor.type.id as TermValue;
-                        if (decisionTree[type] === SKIP) {
-                            continue;
-                        }
-                        if (propDef.expect.includes(type)) {
-                            const node: CalcDecisionPoint = decisionTree[type];
-                            currentPropResult = this.handle(cursor, node);
-                            break;
-                        }
-                        if (isOptionalParam) {
-                            break;
-                        }
-                        currentPropResult = expressionError(`Unexpected ${cursor.type.name}.`);
-                        break;
-                    } while (this.moveToNextSibling(cursor));
-                } else {
-                    const values: unknown[] = [];
-                    do {
-                        const type = cursor.type.id as TermValue;
-                        if (!propDef.expectMany.includes(type)) {
-                            continue;
-                        }
-                        const node: CalcDecisionPoint = decisionTree[type];
-                        const value = this.handle(cursor, node);
-                        if (value == null) {
-                            values.length = 0;
-                            break;
-                        }
-                        values.push(value);
-                    } while (this.moveToNextSibling(cursor));
-                    currentPropResult = values;
-                }
-
-                state = ExpectChildrenState.ValidatePropResult;
-                continue;
-            }
-
-            if (state === ExpectChildrenState.ValidatePropResult) {
-                if (currentPropResult == null) {
-                    if (isOptionalParam) {
-                        state = ExpectChildrenState.ReadNextProp;
+            let propResult: unknown = undefined;
+            
+            if ('expect' in propDef) {
+                do {
+                    const type = cursor.type.id as TermValue;
+                    if (decisionTree[type] === SKIP) {
                         continue;
                     }
-                    result = null;
-                    state = ExpectChildrenState.Complete;
-                    continue;
-                }
+                    if (propDef.expect.includes(type)) {
+                        const node: CalcDecisionPoint = decisionTree[type];
+                        propResult = this.handle(cursor, node);
+                        break;
+                    }
+                    if (isOptionalParam) {
+                        // skip to the next prop
+                        break;
+                    }
+                    propResult = expressionError(`Unexpected ${cursor.type.name}.`)
+                    break;
+                } while (this.moveToNextSibling(cursor));
 
-                else if (isExpressionResultError(currentPropResult)) {
-                    result = currentPropResult as ExpressionResultError;
-                    state = ExpectChildrenState.Complete;
-                    continue;
-                }
+            } else if ('expectMany' in propDef) {
+                let values: unknown[] = [];
+                do {
+                    const type = cursor.type.id as TermValue;
+                    if (propDef.expectMany.includes(type)) {
+                        const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
+                        const val = this.handle(cursor, node);
+                        if (val == null) {
+                            values = [];
+                            break;
+                        }
+                        values.push(val);
+                    } 
+                } while (this.moveToNextSibling(cursor));
 
-                props[propDef.key] = currentPropResult;
-                state = ExpectChildrenState.AdvanceCursorOrComplete;
-                continue;
+                propResult = values;
             }
 
-            if (state === ExpectChildrenState.AdvanceCursorOrComplete) {
-                if (this.moveToNextSibling(cursor)) {
-                    state = ExpectChildrenState.ReadNextProp;
+            // prevent processing, or else it forces us to handle `null` props in processors
+            if (propResult == null) {
+                if (isOptionalParam) {
+                    // because it's optinal we just skip it
                     continue;
                 }
+                ret = null;
+                break;
+            }
 
+            if (isExpressionResultError(propResult)) {
+                const err = propResult as ExpressionResultError;
+                ret = err;
+                break;
+            }
+            
+
+            props[propDef.key] = propResult;
+
+            if (!this.moveToNextSibling(cursor)) {
+                ret = props;
                 // Check if all required params are collected
-                for (const requiredPropDef of point.props) {
-                    if (
-                        !(requiredPropDef.key in props) &&
-                        !('optional' in requiredPropDef && requiredPropDef.optional)
-                    ) {
-                        result = null;
+                for (let index = 0; index < point.props.length; index++) {
+                    const propDef = point.props[index];
+                    if (!(propDef.key in props) && !('optional' in propDef && propDef.optional)) {
+                        ret = null;
                         break;
                     }
                 }
-
-                state = ExpectChildrenState.Complete;
-            }
+                break;
+            };
         }
+
+        if (ret === undefined) ret = props;
 
         this.moveToParent(cursor);
 
-
-        return result;
+        return ret;
     } 
 }
