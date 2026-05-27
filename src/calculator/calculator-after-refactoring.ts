@@ -286,10 +286,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             if (!params.operatorBefore && (!params.operator || !params.operand2)) return null;
             if ((params.operator && !params.operand2)) return null;
 
-            const operands = [params.operand1];
-            if (params.operand2) operands.push(params.operand2);
-            
-            const result = ctx.performOperation(operator, ...operands);
+            const result = params.operand2
+                ? ctx.performOperation(operator, params.operand1, params.operand2)
+                : ctx.performOperation(operator, params.operand1);
+
             if (convertToUnit) {
                 if (isResultWithUnit(result)) {
                     return ctx.convert(result, convertToUnit);
@@ -398,6 +398,7 @@ export class MathCalculator implements Ctx {
     sliceDoc: (from: number, to?: number) => string;
     
     private lineIndexes: number[];
+    private currentLineIndex: number = 0;
     private currentLine: [number, number] = [-1, -1];
 
     assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
@@ -454,21 +455,19 @@ export class MathCalculator implements Ctx {
             }
         }
 
-        const normalized: ExpressionResult[] = [];
-        for (const arg of args) {
+        const normalizeArg = (arg: ExpressionResult): ExpressionResult => {
             if (baseUnit && arg.unit && arg.unit !== baseUnit) {
                 if (!areUnitsCompatible(baseUnit, arg.unit)) {
                     return { n: new Decimal(NaN), unit: baseUnit };
                 }
-                normalized.push(this.convert({ ...arg, unit: arg.unit }, baseUnit));
-            } else {
-                normalized.push(arg);
+                return this.convert(arg, baseUnit);
             }
-        }
+            return arg;
+        };
 
-        let result = normalized[0].n;
-        for (let index = 1; index < normalized.length; index++) {
-            const exp = normalized[index];
+        let result = normalizeArg(args[0]).n
+        for (let index = 1; index < args.length; index++) {
+            const exp = normalizeArg(args[index]);
             switch (operator) {
                 case '-':
                     result = result.minus(exp.n);
@@ -496,7 +495,7 @@ export class MathCalculator implements Ctx {
     }
 
     private setLine(cursor: TreeCursor) {
-        for (let i = 0; i < this.lineIndexes.length; i = i + 2) {
+        for (let i = this.currentLineIndex; i < this.lineIndexes.length; i = i + 2) {
             const from = this.lineIndexes[i];
             const nextLineFrom = this.lineIndexes[i + 2] || this.lineIndexes[i + 1];
             if (cursor.from >= from &&
@@ -688,7 +687,6 @@ export class MathCalculator implements Ctx {
         if (ret === undefined) ret = props;
 
         this.moveToParent(cursor);
-
 
         return ret;
     } 

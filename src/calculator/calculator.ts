@@ -294,10 +294,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             if (!params.operatorBefore && (!params.operator || !params.operand2)) return null;
             if ((params.operator && !params.operand2)) return null;
 
-            const operands = [params.operand1];
-            if (params.operand2) operands.push(params.operand2);
-            
-            const result = ctx.performOperation(operator, ...operands);
+            const result = params.operand2
+                ? ctx.performOperation(operator, params.operand1, params.operand2)
+                : ctx.performOperation(operator, params.operand1);
+
             if (convertToUnit) {
                 if (isResultWithUnit(result)) {
                     return ctx.convert(result, convertToUnit);
@@ -407,6 +407,7 @@ export class MathCalculator implements Ctx {
     
     private lineIndexes: number[];
     private currentLine: [number, number] = [-1, -1];
+    private currentLineIndex: number = 0;
 
     assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
         this.cursor = cursor;
@@ -505,7 +506,7 @@ export class MathCalculator implements Ctx {
     }
 
     private setLine(cursor: TreeCursor) {
-        for (let i = 0; i < this.lineIndexes.length; i = i + 2) {
+        for (let i = this.currentLineIndex; i < this.lineIndexes.length; i = i + 2) {
             const from = this.lineIndexes[i];
             const nextLineFrom = this.lineIndexes[i + 2] || this.lineIndexes[i + 1];
             if (cursor.from >= from &&
