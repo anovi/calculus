@@ -300,6 +300,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 terms.ExpExpression,
                 terms.Identifier,
                 terms.FunctionCall,
+                terms.ConvertExpression,
             ]
         }, {
             key: 'toUnit',

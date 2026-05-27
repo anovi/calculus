@@ -292,7 +292,6 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: '100 cm in m in km',
     expected: ['0.001'],
     expectedUnits: ['km'],
-    skip: true,
   },
   // Formatting
   {
