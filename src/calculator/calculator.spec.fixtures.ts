@@ -279,6 +279,11 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [],
   },
   {
+    name: 'incompatible units in conversion',
+    doc: '222 m in USD',
+    expected: [NaN],
+  },
+  {
     name: 'nonsense expression: two expressions over comma',
     doc: '3 + 3, 3 + 3\n',
     expected: [],

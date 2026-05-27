@@ -10,7 +10,7 @@ type DecimalNaN = {
 
 export type ExpressionResultOk = { n: Decimal; unit?: string; error?: undefined };
 
-export type ExpressionResultError = { n: Decimal & DecimalNaN; unit?: string; error: string };
+export type ExpressionResultError = { n: Decimal & DecimalNaN; unit?: string; error: string, from: number, to: number };
 
 export type ExpressionResult = ExpressionResultOk | ExpressionResultError;
 

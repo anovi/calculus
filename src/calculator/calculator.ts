@@ -17,18 +17,22 @@ export class CalcValue extends RangeValue {
     readonly name?: string;
     readonly unit?: string;
     readonly error?: string;
-    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string, error?: string) {
+    readonly errorFrom?: number;
+    readonly errorTo?: number;
+    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string, error?: string, errorFrom?: number, errorTo?: number) {
         super();
         this.result = result;
         this.name = name;
         this.dependencies = dependencies;
         this.unit = unit;
         this.error = error;
+        this.errorFrom = errorFrom;
+        this.errorTo = errorTo;
     }
 }
 
-function expressionError(message: string, unit?: string): ExpressionResultError {
-    return { n: new Decimal(NaN), unit, error: message };
+function expressionError(message: string, cursor: TreeCursor, unit?: string): ExpressionResultError {
+    return { n: new Decimal(NaN), unit, error: message, from: cursor.from, to: cursor.to };
 }
 
 function findFirstOperandError(...operands: ExpressionResult[]): ExpressionResult | undefined {
@@ -36,8 +40,9 @@ function findFirstOperandError(...operands: ExpressionResult[]): ExpressionResul
 }
 
 function calcValueFromExpr(expr: ExpressionResult, name?: string): CalcValue {
+    const isError = isExpressionResultError(expr);
     const n = expr.n ?? new Decimal(NaN);
-    return new CalcValue(n, name, undefined, expr.unit, expr.error);
+    return new CalcValue(n, name, undefined, expr.unit, expr.error, isError ? expr.from : undefined, isError ? expr.to : undefined );
 }
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
@@ -50,7 +55,7 @@ type Ctx = {
     parentNodeType: () => TermValue,
     sliceDoc: (from: number, to: number) => string,
     convert(value: ExpressionResult, toUnit: string): ExpressionResult,
-    performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult,
+    performOperation(cursor: TreeCursor, operator: Operator, ...args: ExpressionResult[]): ExpressionResult,
 }
 
 // Props defaults to `any` so decision-tree processors declare narrow prop shapes.
@@ -118,7 +123,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             try {
                 return { n: new Decimal(raw) };
             } catch {
-                return null;
+                return expressionError(`Invalid number "${raw}".`, ctx.cursor);
             }
         }
     },
@@ -145,7 +150,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             if (IdentifierEvalContext.includes(ctx.parentNodeType())) {
                 const val = ctx.bindings.get(name);
                 if (!val) {
-                    return expressionError(`Variable ${name} is not defined or used before its declaration.`);
+                    return expressionError(`Variable "${name}" is not defined.`, ctx.cursor);
                 }
                 return val;
             }
@@ -159,12 +164,19 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             { key: 'id', expect: [terms.Identifier] },
             { key: 'args', expect: [ terms.ArgList ] }
         ],
-        process: (_ctx, props: { id: string, args: ExpressionResult[] }): ExpressionResult|null => {
+        process: (ctx, props: { id: string, args: ExpressionResult[] }): ExpressionResult|null => {
             const argError = findFirstOperandError(...props.args);
             if (argError) return argError;
             const def = BUILTIN_FUNCTION_BY_NAME.get(props.id);
-            if (!def) return null;
-            if (props.args.length !== def.arity) return null;
+            if (!def) return expressionError(`Unknown function "${props.id}".`, ctx.cursor);
+            if (props.args.length !== def.arity) {
+                const n = def.arity;
+                const label = n === 1 ? '1 argument' : `${n} arguments`;
+                return expressionError(
+                    `${props.id}() expects ${label}, got ${props.args.length}.`,
+                    ctx.cursor,
+                );
+            }
             const builtinHandler = builtinHandlers.get(props.id);
             if (!builtinHandler) return null;
             return builtinHandler(props.args);
@@ -287,8 +299,8 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             if ((params.operator && !params.operand2)) return null;
 
             const result = params.operand2
-                ? ctx.performOperation(operator, params.operand1, params.operand2)
-                : ctx.performOperation(operator, params.operand1);
+                ? ctx.performOperation(ctx.cursor, operator, params.operand1, params.operand2)
+                : ctx.performOperation(ctx.cursor, operator, params.operand1);
 
             if (convertToUnit) {
                 if (isResultWithUnit(result)) {
@@ -335,9 +347,12 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
 
     // Unit
     [terms.Unit]: {
-        process: (ctx): string|undefined => {
+        process: (ctx): string | ExpressionResultError | undefined => {
             const raw = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
-            const unit = normalizeUnit(raw) ?? undefined;
+            const unit = normalizeUnit(raw);
+            if (unit == null) {
+                return expressionError(`Unknown unit "${raw}".`, ctx.cursor);
+            }
             return unit;
         }
     }
@@ -436,10 +451,10 @@ export class MathCalculator implements Ctx {
             return { n: newVal, unit: unitB };
         }
 
-        return value;
+        return expressionError(`Cannot convert "${unitA}" to "${unitB}".`, this.cursor, unitA);
     }
 
-    performOperation(operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
+    performOperation(cursor: TreeCursor, operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
         const operandError = findFirstOperandError(...args);
         if (operandError) return operandError;
 
@@ -458,16 +473,23 @@ export class MathCalculator implements Ctx {
         const normalizeArg = (arg: ExpressionResult): ExpressionResult => {
             if (baseUnit && arg.unit && arg.unit !== baseUnit) {
                 if (!areUnitsCompatible(baseUnit, arg.unit)) {
-                    return { n: new Decimal(NaN), unit: baseUnit };
+                    return expressionError(
+                        `Cannot combine ${baseUnit} and ${arg.unit}.`,
+                        cursor,
+                        baseUnit,
+                    );
                 }
                 return this.convert(arg, baseUnit);
             }
             return arg;
         };
 
-        let result = normalizeArg(args[0]).n
+        const first = normalizeArg(args[0]);
+        if (isExpressionResultError(first)) return first;
+        let result = first.n;
         for (let index = 1; index < args.length; index++) {
             const exp = normalizeArg(args[index]);
+            if (isExpressionResultError(exp)) return exp;
             switch (operator) {
                 case '-':
                     result = result.minus(exp.n);
@@ -488,7 +510,7 @@ export class MathCalculator implements Ctx {
                     result = result.pow(exp.n);
                     break;
                 default:
-                    return expressionError(`Unknown operator ${operator}`);
+                    return expressionError(`Unknown operator "${operator}"`, cursor);
             }
         }
         return { n: result, unit: baseUnit };
@@ -629,7 +651,7 @@ export class MathCalculator implements Ctx {
                         // skip to the next prop
                         break;
                     }
-                    propResult = expressionError(`Unexpected ${cursor.type.name}.`)
+                    propResult = expressionError(`Unexpected "${cursor.type.name}".`, cursor)
                     break;
                 } while (this.moveToNextSibling(cursor));
 

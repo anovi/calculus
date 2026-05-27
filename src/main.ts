@@ -21,6 +21,7 @@ import { initializeRatesStore } from './rates-store'
 import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
 import { autocompletion } from '@codemirror/autocomplete'
 import { printTree } from './lib/tree'
+import { calcSyntaxLinter } from './editor/linter'
 
 /** localStorage key used to persist the editor doc across reloads. */
 const STORAGE_KEY = 'calculus:doc'
@@ -79,6 +80,7 @@ const view = new EditorView({
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
       editorTheme,
+      calcSyntaxLinter,
       // safariFocusScrollFix(),
       // emptyLineGutter,
     ],
