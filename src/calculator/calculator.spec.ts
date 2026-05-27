@@ -51,6 +51,7 @@ describe('CalcDoc grammar', () => {
         test(fx.name, () => {
             doc = fx.doc;
             const result = parser.parse(doc);
+            printTree(result)
             const cursor = result.cursor();
             const calculator = new MathCalculator(sliceDoc, createMockRatesStore(), doc);
             const res = calculator.assemble(cursor);

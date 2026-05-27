@@ -59,6 +59,7 @@ type Processor<Props = any> = (ctx: Ctx, props: Props) => unknown;
 
 type CalcDecisionPoint = null | TermValue | { slice: boolean } | {
     process: Processor,
+    breakAtError?: true,
     props?: (
         | { key: string, expect: TermValue[], optional?: boolean }
         | { key: string, expectMany: TermValue[] }
@@ -87,7 +88,6 @@ const IdentifierEvalContext: TermValue[] = [
  * 
  * If `props` is present, they will be calculated and passed to `process`, see {@link CalcDecisionPoint} type.
 */
-// decision
 const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.CalcDoc]: null,
     [terms.Comment]: null,
@@ -180,6 +180,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
 
     // Top level statements
     [terms.NoBinding]: {
+        breakAtError: true,
         props: [{
             key: 'result',
             expect: [
@@ -188,7 +189,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 terms.ExpExpression,
                 terms.AddExpression,
                 terms.FunctionCall,
-                terms.ConvertExpression
+                terms.ConvertExpression,
             ]
         }],
         process: (ctx, props: {result: null | ExpressionResult}): Range<CalcValue>|null => {
@@ -200,6 +201,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
         },
     },
     [terms.Binding]: {
+        breakAtError: true,
         props: [{
             key: 'id',
             expect: [terms.Identifier],
@@ -488,7 +490,7 @@ export class MathCalculator implements Ctx {
     }
 
     private setLine(cursor: TreeCursor) {
-        for (let i = 0; i < this.lineIndexes.length; i++) {
+        for (let i = 0; i < this.lineIndexes.length; i = i + 2) {
             const from = this.lineIndexes[i];
             const nextLineFrom = this.lineIndexes[i + 2] || this.lineIndexes[i + 1];
             if (cursor.from >= from &&
@@ -512,6 +514,7 @@ export class MathCalculator implements Ctx {
                 const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
                 const range = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
                 if (range === null) {
+                    skipLineFrom = this.currentLine[0];
                     continue;
                 }
                 if ('value' in range && range.value instanceof CalcValue) {
@@ -532,17 +535,31 @@ export class MathCalculator implements Ctx {
 			} while (this.moveToNextSibling(cursor));
 			this.moveToParent(cursor);
 		}
+        console.log(pipeline)
 		return pipeline;
 	}
 
     private handle(cursor: TreeCursor, point: CalcDecisionPoint): unknown | null {
         console.log('handle()', cursor.type.name);
 
+        if (cursor.type.id === 0) return null;
+
         if (point === null) return null;
 
         if (typeof point === 'number') return this.handle(cursor, decisionTree[point as TermValue]);
 
         if (typeof point !== 'object') return null;
+
+        if ('breakAtError' in point) {
+            this.moveToFirstChild(cursor);
+            do {
+                if (cursor.type.id === 0) {
+                    this.moveToParent(cursor);
+                    return null;
+                }
+            } while (this.moveToNextSibling(cursor));
+            this.moveToParent(cursor);
+        }
 
         if ('slice' in point) return this.sliceDoc(cursor.from, cursor.to);
 
@@ -596,10 +613,8 @@ export class MathCalculator implements Ctx {
             const isOptionalParam = Boolean('expect' in propDef && propDef.optional);
             let propResult: unknown = undefined;
             console.group('PROP', propDef.key)
-            // if (propDef.key ==='operator')debugger;
             
             if ('expect' in propDef) {
-                // propResult = null;
                 do {
                     const type = cursor.type.id as TermValue;
                     if (decisionTree[type] === null) {
@@ -640,7 +655,6 @@ export class MathCalculator implements Ctx {
             if (propResult == null) {
                 if (isOptionalParam) {
                     // because it's optinal we just skip it
-                    // if (!this.moveToNextSibling(cursor)) throw 'What to do next?';
                     continue;
                 }
                 ret = null;
@@ -650,12 +664,6 @@ export class MathCalculator implements Ctx {
 
             if (isExpressionResultError(propResult)) {
                 const err = propResult as ExpressionResultError;
-                // const valueProp = props
-                // if (valueProp?.unit && !err.unit) {
-                //     ret = { ...err, unit: valueProp.unit };
-                //     console.groupEnd();
-                //     break;
-                // }
                 ret = err;
                 console.groupEnd();
                 break;
@@ -679,10 +687,6 @@ export class MathCalculator implements Ctx {
             };
         }
 
-        // if (ret === undefined) ret = point.process(this, props);
-
-        // if (ret === undefined) throw `It's still undefined!`
-        // if (typeof ret === 'object' && ret != null && (!('n' in ret) || ret.n === undefined ) ) throw `It's still undefined!`
         if (ret === undefined) ret = props;
 
         this.moveToParent(cursor);

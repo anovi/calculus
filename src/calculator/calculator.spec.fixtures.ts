@@ -140,7 +140,6 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'root: odd degree of negative base',
     doc: 'root(-8, 3)',
     expected: [-2],
-    skip: true,
   },
   {
     name: 'root: even degree of negative base (not real)',
@@ -277,15 +276,17 @@ export const calculatorFixtures: CalculatorFixture[] = [
   {
     name: 'nonsense conversion: into a number',
     doc: '222 m² in 2',
-    expected: ['NaN'],
-    expectedUnits: ['m²'],
-    skip: true,
+    expected: [],
   },
   {
     name: 'nonsense expression: two expressions over comma',
-    doc: '23 + 3, 3 + 3',
-    expected: ['NaN'],
-    skip: true,
+    doc: '3 + 3, 3 + 3\n',
+    expected: [],
+  },
+  {
+    name: 'nonsense expression: normal expression + two expressions over comma',
+    doc: '1\n23 + 3, 3 + 3\n',
+    expected: [1],
   },
   {
     name: 'several conversions in a row',
