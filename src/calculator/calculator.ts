@@ -57,15 +57,24 @@ type Ctx = {
 // Props defaults to `any` so decision-tree processors declare narrow prop shapes.
 type Processor<Props = any> = (ctx: Ctx, props: Props) => unknown;
 
-type CalcDecisionPoint = null | TermValue | { slice: boolean } | {
+const SKIP = Symbol('skip');
+const SLICE = Symbol('slice');
+type QuickDecision = typeof SKIP | typeof SLICE;
+
+type CalcDecisionPointWithExpectations = {
     process: Processor,
     breakAtError?: true,
-    props?: (
+    props: (
         | { key: string, expect: TermValue[], optional?: boolean }
         | { key: string, expectMany: TermValue[] }
     )[]
-};
-type CalcDecisionPointWithExpectations = Required<Exclude<CalcDecisionPoint, null | TermValue | { slice: boolean }>>
+}
+
+type CalcDecisionPoint =
+    Omit<CalcDecisionPointWithExpectations, 'props'> & Partial<Pick<CalcDecisionPointWithExpectations, 'props'>>
+    | QuickDecision
+    | TermValue;
+
 
 function isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
     return Boolean(expr.unit && typeof expr.unit === 'string');
@@ -89,19 +98,19 @@ const IdentifierEvalContext: TermValue[] = [
  * If `props` is present, they will be calculated and passed to `process`, see {@link CalcDecisionPoint} type.
 */
 const decisionTree: Record<TermValue, CalcDecisionPoint> = {
-    [terms.CalcDoc]: null,
-    [terms.Comment]: null,
-    [terms.Cpr]: null,
-    [terms.Opr]: null,
-    [terms.Date]: null,
-    [terms.String]: null,
-    [terms.EqualSign]: null,
+    [terms.CalcDoc]: SKIP,
+    [terms.Comment]: SKIP,
+    [terms.Cpr]: SKIP,
+    [terms.Opr]: SKIP,
+    [terms.Date]: SKIP,
+    [terms.String]: SKIP,
+    [terms.EqualSign]: SKIP,
     
     // Operators
-    [terms.ConvertOp]: null,
-    [terms.TimesBinaryOp]: {slice: true},
-    [terms.PlusBinaryOp]: {slice: true},
-    [terms.PowBinaryOp]: {slice: true},
+    [terms.ConvertOp]: SKIP,
+    [terms.TimesBinaryOp]: SLICE,
+    [terms.PlusBinaryOp]: SLICE,
+    [terms.PowBinaryOp]: SLICE,
 
     // Numbers
     [terms.Number]: {
@@ -544,7 +553,9 @@ export class MathCalculator implements Ctx {
 
         if (cursor.type.id === 0) return null;
 
-        if (point === null) return null;
+        if (point === SKIP) return null;
+
+        if (point === SLICE) return this.sliceDoc(cursor.from, cursor.to);
 
         if (typeof point === 'number') return this.handle(cursor, decisionTree[point as TermValue]);
 
@@ -560,8 +571,6 @@ export class MathCalculator implements Ctx {
             } while (this.moveToNextSibling(cursor));
             this.moveToParent(cursor);
         }
-
-        if ('slice' in point) return this.sliceDoc(cursor.from, cursor.to);
 
         let propsResult: Record<string, unknown> | null | ExpressionResultError = {};
 
@@ -617,13 +626,13 @@ export class MathCalculator implements Ctx {
             if ('expect' in propDef) {
                 do {
                     const type = cursor.type.id as TermValue;
-                    if (decisionTree[type] === null) {
+                    if (decisionTree[type] === SKIP) {
                         continue;
                     }
                     if (propDef.expect.includes(type)) {
                         const node: CalcDecisionPoint = decisionTree[type];
                         propResult = this.handle(cursor, node);
-                        break; // FIXME: in this case cursor does not move to next sibling
+                        break;
                     }
                     if (isOptionalParam) {
                         // skip to the next prop
