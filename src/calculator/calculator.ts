@@ -75,6 +75,14 @@ type CalcDecisionPoint =
     | QuickDecision
     | TermValue;
 
+const ExpectChildrenState = {
+    Complete: 0,
+    ReadNextProp: 1,
+    ValidatePropResult: 2,
+    AdvanceCursorOrComplete: 3,
+} as const;
+type ExpectChildrenState = (typeof ExpectChildrenState)[keyof typeof ExpectChildrenState];
+
 
 function isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {unit: string} {
     return Boolean(expr.unit && typeof expr.unit === 'string');
@@ -614,94 +622,116 @@ export class MathCalculator implements Ctx {
         console.group('expect()');
 
         const props: Record<string, unknown> = {};
+        let result: null|Record<string, unknown>|ExpressionResultError = props;
+        let state: ExpectChildrenState = ExpectChildrenState.ReadNextProp;
+        let propIndex = -1;
+        let currentPropResult: unknown = undefined;
 
-        let ret: undefined|null|Record<string, unknown>|ExpressionResultError = undefined;
+        while (state !== ExpectChildrenState.Complete) {
+            if (state === ExpectChildrenState.ReadNextProp) propIndex++;
 
-        for (let index = 0; index < point.props.length; index++) {
-            const propDef = point.props[index];
+            if (propIndex >= point.props.length) {
+                state = ExpectChildrenState.Complete;
+                continue;
+            }
+
+            const propDef = point.props[propIndex];
             const isOptionalParam = Boolean('expect' in propDef && propDef.optional);
-            let propResult: unknown = undefined;
-            console.group('PROP', propDef.key)
-            
-            if ('expect' in propDef) {
-                do {
-                    const type = cursor.type.id as TermValue;
-                    if (decisionTree[type] === SKIP) {
-                        continue;
-                    }
-                    if (propDef.expect.includes(type)) {
-                        const node: CalcDecisionPoint = decisionTree[type];
-                        propResult = this.handle(cursor, node);
-                        break;
-                    }
-                    if (isOptionalParam) {
-                        // skip to the next prop
-                        break;
-                    }
-                    propResult = expressionError(`Unexpected ${cursor.type.name}.`)
-                    break;
-                } while (this.moveToNextSibling(cursor));
 
-            } else if ('expectMany' in propDef) {
-                let values: unknown[] = [];
-                do {
-                    const type = cursor.type.id as TermValue;
-                    if (propDef.expectMany.includes(type)) {
-                        const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
-                        const val = this.handle(cursor, node);
-                        if (val == null) {
-                            values = [];
+            if (state === ExpectChildrenState.ReadNextProp) {
+                currentPropResult = undefined;
+                console.group('PROP', propDef.key);
+
+                if ('expect' in propDef) {
+                    do {
+                        const type = cursor.type.id as TermValue;
+                        if (decisionTree[type] === SKIP) {
+                            continue;
+                        }
+                        if (propDef.expect.includes(type)) {
+                            const node: CalcDecisionPoint = decisionTree[type];
+                            currentPropResult = this.handle(cursor, node);
                             break;
                         }
-                        values.push(val);
-                    } 
-                } while (this.moveToNextSibling(cursor));
+                        if (isOptionalParam) {
+                            break;
+                        }
+                        currentPropResult = expressionError(`Unexpected ${cursor.type.name}.`);
+                        break;
+                    } while (this.moveToNextSibling(cursor));
+                } else {
+                    const values: unknown[] = [];
+                    do {
+                        const type = cursor.type.id as TermValue;
+                        if (!propDef.expectMany.includes(type)) {
+                            continue;
+                        }
+                        const node: CalcDecisionPoint = decisionTree[type];
+                        const value = this.handle(cursor, node);
+                        if (value == null) {
+                            values.length = 0;
+                            break;
+                        }
+                        values.push(value);
+                    } while (this.moveToNextSibling(cursor));
+                    currentPropResult = values;
+                }
 
-                propResult = values;
+                state = ExpectChildrenState.ValidatePropResult;
+                continue;
             }
 
-            // prevent processing, or else it forces us to handle `null` props in processors
-            if (propResult == null) {
-                if (isOptionalParam) {
-                    // because it's optinal we just skip it
+            if (state === ExpectChildrenState.ValidatePropResult) {
+                if (currentPropResult == null) {
+                    if (isOptionalParam) {
+                        console.groupEnd();
+                        state = ExpectChildrenState.ReadNextProp;
+                        continue;
+                    }
+                    result = null;
+                    console.groupEnd();
+                    state = ExpectChildrenState.Complete;
                     continue;
                 }
-                ret = null;
+
+                else if (isExpressionResultError(currentPropResult)) {
+                    result = currentPropResult as ExpressionResultError;
+                    console.groupEnd();
+                    state = ExpectChildrenState.Complete;
+                    continue;
+                }
+
+                props[propDef.key] = currentPropResult;
                 console.groupEnd();
-                break;
+                state = ExpectChildrenState.AdvanceCursorOrComplete;
+                continue;
             }
 
-            if (isExpressionResultError(propResult)) {
-                const err = propResult as ExpressionResultError;
-                ret = err;
-                console.groupEnd();
-                break;
-            }
-            
+            if (state === ExpectChildrenState.AdvanceCursorOrComplete) {
+                if (this.moveToNextSibling(cursor)) {
+                    state = ExpectChildrenState.ReadNextProp;
+                    continue;
+                }
 
-            props[propDef.key] = propResult;
-            console.groupEnd();
-
-            if (!this.moveToNextSibling(cursor)) {
-                ret = props;
                 // Check if all required params are collected
-                for (let index = 0; index < point.props.length; index++) {
-                    const propDef = point.props[index];
-                    if (!(propDef.key in props) && !('optional' in propDef && propDef.optional)) {
-                        ret = null;
+                for (const requiredPropDef of point.props) {
+                    if (
+                        !(requiredPropDef.key in props) &&
+                        !('optional' in requiredPropDef && requiredPropDef.optional)
+                    ) {
+                        result = null;
                         break;
                     }
                 }
-                break;
-            };
-        }
 
-        if (ret === undefined) ret = props;
+                state = ExpectChildrenState.Complete;
+            }
+        }
 
         this.moveToParent(cursor);
 
         console.groupEnd()
 
-        return ret;
+        return result;
     } 
 }
