@@ -34,7 +34,7 @@ export class DocumentSession {
     this.firstDocumentContent = deps.firstDocumentContent ?? ''
     this.readHashId = deps.readHashId ?? readDocumentIdFromHash
     this.writeHashId = deps.writeHashId ?? writeDocumentIdToHash
-    this.subscribeHashChange = deps.subscribeHashChange ?? (() => () => {})
+    this.subscribeHashChange = deps.subscribeHashChange ?? onHashChange
   }
 
   async initialize(): Promise<ActiveDocument> {

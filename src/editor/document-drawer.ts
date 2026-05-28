@@ -64,6 +64,7 @@ export class DocumentDrawer {
 
       button.append(title, date)
       button.addEventListener('click', () => {
+        button.blur()
         this.onSelectDocument(doc.id)
         this.close()
       })

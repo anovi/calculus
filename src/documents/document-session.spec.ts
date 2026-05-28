@@ -79,6 +79,52 @@ class FakeRepository {
 }
 
 describe('DocumentSession', () => {
+  it('wires hash navigation subscription by default', async () => {
+    const repository = new FakeRepository()
+    const preferencesStore = new FakePreferencesStore()
+    const restoreWindow = globalThis.window
+    const captured: Record<string, EventListener> = {}
+    const removed: Record<string, EventListener> = {}
+
+    const location = { hash: '#doc=initial' }
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        addEventListener: (event: string, listener: EventListener) => {
+          captured[event] = listener
+        },
+        removeEventListener: (event: string, listener: EventListener) => {
+          removed[event] = listener
+        },
+        location,
+      },
+    })
+
+    try {
+      const session = new DocumentSession({
+        repository: repository as unknown as import('./document-repository').DocumentRepository,
+        preferencesStore: preferencesStore as unknown as import('./app-preferences-store').AppPreferencesStore,
+      })
+      await session.initialize()
+
+      let navigatedTo: string | null = null
+      const unsubscribe = session.onHashNavigation((id) => {
+        navigatedTo = id
+      })
+
+      location.hash = '#doc=target'
+      captured.hashchange?.(new Event('hashchange'))
+      assert.strictEqual(navigatedTo, 'target')
+      unsubscribe()
+      assert.strictEqual(removed.hashchange, captured.hashchange)
+    } finally {
+      Object.defineProperty(globalThis, 'window', {
+        configurable: true,
+        value: restoreWindow,
+      })
+    }
+  })
+
   it('prefers hash document on initialization', async () => {
     const repository = new FakeRepository()
     const preferencesStore = new FakePreferencesStore()

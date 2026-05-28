@@ -113,9 +113,10 @@ const applyDocument = (content: string) => {
 }
 
 const openDocument = async (id: string) => {
-  const doc = await session.openDocument(id)
-  applyDocument(doc.content)
-  await refreshDrawer()
+  const doc = await session.openDocument(id);
+  applyDocument(doc.content);
+  view.focus();
+  await refreshDrawer();
 }
 
 const createDocument = async () => {
