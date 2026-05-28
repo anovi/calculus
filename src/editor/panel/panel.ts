@@ -7,6 +7,7 @@ import { OperationsDictionary, type Operation, type OperationDef } from './opera
 import { toggleHelp } from './effects';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
 import { helpPanelState } from "./state";
+import { isMobileDevice } from "../../lib/mobile-device";
 
 
 
@@ -326,6 +327,8 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
 });
 
 export function helpPanel() {
+    if (!isMobileDevice()) return [];
+
     return [
         helpPanelState,
         helpPanelFocusSync,
