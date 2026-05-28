@@ -78,6 +78,10 @@ export class DocumentRepository {
     return document
   }
 
+  async deleteDocument(id: string): Promise<void> {
+    await this.storage.deleteDocument(id)
+  }
+
   async listDocumentsByUpdatedDesc(): Promise<DocumentSummary[]> {
     const docs = await this.storage.listDocuments()
     return docs

@@ -93,6 +93,15 @@ describe('DocumentRepository', () => {
     assert.strictEqual(await repo.getLastOpenDocumentId(), 'doc-z')
   })
 
+  it('deletes a document by id', async () => {
+    const storage = new FakeStorage()
+    storage.docs.set('doc-1', { id: 'doc-1', title: 'Doc', content: 'x', createdAt: 1, updatedAt: 2 })
+    const repo = new DocumentRepository({ storage })
+
+    await repo.deleteDocument('doc-1')
+    assert.strictEqual(await repo.getDocument('doc-1'), null)
+  })
+
   it('deletes the oldest document when quota is exceeded and retries', async () => {
     const storage = new FakeStorage()
     storage.docs.set('oldest', { id: 'oldest', title: 'a', content: 'a', createdAt: 1, updatedAt: 1 })

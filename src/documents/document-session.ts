@@ -50,15 +50,19 @@ export class DocumentSession {
   }
 
   async openDocument(id: string): Promise<ActiveDocument> {
-    const document = await this.repository.ensureDocument(id)
-    await this.setActiveDocument(document.id)
-    return { id: document.id, content: document.content }
+    const existing = await this.repository.getDocument(id)
+    if (existing !== null) {
+      await this.setActiveDocument(existing.id)
+      return { id: existing.id, content: existing.content }
+    }
+    await this.setActiveDocument(id)
+    return { id, content: '' }
   }
 
   async createAndOpenDocument(content?: string): Promise<ActiveDocument> {
     const hasVisited = await this.preferencesStore.getHasVisited()
     const resolvedContent = content ?? (hasVisited ? '' : this.firstDocumentContent)
-    const document = await this.repository.createDocument({ content: resolvedContent })
+    const document = await this.createActiveDocument({ content: resolvedContent })
     if (!hasVisited) await this.preferencesStore.setHasVisited(true)
     await this.setActiveDocument(document.id)
     return { id: document.id, content: document.content }
@@ -70,6 +74,10 @@ export class DocumentSession {
 
   async saveActiveDocument(content: string): Promise<void> {
     if (this.activeDocumentId === null) return
+    if (content.trim().length === 0) {
+      await this.repository.deleteDocument(this.activeDocumentId)
+      return
+    }
     await this.repository.saveDocument({ id: this.activeDocumentId, content })
   }
 
@@ -92,7 +100,7 @@ export class DocumentSession {
 
   private async createAndOpenDocumentForVisit(hasVisited: boolean): Promise<ActiveDocument> {
     const content = hasVisited ? '' : this.firstDocumentContent
-    const created = await this.repository.createDocument({ content })
+    const created = await this.createActiveDocument({ content })
     if (!hasVisited) await this.preferencesStore.setHasVisited(true)
     await this.setActiveDocument(created.id)
     return { id: created.id, content: created.content }
@@ -107,9 +115,22 @@ export class DocumentSession {
     }
 
     const content = hasVisited ? '' : this.firstDocumentContent
-    const created = await this.repository.createDocument({ id, content })
+    if (content.trim().length === 0) {
+      if (!hasVisited) await this.preferencesStore.setHasVisited(true)
+      await this.setActiveDocument(id)
+      return { id, content }
+    }
+    const created = await this.createActiveDocument({ id, content })
     if (!hasVisited) await this.preferencesStore.setHasVisited(true)
     await this.setActiveDocument(created.id)
+    return { id: created.id, content: created.content }
+  }
+
+  private async createActiveDocument(options: { id?: string; content: string }): Promise<ActiveDocument> {
+    const created = await this.repository.createDocument(options)
+    if (options.content.trim().length === 0) {
+      await this.repository.deleteDocument(created.id)
+    }
     return { id: created.id, content: created.content }
   }
 }

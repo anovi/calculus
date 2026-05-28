@@ -61,6 +61,7 @@ body {
   z-index: 10010;
   transform: translateX(-100%);
   transition: transform 180ms ease-out;
+  transition-duration: 100ms;
   background: #0f1626;
   border-right: 1px solid var(--border);
   display: flex;

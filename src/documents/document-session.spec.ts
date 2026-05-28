@@ -58,6 +58,10 @@ class FakeRepository {
     return record
   }
 
+  async deleteDocument(id: string): Promise<void> {
+    this.docs.delete(id)
+  }
+
   async listDocumentsByUpdatedDesc(): Promise<DocumentSummary[]> {
     return [...this.docs.values()]
       .sort((a, b) => b.updatedAt - a.updatedAt)
@@ -231,8 +235,7 @@ describe('DocumentSession', () => {
 
     const opened = await session.openDocument('from-link')
     assert.strictEqual(opened.id, 'from-link')
-    assert.strictEqual((await repository.getDocument('from-link'))?.id, 'from-link')
-    assert.strictEqual((await repository.getDocument('from-link'))?.content, '')
+    assert.strictEqual(await repository.getDocument('from-link'), null)
   })
 
   it('creates first explicit new document with welcome content, then empty ones', async () => {
@@ -252,5 +255,48 @@ describe('DocumentSession', () => {
 
     const second = await session.createAndOpenDocument()
     assert.strictEqual(second.content, '')
+    assert.strictEqual(await repository.getDocument(second.id), null)
+  })
+
+  it('does not persist whitespace-only content for active document', async () => {
+    const repository = new FakeRepository()
+    const preferencesStore = new FakePreferencesStore()
+    preferencesStore.hasVisited = true
+    const session = new DocumentSession({
+      repository: repository as unknown as import('./document-repository').DocumentRepository,
+      preferencesStore: preferencesStore as unknown as import('./app-preferences-store').AppPreferencesStore,
+      firstDocumentContent: 'WELCOME',
+      readHashId: () => null,
+      writeHashId: () => {},
+    })
+
+    const doc = await session.createAndOpenDocument()
+    assert.strictEqual(await repository.getDocument(doc.id), null)
+
+    await session.saveActiveDocument('   \n\t  ')
+    assert.strictEqual(await repository.getDocument(doc.id), null)
+  })
+
+  it('deletes persisted document when active content is cleared and re-persists on non-empty save', async () => {
+    const repository = new FakeRepository()
+    const preferencesStore = new FakePreferencesStore()
+    preferencesStore.hasVisited = true
+    const session = new DocumentSession({
+      repository: repository as unknown as import('./document-repository').DocumentRepository,
+      preferencesStore: preferencesStore as unknown as import('./app-preferences-store').AppPreferencesStore,
+      firstDocumentContent: 'WELCOME',
+      readHashId: () => null,
+      writeHashId: () => {},
+    })
+
+    const doc = await session.createAndOpenDocument()
+    await session.saveActiveDocument('hello')
+    assert.strictEqual((await repository.getDocument(doc.id))?.content, 'hello')
+
+    await session.saveActiveDocument('  ')
+    assert.strictEqual(await repository.getDocument(doc.id), null)
+
+    await session.saveActiveDocument('back again')
+    assert.strictEqual((await repository.getDocument(doc.id))?.content, 'back again')
   })
 })
