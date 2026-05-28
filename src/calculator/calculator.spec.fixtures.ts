@@ -243,6 +243,12 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expectedUnits: ['m'],
   },
   {
+    name: 'binding with unit converted on next line',
+    doc: 'length = 20 cm\nlength in m',
+    expected: [20, 0.2],
+    expectedUnits: ['cm', 'm'],
+  },
+  {
     name: 'convertion of number with no unit',
     doc: '10 in EUR',
     expected: [10],

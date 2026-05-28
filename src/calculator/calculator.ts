@@ -88,8 +88,8 @@ const IdentifierEvalContext: TermValue[] = [
     terms.ExpExpression,
     terms.AddExpression,
     terms.MulExpression,
-    terms.ExpExpression,
-    terms.ArgList
+    terms.ConvertExpression,
+    terms.ArgList,
 ]
 
 /**
