@@ -23,9 +23,10 @@ import { calculusHighlightStyle } from './language/baseline/calculus-lang-highli
 import { autocompletion } from '@codemirror/autocomplete'
 import { printTree } from './lib/tree'
 import { calcSyntaxLinter } from './editor/linter'
-
-/** localStorage key used to persist the editor doc across reloads. */
-const STORAGE_KEY = 'calculus:doc'
+import { DocumentRepository } from './documents/document-repository'
+import { DocumentSession } from './documents/document-session'
+import { DocumentDrawer } from './editor/document-drawer'
+import { AppPreferencesStore } from './documents/app-preferences-store'
 
 const DEFAULT_DOC = `// Welcome to calculus.
 // Each line is either a comment, an expression, or a named binding.
@@ -35,38 +36,42 @@ net = 100
 gross = net + net * tax_rate
 `
 
-function loadDoc(): string {
-  try {
-    const cached = localStorage.getItem(STORAGE_KEY)
-    if (cached !== null) return cached
-  } catch {
-    // Storage may be disabled (private mode, quota); fall through to default.
-  }
-  return DEFAULT_DOC
-}
-
-function saveDoc(doc: string): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, doc)
-  } catch {
-    // Ignore quota / availability errors; persistence is best-effort.
-  }
-}
-
 const root = document.querySelector<HTMLDivElement>('#editor')
 if (!root) {
   throw new Error('#editor missing')
 }
+const createDocumentButton = document.querySelector<HTMLButtonElement>('#documents-create')
+if (!createDocumentButton) {
+  throw new Error('#documents-create missing')
+}
 
+const repository = new DocumentRepository()
+const preferencesStore = new AppPreferencesStore()
+const session = new DocumentSession({ repository, preferencesStore, firstDocumentContent: DEFAULT_DOC })
+const initialDocument = await session.initialize()
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null
+let refreshDrawer: () => Promise<void> = async () => {}
+let isApplyingDocument = false
 const persist = EditorView.updateListener.of((update) => {
-  if (update.docChanged) saveDoc(update.state.doc.toString())
+  if (!update.docChanged) return
+  if (isApplyingDocument) return
+  if (persistTimer !== null) clearTimeout(persistTimer)
+  persistTimer = setTimeout(() => {
+    persistTimer = null
+    void session.saveActiveDocument(update.state.doc.toString())
+      .then(() => refreshDrawer())
+      .catch((error) => {
+        console.warn('Failed to persist document:', error)
+      })
+  }, 120)
 })
 
-{(() => {
+{ (() => {
 const view = new EditorView({
   parent: root,
   state: EditorState.create({
-    doc: loadDoc(),
+    doc: initialDocument.content,
     extensions: [
       basicSetup(),
       calculus(),
@@ -89,9 +94,53 @@ const view = new EditorView({
   }),
 })
 
+const drawer = new DocumentDrawer({
+  onSelectDocument: (id) => {
+    void openDocument(id)
+  },
+})
+
+const applyDocument = (content: string) => {
+  isApplyingDocument = true
+  view.dispatch({
+    changes: {
+      from: 0,
+      to: view.state.doc.length,
+      insert: content,
+    },
+  })
+  isApplyingDocument = false
+}
+
+const openDocument = async (id: string) => {
+  const doc = await session.openDocument(id)
+  applyDocument(doc.content)
+  await refreshDrawer()
+}
+
+const createDocument = async () => {
+  const doc = await session.createAndOpenDocument()
+  applyDocument(doc.content)
+  await refreshDrawer()
+}
+
+refreshDrawer = async () => {
+  const docs = await session.listDocuments()
+  const active = session.getActiveDocumentId()
+  drawer.renderDocuments(docs.map((doc) => ({ ...doc, isActive: doc.id === active })))
+}
+
+void refreshDrawer()
+session.onHashNavigation((id) => {
+  void openDocument(id)
+})
+createDocumentButton.addEventListener('click', () => {
+  void createDocument()
+})
+
 // @ts-ignore
 globalThis.printTree = () => printTree(syntaxTree(view.state))
-})()}
+})() }
 
 registerSW({ immediate: true })
 

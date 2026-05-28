@@ -13,7 +13,20 @@
     <title>Calculus</title>
   </head>
   <body>
-    <div id="editor"></div>
+    <div id="app-shell">
+      <div id="documents-controls">
+        <button id="documents-toggle" type="button" aria-label="Open documents" aria-expanded="false">Docs</button>
+        <button id="documents-create" type="button" aria-label="Create new document">+</button>
+      </div>
+      <aside id="documents-drawer" aria-hidden="true">
+        <header class="documents-drawer__header">
+          <h2>Documents</h2>
+        </header>
+        <ul id="documents-list"></ul>
+      </aside>
+      <div id="documents-backdrop" aria-hidden="true"></div>
+      <div id="editor"></div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
