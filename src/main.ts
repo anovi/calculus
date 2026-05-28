@@ -1,7 +1,7 @@
 import { registerSW } from 'virtual:pwa-register'
 
 import { EditorView } from 'codemirror'
-import { EditorState } from '@codemirror/state'
+import { EditorState, type Extension } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
 import { syntaxTree } from '@codemirror/language'
 import { placeholder } from '@codemirror/view'
@@ -76,31 +76,33 @@ const controlsPanel = createDocumentControlsPanel({
   },
 })
 
+const editorExtensions: Extension[] = [
+  basicSetup(),
+  calculus(),
+  autocompletion({
+    maxRenderedOptions: 20,
+    override: [unitCompletionSource, variableCompletionSource],
+  }),
+  formatOnType(),
+  calcRanges(),
+  calcClipboard(),
+  calcResultsPlugin,
+  persist,
+  syntaxHighlighting(calculusHighlightStyle),
+  helpPanel(),
+  ...controlsPanel.extensions,
+  placeholder('Start with a formula or variable…'),
+  editorTheme,
+  calcSyntaxLinter,
+  // safariFocusScrollFix(),
+  // emptyLineGutter,
+]
+
 const view = new EditorView({
   parent: root,
   state: EditorState.create({
     doc: initialDocument.content,
-    extensions: [
-      basicSetup(),
-      calculus(),
-      autocompletion({
-        maxRenderedOptions: 20,
-        override: [unitCompletionSource, variableCompletionSource],
-      }),
-      formatOnType(),
-      calcRanges(),
-      calcClipboard(),
-      calcResultsPlugin,
-      persist,
-      syntaxHighlighting(calculusHighlightStyle),
-      helpPanel(),
-      controlsPanel.extension,
-      placeholder('Start with a formula or variable…'),
-      editorTheme,
-      calcSyntaxLinter,
-      // safariFocusScrollFix(),
-      // emptyLineGutter,
-    ],
+    extensions: editorExtensions,
   }),
 })
 
@@ -116,13 +118,10 @@ drawer = new DocumentDrawer({
 
 const applyDocument = (content: string) => {
   isApplyingDocument = true
-  view.dispatch({
-    changes: {
-      from: 0,
-      to: view.state.doc.length,
-      insert: content,
-    },
-  })
+  view.setState(EditorState.create({
+    doc: content,
+    extensions: editorExtensions,
+  }))
   isApplyingDocument = false
 }
 

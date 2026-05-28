@@ -81,6 +81,17 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 
+#editor .cm-document-controls__button:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+#editor .cm-document-controls__button:disabled:is(:hover, :focus-visible) {
+  color: rgba(241, 245, 255, 0.9);
+  background: transparent;
+}
+
 #documents-drawer {
   position: fixed;
   top: 0;

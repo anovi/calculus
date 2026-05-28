@@ -1,6 +1,6 @@
-import { undo, redo } from '@codemirror/commands'
-import { showPanel, type Panel, type EditorView } from '@codemirror/view'
-import type { Extension } from '@codemirror/state'
+import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands'
+import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } from '@codemirror/view'
+import type { EditorState, Extension } from '@codemirror/state'
 
 import { setButtonIcon } from './button-icons'
 
@@ -10,8 +10,18 @@ export type DocumentControlsPanelDeps = {
 }
 
 export type DocumentControlsPanel = {
-  extension: Extension
+  extensions: Extension[]
   toggleButton: HTMLButtonElement
+}
+
+type HistoryButtons = {
+  undo: HTMLButtonElement
+  redo: HTMLButtonElement
+}
+
+function syncHistoryButtons(state: EditorState, buttons: HistoryButtons): void {
+  buttons.undo.disabled = undoDepth(state) === 0
+  buttons.redo.disabled = redoDepth(state) === 0
 }
 
 function createHistoryButton(
@@ -24,6 +34,7 @@ function createHistoryButton(
   btn.setAttribute('aria-label', kind === 'undo' ? 'Undo' : 'Redo')
   setButtonIcon(btn, kind)
   btn.addEventListener('click', () => {
+    if (btn.disabled) return
     const run = kind === 'undo' ? undo : redo
     run({
       state: view.state,
@@ -54,7 +65,9 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
   setButtonIcon(createButton, 'plus')
   createButton.addEventListener('click', () => deps.onCreateDocument())
 
-  const extension = showPanel.of((view: EditorView): Panel => {
+  let historyButtons: HistoryButtons | null = null
+
+  const panelExtension = showPanel.of((view: EditorView): Panel => {
     const dom = document.createElement('div')
     dom.className = 'cm-document-controls-panel'
 
@@ -62,16 +75,28 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
     start.className = 'cm-document-controls-panel__start'
     start.append(toggleButton, createButton)
 
+    const undoBtn = createHistoryButton(view, 'undo')
+    const redoBtn = createHistoryButton(view, 'redo')
+    historyButtons = { undo: undoBtn, redo: redoBtn }
+    syncHistoryButtons(view.state, historyButtons)
+
     const end = document.createElement('div')
     end.className = 'cm-document-controls-panel__end'
-    end.append(
-      createHistoryButton(view, 'undo'),
-      createHistoryButton(view, 'redo'),
-    )
+    end.append(undoBtn, redoBtn)
 
     dom.append(start, end)
     return { dom, top: true }
   })
 
-  return { extension, toggleButton }
+  const historyButtonSync = ViewPlugin.fromClass(class {
+    update(update: ViewUpdate) {
+      if (!historyButtons) return
+      syncHistoryButtons(update.state, historyButtons)
+    }
+  })
+
+  return {
+    extensions: [panelExtension, historyButtonSync],
+    toggleButton,
+  }
 }
