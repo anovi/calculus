@@ -4,6 +4,7 @@ import { EditorView } from 'codemirror'
 import { EditorState } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
 import { syntaxTree } from '@codemirror/language'
+import { placeholder } from '@codemirror/view'
 
 import {
   basicSetup,
@@ -94,6 +95,7 @@ const view = new EditorView({
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
       controlsPanel.extension,
+      placeholder('Start with a formula or variable…'),
       editorTheme,
       calcSyntaxLinter,
       // safariFocusScrollFix(),

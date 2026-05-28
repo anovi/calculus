@@ -210,17 +210,28 @@ body {
   padding-bottom: 534px;
 }
 
+#editor .cm-placeholder {
+  color: rgba(200, 209, 224, 0.58);
+  font-style: italic;
+}
+
 /*
- * The outer wrapper carries no visible chrome — only transparent left padding
- * that creates the gap between the last character and the pill. This keeps the
- * widget's outer-left edge flush with the text so CodeMirror draws the caret
- * at the real end-of-line, not 1ch into the gap.
+ * Gap before the pill is a separate inline fragment (::before), not margin on
+ * the wrapper. When the pill wraps to its own line, the break can fall between
+ * the gap and the pill so the new line starts flush (no leading empty space).
+ * The wrapper stays display:inline so the outer-left edge is still the gap
+ * start — CodeMirror draws the caret at the real end-of-line for side:1.
  */
 #editor .cm-calc-result {
-  display: inline-block;
-  padding-left: 1ch;
+  display: inline;
   user-select: none;
   /* pointer-events: none; */
+}
+
+#editor .cm-calc-result::before {
+  content: '';
+  display: inline-block;
+  width: 1ch;
 }
 
 #editor .cm-calc-result__pill {
