@@ -12,10 +12,12 @@
     "bench": "vitest bench src/benchmarks",
     "test:watch": "vitest",
     "grammar": "lezer-generator ./src/language/baseline/calculus-language.grammar -o ./src/language/baseline/calculus-language.ts",
-    "grammar-inline-units": "node --experimental-strip-types scripts/generate-inline-units-lezer.ts"
+    "grammar-inline-units": "node --experimental-strip-types scripts/generate-inline-units-lezer.ts",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "25.6.2",
+    "husky": "9.1.7",
     "typescript": "~6.0.2",
     "vite": "^8.0.10",
     "vite-plugin-pwa": "1.3.0",
