@@ -27,6 +27,8 @@ import { DocumentRepository } from './documents/document-repository'
 import { DocumentSession } from './documents/document-session'
 import { DocumentDrawer } from './editor/document-drawer'
 import { AppPreferencesStore } from './documents/app-preferences-store'
+import { createDocumentControlsPanel } from './editor/document-controls-panel'
+import { isMobileDevice } from './lib/mobile-device'
 
 const DEFAULT_DOC = `// Welcome to calculus.
 // Each line is either a comment, an expression, or a named binding.
@@ -40,15 +42,11 @@ const root = document.querySelector<HTMLDivElement>('#editor')
 if (!root) {
   throw new Error('#editor missing')
 }
-const createDocumentButton = document.querySelector<HTMLButtonElement>('#documents-create')
-if (!createDocumentButton) {
-  throw new Error('#documents-create missing')
-}
-
 const repository = new DocumentRepository()
 const preferencesStore = new AppPreferencesStore()
 const session = new DocumentSession({ repository, preferencesStore, firstDocumentContent: DEFAULT_DOC })
 const initialDocument = await session.initialize()
+let drawer: DocumentDrawer | null = null
 
 let persistTimer: ReturnType<typeof setTimeout> | null = null
 let refreshDrawer: () => Promise<void> = async () => {}
@@ -68,6 +66,15 @@ const persist = EditorView.updateListener.of((update) => {
 })
 
 { (() => {
+const controlsPanel = createDocumentControlsPanel({
+  onToggleDocuments: () => {
+    drawer?.toggle()
+  },
+  onCreateDocument: () => {
+    void createDocument()
+  },
+})
+
 const view = new EditorView({
   parent: root,
   state: EditorState.create({
@@ -86,6 +93,7 @@ const view = new EditorView({
       persist,
       syntaxHighlighting(calculusHighlightStyle),
       helpPanel(),
+      controlsPanel.extension,
       editorTheme,
       calcSyntaxLinter,
       // safariFocusScrollFix(),
@@ -94,10 +102,14 @@ const view = new EditorView({
   }),
 })
 
-const drawer = new DocumentDrawer({
+drawer = new DocumentDrawer({
+  toggleButton: controlsPanel.toggleButton,
   onSelectDocument: (id) => {
     void openDocument(id)
   },
+  onClose: isMobileDevice()
+    ? undefined
+    : () => { view.focus() },
 })
 
 const applyDocument = (content: string) => {
@@ -115,7 +127,7 @@ const applyDocument = (content: string) => {
 const openDocument = async (id: string) => {
   const doc = await session.openDocument(id);
   applyDocument(doc.content);
-  view.focus();
+  if (!isMobileDevice()) view.focus();
   await refreshDrawer();
 }
 
@@ -123,20 +135,19 @@ const createDocument = async () => {
   const doc = await session.createAndOpenDocument()
   applyDocument(doc.content)
   await refreshDrawer()
+  drawer?.close()
 }
 
 refreshDrawer = async () => {
   const docs = await session.listDocuments()
   const active = session.getActiveDocumentId()
+  if (!drawer) return
   drawer.renderDocuments(docs.map((doc) => ({ ...doc, isActive: doc.id === active })))
 }
 
 void refreshDrawer()
 session.onHashNavigation((id) => {
   void openDocument(id)
-})
-createDocumentButton.addEventListener('click', () => {
-  void createDocument()
 })
 
 // @ts-ignore

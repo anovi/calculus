@@ -19,37 +19,48 @@ body {
   height: 100%;
 }
 
-#documents-controls {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 10020;
+#editor .cm-panels-top {
+  border: 0;
+  background: transparent;
+  z-index: var(--z-layer-drawer);
+}
+
+#editor .cm-document-controls-panel {
   display: flex;
+  align-items: center;
   gap: 8px;
+  padding: 8px 12px;
 }
 
-#documents-toggle {
-  min-width: 78px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: rgba(20, 28, 46, 0.95);
-  color: var(--heading);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-#documents-create {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: rgba(20, 28, 46, 0.95);
-  color: var(--heading);
-  font-size: 22px;
+#editor .cm-document-controls__button {
+  height: 28px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: rgba(241, 245, 255, 0.9);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
   line-height: 1;
-  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 6px;
   cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: var(--z-layer-floating);
+}
+
+#editor .cm-document-controls__button:is(:hover, :focus-visible) {
+  color: var(--heading);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#editor #documents-create.cm-document-controls__button {
+  width: 28px;
+  padding: 0;
+  font-size: 1.25rem;
+  font-weight: 400;
 }
 
 #documents-drawer {
@@ -58,7 +69,7 @@ body {
   left: 0;
   bottom: 0;
   width: min(420px, 92vw);
-  z-index: 10010;
+  z-index: var(--z-layer-drawer);
   transform: translateX(-100%);
   transition: transform 180ms ease-out;
   transition-duration: 100ms;
@@ -76,7 +87,7 @@ body {
 #documents-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 10000;
+  z-index: var(--z-layer-backdrop);
   background: rgba(0, 0, 0, 0.3);
   opacity: 0;
   pointer-events: none;
@@ -239,7 +250,7 @@ body {
 #cm-suggestions-panel {
   position: fixed;
   right: 0;
-  z-index: 9999;
+  z-index: var(--z-layer-overlay);
   max-width: 100vw;
   display: flex;
   flex-direction: row;
@@ -376,4 +387,10 @@ body {
   --autocomplete-selected-fg: var(--heading);
   --autocomplete-detail-fg: rgba(200, 209, 224, 0.55);
   --autocomplete-matched-fg: var(--accent);
+
+  --z-layer-base: 0;
+  --z-layer-overlay: 900;
+  --z-layer-backdrop: 1000;
+  --z-layer-drawer: 1010;
+  --z-layer-floating: 9999;
 }

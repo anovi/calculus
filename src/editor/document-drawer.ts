@@ -3,7 +3,9 @@ import type { DocumentSummary } from '../documents/document-repository'
 export type DrawerDocument = DocumentSummary & { isActive: boolean }
 
 export type DocumentDrawerDeps = {
+  toggleButton: HTMLButtonElement
   onSelectDocument: (id: string) => void
+  onClose?: () => void
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('sv-SE', {
@@ -21,26 +23,27 @@ export class DocumentDrawer {
   private readonly list: HTMLUListElement
   private readonly backdrop: HTMLElement
   private readonly onSelectDocument: (id: string) => void
+  private readonly onClose?: () => void
   private isOpen = false
 
   constructor(deps: DocumentDrawerDeps) {
-    const toggle = document.querySelector<HTMLButtonElement>('#documents-toggle')
     const drawer = document.querySelector<HTMLElement>('#documents-drawer')
     const list = document.querySelector<HTMLUListElement>('#documents-list')
     const backdrop = document.querySelector<HTMLElement>('#documents-backdrop')
 
-    if (!toggle || !drawer || !list || !backdrop) {
+    if (!drawer || !list || !backdrop) {
       throw new Error('Document drawer markup is missing')
     }
 
-    this.toggleButton = toggle
+    this.toggleButton = deps.toggleButton
     this.drawer = drawer
     this.list = list
     this.backdrop = backdrop
     this.onSelectDocument = deps.onSelectDocument
+    this.onClose = deps.onClose
 
-    this.toggleButton.addEventListener('click', () => this.toggle())
     this.backdrop.addEventListener('click', () => this.close())
+    this.setOpen(false)
   }
 
   renderDocuments(documents: DrawerDocument[]): void {
@@ -77,11 +80,12 @@ export class DocumentDrawer {
     this.setOpen(false)
   }
 
-  private toggle(): void {
+  toggle(): void {
     this.setOpen(!this.isOpen)
   }
 
   private setOpen(open: boolean): void {
+    const wasOpen = this.isOpen
     this.isOpen = open
     this.toggleButton.classList.toggle('is-open', open)
     this.toggleButton.textContent = open ? 'Close' : 'Docs'
@@ -91,6 +95,9 @@ export class DocumentDrawer {
     this.backdrop.classList.toggle('is-open', open)
     this.drawer.setAttribute('aria-hidden', open ? 'false' : 'true')
     this.backdrop.setAttribute('aria-hidden', open ? 'false' : 'true')
+    if (wasOpen && !open) {
+      this.onClose?.()
+    }
   }
 
   private formatDate(doc: DrawerDocument): string {
