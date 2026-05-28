@@ -88,7 +88,6 @@ export class DocumentDrawer {
     const wasOpen = this.isOpen
     this.isOpen = open
     this.toggleButton.classList.toggle('is-open', open)
-    this.toggleButton.textContent = open ? 'Close' : 'Docs'
     this.toggleButton.setAttribute('aria-expanded', open ? 'true' : 'false')
     this.toggleButton.setAttribute('aria-label', open ? 'Close documents' : 'Open documents')
     this.drawer.classList.toggle('is-open', open)

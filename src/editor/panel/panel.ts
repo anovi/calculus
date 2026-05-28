@@ -1,7 +1,7 @@
 import { ViewPlugin, type Panel, type ViewUpdate } from "@codemirror/view";
-import { undo, redo } from "@codemirror/commands";
 import { EditorView } from "@codemirror/view";
 
+import { OPERATION_ICON, setButtonIcon } from '../button-icons';
 import { toggleInlineFormat } from '../editor-commands';
 import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
 import { toggleHelp } from './effects';
@@ -22,24 +22,14 @@ type TouchTapStart = { x: number; y: number; scrollLeft: number };
 ===============================================================================*/
 
 
-// Create templates for buttons
-for (const key in OperationsDictionary) {
-    if (Object.prototype.hasOwnProperty.call(OperationsDictionary, key)) {
-        const op = OperationsDictionary[key as Operation];
-        const html = `<button data-operation="${op.operation}"><div class="op ${op.operation}">${op.sign}</div></button>`;
-        const template = document.createElement('template');
-        template.innerHTML = html.trim();
-    }
-}
-
 function button(
     op: OperationDef,
     onclick: (op: OperationDef) => void,
     scrollContainer?: HTMLElement,
 ) {
-    const template = document.createElement('template');
-    template.innerHTML = `<button data-operation="${op.operation}"><div class="op ${op.operation}">${op.sign}</div></button>`;
-    const dom = template.content.firstElementChild as HTMLButtonElement;
+    const dom = document.createElement('button');
+    dom.dataset.operation = op.operation;
+    setButtonIcon(dom, OPERATION_ICON[op.operation]);
     createButtonHandler(dom, onclick.bind(null, op), scrollContainer);
     return dom;
 }
@@ -127,33 +117,6 @@ function dismissKeyboardButton(view: EditorView): HTMLButtonElement {
     return btn;
 }
 
-function undoRedoButtons(
-    view: EditorView,
-    scrollContainer: HTMLElement,
-): [HTMLButtonElement, HTMLButtonElement] {
-    const undoButton = document.createElement('button');
-    undoButton.innerHTML = "\u293A";
-    createButtonHandler(undoButton, () => {
-        undo({
-            state: view.state,
-            dispatch(transaction) {
-                view.dispatch(transaction);
-            },
-        })
-    }, scrollContainer)
-    const redoButton = document.createElement('button');
-    redoButton.innerHTML = "\u293B";
-    createButtonHandler(redoButton, () => {
-        redo({
-            state: view.state,
-            dispatch(transaction) {
-                view.dispatch(transaction);
-            },
-        })
-    }, scrollContainer)
-    return [undoButton, redoButton];
-}
-
 function suggestionPanel(view: EditorView) {
     const dom = document.createElement("div");
     dom.className = "cm-help-panel";
@@ -164,7 +127,6 @@ function suggestionPanel(view: EditorView) {
 
     const buttonsEl = document.createElement('div');
     buttonsEl.classList.add('suggestion-panel-buttons');
-    buttonsEl.append(...undoRedoButtons(view, buttonsEl));
     
     dom.appendChild(buttonsEl);
     dom.appendChild(dismissBtn);
