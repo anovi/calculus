@@ -7,6 +7,7 @@ import { syntaxTree } from '@codemirror/language'
 
 import {
   basicSetup,
+  calcClipboard,
   calcRanges,
   calcResultsPlugin,
   calculus,
@@ -75,6 +76,7 @@ const view = new EditorView({
       }),
       formatOnType(),
       calcRanges(),
+      calcClipboard(),
       calcResultsPlugin,
       persist,
       syntaxHighlighting(calculusHighlightStyle),

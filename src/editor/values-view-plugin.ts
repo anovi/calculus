@@ -9,9 +9,8 @@ import {
   type EditorView,
   type ViewUpdate,
 } from '@codemirror/view'
-import type Decimal from 'decimal.js'
-
 import { CalcValue } from '../calculator'
+import { formatResult } from './calc-result-format'
 import { calcRangesField, getCalcRanges } from './values-field'
 import { parsePairKey, ratesStore } from '../rates-store'
 import { CurrencyRateUpdated } from './effects'
@@ -95,13 +94,6 @@ class ResultWidget extends WidgetType {
   }
 }
 
-function formatResult(n: Decimal | undefined): string {
-  if (n == null) return 'NaN';
-  if (!n.isFinite()) return n.toString();
-  if (n.isInteger()) return n.toString();
-  return n.toDecimalPlaces(6).toString();
-}
-
 /**
  * Walks the current `calcRangesField` and emits a widget decoration anchored
  * at the end of the line each value occupies. The grammar's `lineEnd` token
@@ -117,12 +109,13 @@ function buildDecorations(view: EditorView): DecorationSet {
   const cursor = set.iter();
   while (cursor.value !== null) {
     const lineEnd = doc.lineAt(cursor.from).to;
-    widgets.push(
-      Decoration.widget({
-        widget: new ResultWidget(cursor.value),
-        side: 1,
-      }).range(lineEnd),
-    )
+    if (!cursor.value.error)
+      widgets.push(
+        Decoration.widget({
+          widget: new ResultWidget(cursor.value),
+          side: 1,
+        }).range(lineEnd),
+      )
     cursor.next();
   }
   return Decoration.set(widgets, true);
