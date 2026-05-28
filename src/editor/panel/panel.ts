@@ -8,13 +8,7 @@ import { toggleHelp } from './effects';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
 import { helpPanelState } from "./state";
 import { isMobileDevice } from "../../lib/mobile-device";
-
-
-
-/** Finger movement above this is a scroll/swipe, not a panel button tap (iOS). */
-const TAP_MOVE_THRESHOLD_PX = 10;
-
-type TouchTapStart = { x: number; y: number; scrollLeft: number };
+import { bindFocusPreservingButton } from '../focus-preserving-button';
 
 
 /*===============================================================================
@@ -30,74 +24,8 @@ function button(
     const dom = document.createElement('button');
     dom.dataset.operation = op.operation;
     setButtonIcon(dom, OPERATION_ICON[op.operation]);
-    createButtonHandler(dom, onclick.bind(null, op), scrollContainer);
+    bindFocusPreservingButton(dom, onclick.bind(null, op), scrollContainer);
     return dom;
-}
-
-function touchMovedBeyondTap(x: number, y: number, start: TouchTapStart): boolean {
-    const dx = x - start.x;
-    const dy = y - start.y;
-    return Math.hypot(dx, dy) > TAP_MOVE_THRESHOLD_PX;
-}
-
-function createButtonHandler<H extends (...bindings: any[]) => void>(
-    element: HTMLButtonElement,
-    onclick: H,
-    scrollContainer?: HTMLElement,
-) {
-    let touchStart: TouchTapStart | null = null;
-    let suppressClick = false;
-
-    element.addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) {
-            touchStart = null;
-            return;
-        }
-        const t = e.touches[0];
-        touchStart = {
-            x: t.clientX,
-            y: t.clientY,
-            scrollLeft: scrollContainer?.scrollLeft ?? 0,
-        };
-    }, { passive: true });
-
-    element.addEventListener('touchmove', (e) => {
-        if (!touchStart || e.touches.length !== 1) return;
-        const t = e.touches[0];
-        if (touchMovedBeyondTap(t.clientX, t.clientY, touchStart)) {
-            touchStart = null;
-        }
-    }, { passive: true });
-
-    element.addEventListener('touchend', (e) => {
-        const start = touchStart;
-        touchStart = null;
-        if (!start) return;
-
-        const t = e.changedTouches[0];
-        if (!t || touchMovedBeyondTap(t.clientX, t.clientY, start)) return;
-        if (
-            scrollContainer &&
-            Math.abs(scrollContainer.scrollLeft - start.scrollLeft) > 1
-        ) {
-            return;
-        }
-
-        e.preventDefault();
-        suppressClick = true;
-        onclick();
-        element.blur();
-    });
-
-    element.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (suppressClick) {
-            suppressClick = false;
-            return;
-        }
-        onclick();
-        element.blur();
-    });
 }
 
 function dismissEditorFocus(view: EditorView) {
@@ -113,7 +41,7 @@ function dismissKeyboardButton(view: EditorView): HTMLButtonElement {
     btn.classList.add('cm-suggestions-main-button');
     btn.setAttribute('aria-label', 'Dismiss keyboard');
     btn.innerHTML = '⌄';
-    createButtonHandler(btn, () => dismissEditorFocus(view));
+    bindFocusPreservingButton(btn, () => dismissEditorFocus(view));
     return btn;
 }
 

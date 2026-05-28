@@ -3,6 +3,7 @@ import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } f
 import type { EditorState, Extension } from '@codemirror/state'
 
 import { setButtonIcon } from './button-icons'
+import { bindFocusPreservingButton } from './focus-preserving-button'
 
 export type DocumentControlsPanelDeps = {
   onToggleDocuments: () => void
@@ -33,7 +34,7 @@ function createHistoryButton(
   btn.className = 'cm-document-controls__button cm-document-controls__history-button'
   btn.setAttribute('aria-label', kind === 'undo' ? 'Undo' : 'Redo')
   setButtonIcon(btn, kind)
-  btn.addEventListener('click', () => {
+  bindFocusPreservingButton(btn, () => {
     if (btn.disabled) return
     const run = kind === 'undo' ? undo : redo
     run({
@@ -42,7 +43,6 @@ function createHistoryButton(
         view.dispatch(transaction)
       },
     })
-    btn.blur()
   })
   return btn
 }
