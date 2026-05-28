@@ -199,6 +199,16 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [0.123],
   },
   {
+    name: 'integer with comma separators',
+    doc: '1,233,232',
+    expected: [1233232],
+  },
+  {
+    name: 'float with comma separators',
+    doc: '1,233,232.232',
+    expected: ['1233232.232'],
+  },
+  {
     name: 'negative',
     doc: '-2',
     expected: [-2],

@@ -119,6 +119,35 @@ expectedTree: `CalcDoc
       Number`,
 },
 {
+name: 'integer with comma separators',
+doc: '1,233,232',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number`,
+},
+{
+name: 'float with comma separators',
+doc: '1,233,232.232',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number`,
+},
+{
+name: 'float with comma in fractional part is invalid',
+doc: '1,233,232.232,333',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number
+      ⚠
+    ⚠
+  NoBinding
+    Literal
+      Number`,
+},
+{
 name: 'expression binding',
 doc: 'some = 2+2',
 expectedTree: `CalcDoc

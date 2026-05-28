@@ -78,8 +78,8 @@ ConvertOp { in }
 	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
 	
 	// Literals
-	Float { @digit+ (" "? @digit+)* "." @digit+ (" "? @digit+)* }
-	Integer { @digit+ (" "? @digit+)* }
+	Float { @digit+ ((" " | ",") @digit+)* "." @digit+ (" "? @digit+)* }
+	Integer { @digit+ ((" " | ",") @digit+)* }
 	Number { Integer | Float }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }

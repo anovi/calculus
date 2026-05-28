@@ -68,8 +68,8 @@ convertOp { in }
 	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
 	
 	// Literals
-	Float { @digit+ "." @digit+ }
-	Integer { @digit+ }
+	Float { @digit+ ((" " | ",") @digit+)* "." @digit+ (" "? @digit+)* }
+	Integer { @digit+ ((" " | ",") @digit+)* }
 	Number { Integer | Float }
 	// Placeholder expanded at grammar build / dev time from `src/units/currencies-list.ts` (see `currency-unit-alternation.ts` and Vite `injectInlineUnitsCurrencyGrammar`).
 	Unit { "@@INJECT@@" }

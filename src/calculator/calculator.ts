@@ -119,7 +119,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     // Numbers
     [terms.Number]: {
         process: (ctx): ExpressionResult | null => {
-            const raw = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to).replaceAll(' ', '');
+            const raw = ctx
+                .sliceDoc(ctx.cursor.from, ctx.cursor.to)
+                .replaceAll(' ', '')
+                .replaceAll(',', '');
             try {
                 return { n: new Decimal(raw) };
             } catch {
