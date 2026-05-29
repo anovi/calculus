@@ -1,12 +1,13 @@
-import { CURRENCY_CODES } from '../../units'
-
 /**
  * Body of the Lezer `Unit { ... }` token rule: string literals joined by `|`,
- * built from {@link CURRENCY_CODES} with lowercase, uppercase, and title-case variants.
+ * built from ISO currency codes with lowercase, uppercase, and title-case variants.
+ *
+ * Accepts codes as an argument so Vite config can call this without `__CURRENCIES__`
+ * (that global is only defined for app bundles via `define`).
  */
-export function buildCurrencyUnitAlternationBody(): string {
+export function buildCurrencyUnitAlternationBody(currencyCodes: readonly string[]): string {
 	const variants = new Set<string>();
-	for (const code of CURRENCY_CODES) {
+	for (const code of currencyCodes) {
 		const upper = code;
 		variants.add(upper);
 		variants.add(code.toLowerCase());
