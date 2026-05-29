@@ -24,8 +24,15 @@ describe('formatResult', () => {
         expect(formatResult(calc(new Decimal('1.2349'), 'BHD'))).toBe('1.235 BHD');
     });
 
-    it('keeps generic precision for non-currency units', () => {
-        expect(formatResult(calc(new Decimal('1.23456789'), 'km'))).toBe('1.234568 km');
+    it('rounds physical units by measure kind', () => {
+        expect(formatResult(calc(new Decimal('1.23456789'), 'km'))).toBe('1.2346 km');
+        expect(formatResult(calc(new Decimal('20.456'), 'C'))).toBe('20.46 C');
+        expect(formatResult(calc(new Decimal('1.2345'), 'L'))).toBe('1.235 L');
+    });
+
+    it('uses fewer fractional digits for large magnitudes', () => {
+        expect(formatResult(calc(new Decimal('1234.56789'), 'km'))).toBe('1234.57 km');
+        expect(formatResult(calc(new Decimal('1234567.89'), 'km'))).toBe('1234568 km');
     });
 
     it('uses six fractional digits for unitless values', () => {

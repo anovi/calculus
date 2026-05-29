@@ -23,6 +23,10 @@ describe('unit conversion libraries (research)', () => {
     assert.strictEqual(convert(10, 'km').to('mi'), CONVERT_KM_TO_MI_10);
   });
 
+  it('convert package converts m to best', () => {
+    assert.strictEqual(convert(123123.1, 'm').to('best').toString(3), "123.123 km");
+  });
+
   it('UnitsConverter implementations match their respective libraries', () => {
     const value = new Decimal(10);
     assert.strictEqual(

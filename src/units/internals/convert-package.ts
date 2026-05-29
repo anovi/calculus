@@ -16,6 +16,7 @@ for (const [_key, entry] of conversions) {
 }
 
 export { convert, getMeasureKind };
+export { MeasureKind } from '../../../node_modules/convert/dist/conversions/types.js';
 export type { Unit };
 
 export const convertPackageUnitsConverter: UnitsConverter = {

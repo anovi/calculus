@@ -2,6 +2,7 @@ import Decimal from 'decimal.js'
 
 import { CalcValue } from '../calculator'
 import { getCurrencyDecimalPlaces, isCurrency } from '../units/currency'
+import { getMeasureDisplayDecimalPlaces } from '../units/measure-display-precision'
 
 function formatNumber(n: Decimal, decimalPlaces?: number): string {
     if (!n.isFinite()) return n.toString();
@@ -16,8 +17,9 @@ function formatNumber(n: Decimal, decimalPlaces?: number): string {
 
 function decimalPlacesForValue(value: CalcValue): number | undefined {
     const unit = value.unit;
-    if (!unit || !isCurrency(unit)) return undefined;
-    return getCurrencyDecimalPlaces(unit);
+    if (!unit) return undefined;
+    if (isCurrency(unit)) return getCurrencyDecimalPlaces(unit);
+    return getMeasureDisplayDecimalPlaces(value.result, unit);
 }
 
 /** Formatted numeric result and unit suffix, e.g. `26.5` or `1.234 usd`. */
