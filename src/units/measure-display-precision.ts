@@ -77,14 +77,18 @@ export function getMeasureDecimalPlaces(unit: string): number | undefined {
 /**
  * Fractional digits for a measured value: magnitude-aware precision capped by kind.
  *
- * `dp = min(maxDp, max(0, DISPLAY_SIGNIFICANT_FIGURES − 1 − ⌊log₁₀|value|⌋))`
+ * For |value| ≥ 1: `dp = min(maxDp, max(0, DISPLAY_SIGNIFICANT_FIGURES − 1 − ⌊log₁₀|value|⌋))`
+ * For |value| < 1: same formula without the kind cap — small results (e.g. ms → min) need
+ * more fractional digits than the per-kind maximum used near unit scale.
  */
 export function magnitudeAwareDecimalPlaces(value: Decimal, maxDp: number): number {
 	const abs = value.abs();
 	if (abs.isZero()) return 0;
 	const magnitude = decimalLog10Floor(abs);
 	const dp = DISPLAY_SIGNIFICANT_FIGURES - 1 - magnitude;
-	return Math.max(0, Math.min(maxDp, dp));
+	const magnitudeAware = Math.max(0, dp);
+	if (magnitude >= 0) return Math.min(maxDp, magnitudeAware);
+	return magnitudeAware;
 }
 
 /** Display precision for a physical unit and numeric result, or `undefined` if unknown. */

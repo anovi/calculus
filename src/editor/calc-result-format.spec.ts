@@ -39,6 +39,10 @@ describe('formatResult', () => {
         expect(formatResult(calc(new Decimal('1.23456789')))).toBe('1.234568');
     });
 
+    it('shows small time conversions without rounding to zero', () => {
+        expect(formatResult(calc(new Decimal('0.0002'), 'min'))).toBe('0.0002 min');
+    });
+
     it('appends unit when present', () => {
         expect(formatResult(calc(new Decimal(26), 'USD'))).toBe('26 USD');
     });

@@ -44,8 +44,9 @@ describe('magnitudeAwareDecimalPlaces', () => {
 		expect(magnitudeAwareDecimalPlaces(new Decimal('1234567.89'), 4)).toBe(0);
 	});
 
-	it('never exceeds the per-kind cap', () => {
-		expect(magnitudeAwareDecimalPlaces(new Decimal('0.0000123456'), 4)).toBe(4);
+	it('does not cap fractional digits below unit scale', () => {
+		expect(magnitudeAwareDecimalPlaces(new Decimal('0.0000123456789'), 3)).toBe(10);
+		expect(magnitudeAwareDecimalPlaces(new Decimal('0.0000123456'), 4)).toBe(10);
 	});
 });
 
