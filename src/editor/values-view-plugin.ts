@@ -65,8 +65,7 @@ class ResultWidget extends WidgetType {
       pill.title = this.value.error;
     } else {
       pill.className = 'cm-calc-result__pill';
-      const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
-      pill.textContent = `= ${formatResult(this.value.result)}${unitSuffix}`;
+      pill.textContent = `= ${formatResult(this.value)}`;
     }
     wrap.appendChild(pill);
 
@@ -183,8 +182,7 @@ class ValueMarker extends GutterMarker {
     if (this.value.error != null) {
       return document.createTextNode('Error');
     }
-    const unitSuffix = this.value.unit ? ` ${this.value.unit}` : '';
-    return document.createTextNode(`${formatResult(this.value.result)}${unitSuffix}`);
+    return document.createTextNode(formatResult(this.value));
   }
 }
 

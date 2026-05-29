@@ -1,18 +1,38 @@
-import type Decimal from 'decimal.js'
+import Decimal from 'decimal.js'
 
-import type { CalcValue } from '../calculator'
+import { CalcValue } from '../calculator'
+import { getCurrencyDecimalPlaces, isCurrency } from '../units/currency'
 
-export function formatResult(n: Decimal | undefined): string {
-    if (n == null) return 'NaN';
+function formatNumber(n: Decimal, decimalPlaces?: number): string {
     if (!n.isFinite()) return n.toString();
-        if (n.isInteger()) return n.toString();
-            return n.toDecimalPlaces(6).toString();
+    if (decimalPlaces != null) {
+        const rounded = n.toDecimalPlaces(decimalPlaces, Decimal.ROUND_HALF_UP);
+        if (rounded.isInteger()) return rounded.toString();
+        return rounded.toString();
+    }
+    if (n.isInteger()) return n.toString();
+    return n.toDecimalPlaces(6).toString();
+}
+
+function decimalPlacesForValue(value: CalcValue): number | undefined {
+    const unit = value.unit;
+    if (!unit || !isCurrency(unit)) return undefined;
+    return getCurrencyDecimalPlaces(unit);
+}
+
+/** Formatted numeric result and unit suffix, e.g. `26.5` or `1.234 usd`. */
+export function formatResult(value: CalcValue): string {
+    const n = value.result;
+    if (n == null || n.isNaN()) return 'NaN';
+
+    const formatted = formatNumber(n, decimalPlacesForValue(value));
+    return value.unit ? `${formatted} ${value.unit}` : formatted;
 }
 
 /** Display suffix after source text, e.g. `= 26` or `= 1.5 usd`. */
 export function formatCalcSuffix(value: CalcValue): string | null {
     if (value.error != null) return '= Error';
-    return `= ${formatResult(value.result)}${value.unit ? ` ${value.unit}` : ''}`;
+    return `= ${formatResult(value)}`;
 }
 
 /** Part after ` = ` when copying, e.g. `26` or `Error`. */
