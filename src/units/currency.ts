@@ -1,4 +1,4 @@
-import { CURRENCIES, CURRENCY_CODES, type CurrencyCode } from './currencies-list';
+import { CURRENCIES, CURRENCY_CODES, type CurrencyCode, type CurrencyEntry } from './currencies-list';
 
 export type { CurrencyCode, CurrencyEntry } from './currencies-list';
 
@@ -33,4 +33,8 @@ export function isCurrencyCode(value: string): value is CurrencyCode {
 
 export function isCurrency(unit: string): unit is CurrencyCode {
 	return isCurrencyCode(unit.toUpperCase());
+}
+
+export function getCurrencies(): readonly CurrencyEntry[] {
+	return CURRENCIES;
 }

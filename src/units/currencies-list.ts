@@ -1,4 +1,4 @@
-import type { CurrencyEntry } from './parse-currencies-csv';
+import type { CurrencyEntry } from "./types";
 
 export type { CurrencyEntry };
 

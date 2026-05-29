@@ -10,7 +10,15 @@ type DecimalNaN = {
 
 export type ExpressionResultOk = { n: Decimal; unit?: string; error?: undefined };
 
-export type ExpressionResultError = { n: Decimal & DecimalNaN; unit?: string; error: string, from: number, to: number };
+export type ExpressionResultError = {
+    n: Decimal & DecimalNaN;
+    unit?: string;
+    error: string;
+    from: number;
+    to: number;
+    /** Canonical spellings the user can pick when {@link normalizeUnit} is ambiguous. */
+    unitChoices?: readonly string[];
+};
 
 export type ExpressionResult = ExpressionResultOk | ExpressionResultError;
 

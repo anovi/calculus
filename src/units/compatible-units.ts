@@ -1,7 +1,7 @@
 import { CURRENCY_CODES } from './currencies-list';
 import { isCurrency } from './currency';
 import { getMeasureKind } from './internals/convert-package';
-import { getConvertUnitSpellings, normalizeUnit } from './unit-name-normalizer';
+import { CANONICAL_UNIT_SPELLINGS, normalizeUnit } from './unit-name-normalizer';
 
 /** Convert targets: no single-letter spellings; `in` is the convert keyword. */
 function isStandaloneConvertSpelling(unit: string): boolean {
@@ -14,7 +14,7 @@ const currencyTargets = Object.freeze(
 
 const convertTargetsByMeasureKind = new Map<number, string[]>();
 
-for (const unit of getConvertUnitSpellings()) {
+for (const unit of CANONICAL_UNIT_SPELLINGS) {
   if (!isStandaloneConvertSpelling(unit)) continue;
   const kind = getMeasureKind(unit);
   if (kind == null) continue;
@@ -33,7 +33,7 @@ for (const list of convertTargetsByMeasureKind.values()) {
  */
 export function getCompatibleConvertUnits(sourceUnit: string): readonly string[] {
   const canonical = normalizeUnit(sourceUnit);
-  if (!canonical) return [];
+  if (!canonical || Array.isArray(canonical)) return [];
 
   if (isCurrency(canonical)) return currencyTargets;
 

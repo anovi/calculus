@@ -105,7 +105,7 @@ function measureKindForUnit(unit: string): MeasureKind | undefined {
 	const direct = getMeasureKind(unit);
 	if (direct != null) return direct;
 	const canonical = normalizeUnit(unit);
-	if (canonical == null) return undefined;
+	if (canonical == null || Array.isArray(canonical)) return undefined;
 	return getMeasureKind(canonical);
 }
 

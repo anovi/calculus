@@ -1,17 +1,11 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
-import { PrefixTree } from '../../lib/prefix-tree';
-import { CURRENCY_CODES, getConvertUnitSpellings } from '../../units';
+import { unitsPrefixTrie } from '../../units';
 import { Unit } from './calculus-language.terms';
 
 export type UnitTokenizerTerms = {
   Unit: number;
 };
-
-const convertUnits = getConvertUnitSpellings();
-
-/** All units/currencies (`100USD`, standalone `EUR` in convert targets). */
-const unitsPrefixTrie = PrefixTree.fromWords([...CURRENCY_CODES, ...convertUnits]);
 
 function isIdentifierChar(code: number) {
   return (

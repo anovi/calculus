@@ -1,12 +1,4 @@
-/** One circulating currency row (see `currencies-list.csv`). */
-export interface CurrencyEntry {
-	readonly code: string;
-	readonly name: string;
-	readonly symbol?: string;
-	readonly fractionalUnit?: string;
-	/** Minor units per major unit (e.g. 100 cents per dollar). */
-	readonly numberToBasic?: number;
-}
+import type { CurrencyEntry } from "./types";
 
 const ISO_CODE = /^[A-Z]{3}$/;
 

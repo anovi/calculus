@@ -1,5 +1,14 @@
 import Decimal from 'decimal.js';
 
+/** One circulating currency row (see `currencies-list.csv`). */
+export interface CurrencyEntry {
+	readonly code: string;
+	readonly name: string;
+	readonly symbol?: string;
+	readonly fractionalUnit?: string;
+	/** Minor units per major unit (e.g. 100 cents per dollar). */
+	readonly numberToBasic?: number;
+}
 
 export interface UnitsConverter {
     canConvert(unitA: string, unitB: string): boolean;

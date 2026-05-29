@@ -3,7 +3,12 @@ import { TreeCursor } from '@lezer/common';
 import { RangeValue, Range } from "@codemirror/state";
 
 import { terms, type TermValue } from '../language';
-import { normalizeUnit, areUnitsCompatible, canConvert, convertValue } from '../units';
+import {
+    normalizeUnit,
+    areUnitsCompatible,
+    canConvert,
+    convertValue,
+} from '../units';
 import { isCurrency } from '../units/currency';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
@@ -19,7 +24,17 @@ export class CalcValue extends RangeValue {
     readonly error?: string;
     readonly errorFrom?: number;
     readonly errorTo?: number;
-    constructor(result: Decimal, name?: string, dependencies?: string[], unit?: string, error?: string, errorFrom?: number, errorTo?: number) {
+    readonly unitChoices?: readonly string[];
+    constructor(
+        result: Decimal,
+        name?: string,
+        dependencies?: string[],
+        unit?: string,
+        error?: string,
+        errorFrom?: number,
+        errorTo?: number,
+        unitChoices?: readonly string[],
+    ) {
         super();
         this.result = result;
         this.name = name;
@@ -28,6 +43,7 @@ export class CalcValue extends RangeValue {
         this.error = error;
         this.errorFrom = errorFrom;
         this.errorTo = errorTo;
+        this.unitChoices = unitChoices;
     }
 }
 
@@ -42,7 +58,16 @@ function findFirstOperandError(...operands: ExpressionResult[]): ExpressionResul
 function calcValueFromExpr(expr: ExpressionResult, name?: string): CalcValue {
     const isError = isExpressionResultError(expr);
     const n = expr.n ?? new Decimal(NaN);
-    return new CalcValue(n, name, undefined, expr.unit, expr.error, isError ? expr.from : undefined, isError ? expr.to : undefined );
+    return new CalcValue(
+        n,
+        name,
+        undefined,
+        expr.unit,
+        expr.error,
+        isError ? expr.from : undefined,
+        isError ? expr.to : undefined,
+        isError ? expr.unitChoices : undefined,
+    );
 }
 
 type Operator = '-' | '+' | '/' | '*' | '%' | '^';
@@ -355,6 +380,15 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             const unit = normalizeUnit(raw);
             if (unit == null) {
                 return expressionError(`Unknown unit "${raw}".`, ctx.cursor);
+            }
+            if (Array.isArray(unit)) {
+                return {
+                    n: new Decimal(NaN),
+                    error: `There is unit ambiguety: ${unit.join(', ')}.`,
+                    from: ctx.cursor.from,
+                    to: ctx.cursor.to,
+                    unitChoices: unit,
+                };
             }
             return unit;
         }

@@ -37,14 +37,30 @@ export function createMockRatesStore(): RatesStore {
   });
 }
 
+/** Per-row calculation error (no numeric result). */
+export type CalculatorExpectedError = {
+  error: string;
+  unitChoices?: readonly string[];
+};
+
+/** Per-row expected value: numeric result or an error. */
+export type CalculatorExpectedRow = number | string | CalculatorExpectedError;
+
+export function isCalculatorExpectedError(
+  row: CalculatorExpectedRow,
+): row is CalculatorExpectedError {
+  return typeof row === 'object' && row !== null && 'error' in row;
+}
+
 export type CalculatorFixture = {
   name: string;
   doc: string;
   /**
    * Expected per-row result. Use a string when the exact decimal matters
    * (avoids any float round-trip through the test source).
+   * Use `{ error, unitChoices? }` when the line should not calculate.
    */
-  expected: (number | string)[];
+  expected: CalculatorExpectedRow[];
   /** When set, asserts `CalcValue.unit` per row (use `undefined` for rows without a unit). */
   expectedUnits?: (string | undefined)[];
   skip?: boolean;
@@ -245,6 +261,26 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'units convertion',
     doc: '10 km in mi',
     expected: [6.2137119223733395],
+  },
+  {
+    name: 'time: milliseconds to minutes',
+    doc: '123123 ms in min',
+    expected: [2.05205],
+    expectedUnits: ['min'],
+  },
+  {
+    name: 'time: megaseconds to minutes',
+    doc: '2.2 Ms in min',
+    expected: ['36666.66666666667'],
+    expectedUnits: ['min'],
+  },
+  {
+    name: 'ambiguous unit: MS',
+    doc: '100 MS',
+    expected: [{
+      error: 'There is unit ambiguety: Ms, ms.',
+      unitChoices: ['Ms', 'ms'],
+    }],
   },
   {
     name: 'compatible units: length addition with conversion',

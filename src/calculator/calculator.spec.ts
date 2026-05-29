@@ -7,7 +7,12 @@ import Decimal from 'decimal.js';
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
 import { createUnitTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
 import { CalcValue, MathCalculator } from './calculator';
-import { calculatorFixtures, createMockRatesStore } from './calculator.spec.fixtures';
+import {
+    calculatorFixtures,
+    createMockRatesStore,
+    isCalculatorExpectedError,
+    type CalculatorExpectedRow,
+} from './calculator.spec.fixtures';
 import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
@@ -21,15 +26,34 @@ const parser = buildParser(grammarSource, {
 	},
 })
 
-function assertValues(values: Range<CalcValue>[], assertions: (number | string)[]) {
-    if (!values || values.length !== assertions.length) throw Error('Values and assertions must be equal length!');
+function assertExpected(values: Range<CalcValue>[], assertions: CalculatorExpectedRow[]) {
+    if (!values || values.length !== assertions.length) {
+        throw Error('Values and assertions must be equal length!');
+    }
     for (let index = 0; index < values.length; index++) {
-        const actual = values[index].value.result;
-        const expected = new Decimal(assertions[index]);
-        const match = (actual.isNaN() && expected.isNaN()) || actual.eq(expected);
+        const row = values[index].value;
+        const expected = assertions[index];
+
+        if (isCalculatorExpectedError(expected)) {
+            assert.ok(row.result.isNaN(), `Row ${index}: expected error, got ${row.result}`);
+            assert.strictEqual(row.error, expected.error, `Row ${index}: error message`);
+            if (expected.unitChoices !== undefined) {
+                assert.deepStrictEqual(
+                    row.unitChoices,
+                    expected.unitChoices,
+                    `Row ${index}: unitChoices`,
+                );
+            }
+            assert.ok(row.errorFrom != null && row.errorTo != null, `Row ${index}: error range`);
+            continue;
+        }
+
+        const actual = row.result;
+        const expectedDecimal = new Decimal(expected);
+        const match = (actual.isNaN() && expectedDecimal.isNaN()) || actual.eq(expectedDecimal);
         assert.ok(
             match,
-            `Row ${index}: expected ${expected.toString()}, got ${actual.toString()}`
+            `Row ${index}: expected ${expectedDecimal.toString()}, got ${actual.toString()}`
         );
     }
 }
@@ -59,7 +83,7 @@ describe('CalcDoc grammar', () => {
             try {
                 assert.ok(result instanceof Tree);
                 assert.ok(res)
-                assertValues(res, fx.expected)
+                assertExpected(res, fx.expected)
                 if (fx.expectedUnits) assertUnits(res, fx.expectedUnits)
             } catch (error) {
                 printTree(result);

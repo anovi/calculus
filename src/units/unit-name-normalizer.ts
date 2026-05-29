@@ -3,40 +3,33 @@ import { unitsObject } from '../../node_modules/convert/dist/generated/parse-uni
 import { CURRENCY_CODES } from './currencies-list';
 
 /** Every unit spelling accepted by the `convert` package (names, symbols, aliases). */
-const CONVERT_UNIT_SPELLINGS = Object.freeze(Object.keys(unitsObject));
+export const CANONICAL_UNIT_SPELLINGS = Object.freeze(Object.keys(unitsObject));
 
-const canonicalConvertByLower = new Map<string, string>();
-for (const unit of CONVERT_UNIT_SPELLINGS) {
-  const lower = unit.toLowerCase();
-  if (!canonicalConvertByLower.has(lower)) canonicalConvertByLower.set(lower, unit);
-}
-
-function normalizeConvertUnit(unit: string): string | null {
-  return canonicalConvertByLower.get(unit.toLowerCase()) ?? null;
-}
-
-function buildCanonicalUnitByLower(): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const code of CURRENCY_CODES) {
-    map.set(code.toLowerCase(), code);
-  }
-  for (const unit of CONVERT_UNIT_SPELLINGS) {
+function buildCanonicalUnitByLower(
+  map: Map<string, string[]>,
+  collection: readonly string[]
+): Map<string, string[]> {
+  for (const unit of collection) {
     const lower = unit.toLowerCase();
-    if (!map.has(lower)) {
-      map.set(lower, normalizeConvertUnit(unit) ?? unit);
-    }
+    let arr = map.get(lower);
+    if (!arr) arr = [];
+    arr.push(unit);
+    map.set(lower, arr);
   }
   return map;
 }
 
-const canonicalUnitByLower = buildCanonicalUnitByLower();
+const currencies = buildCanonicalUnitByLower(new Map(), CURRENCY_CODES);
+const canonicalUnitByLower = buildCanonicalUnitByLower(currencies, CANONICAL_UNIT_SPELLINGS);
 
-/** All physical-unit spellings recognized by the `convert` package. */
-export function getConvertUnitSpellings(): readonly string[] {
-  return CONVERT_UNIT_SPELLINGS;
-}
-
-/** Map lowercase unit text to canonical code (ISO currency or convert unit spelling). */
-export function normalizeUnit(unit: string): string | null {
-  return canonicalUnitByLower.get(unit.toLowerCase()) ?? null;
+/**
+ * Returns canonical unit code (ISO currency or measurement unit spelling).
+ * Case insensitive but returns multiple variants when ambiguity met.
+ * E.g. "MS" can be either "Ms" or "ms".
+ */
+export function normalizeUnit(unit: string): string | string[] | null {
+  const candidates = canonicalUnitByLower.get(unit.toLowerCase()) ?? null;
+  if (candidates == null || candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+  return candidates.find(c => c === unit) || candidates;
 }

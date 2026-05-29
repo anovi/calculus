@@ -1,21 +1,36 @@
-export { canConvert, convertValue, areUnitsCompatible, units } from './unit-converter';
+// Rules:
+// - do not export internals
+// - do not export implementation details, only domain semantics
+
 export * from './types';
-export { CURRENCIES, CURRENCY_CODES } from './currencies-list';
+export {
+    canConvert,
+    convertValue,
+    areUnitsCompatible,
+    getMeasurementUnits,
+} from './unit-converter';
+export {
+    unitsPrefixTrie // TODO: probably should not expose it, and add API
+} from './all-units-vocabluary';
 export {
     getCurrencyDecimalPlaces,
     isCurrency,
     isCurrencyCode,
+    getCurrencies,
     type CurrencyCode,
     type CurrencyEntry,
 } from './currency';
-export { getConvertUnitSpellings, normalizeUnit } from './unit-name-normalizer';
-export { getCompatibleConvertUnits } from './compatible-units';
 export {
-    ALL_MEASURE_KINDS,
-    DISPLAY_SIGNIFICANT_FIGURES,
+    normalizeUnit
+} from './unit-name-normalizer';
+export {
+    formatUnitChoiceLabel,
+} from './unit-display';
+export {
+    getCompatibleConvertUnits
+} from './compatible-units';
+export {
     getMeasureDecimalPlaces,
     getMeasureDisplayDecimalPlaces,
     magnitudeAwareDecimalPlaces,
-    MAX_DECIMAL_PLACES_BY_MEASURE_KIND,
 } from './measure-display-precision';
-export { allUnitVocabluary } from './all-unit-vocabluary';

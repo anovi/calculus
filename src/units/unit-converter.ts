@@ -7,7 +7,8 @@ export function canConvert(unitA: string, unitB: string): boolean {
     return convertPackageUnitsConverter.canConvert(unitA, unitB);
 }
 
-/** Same unit, same physical measure kind, or both currencies. */
+// FIXME: it dublicates compatible-units?
+/** Returns `true` for same unit, same physical measure kind, or both are currencies. */
 export function areUnitsCompatible(unitA: string, unitB: string): boolean {
     if (unitA === unitB) return true;
     if (isCurrency(unitA) && isCurrency(unitB)) return true;
@@ -19,3 +20,7 @@ export function convertValue(value: Decimal, unitA: string, unitB: string): Deci
 }
 
 export const units: MeasureEntry[] = _units;
+
+export function getMeasurementUnits(): MeasureEntry[] {
+    return units;    
+}

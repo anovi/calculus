@@ -7,7 +7,7 @@ import {
 import { syntaxTree } from '@codemirror/language';
 import type { SyntaxNode } from '@lezer/common';
 
-import { CURRENCIES, units, type MeasureEntry } from '../../units';
+import { getCurrencies, getMeasurementUnits, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../editor-commands';
 
@@ -23,7 +23,7 @@ const CURRENCY_BOOST = 50;
 const unitCompletionOptions: readonly Completion[] = (() => {
   const out: Completion[] = [];
 
-  for (const entry of units) {
+  for (const entry of getMeasurementUnits()) {
     const apply = canonicalApplyText(entry);
     const primaryName = entry.names[0];
     const seen = new Set<string>();
@@ -52,7 +52,7 @@ const unitCompletionOptions: readonly Completion[] = (() => {
     }
   }
 
-  for (const cur of CURRENCIES) {
+  for (const cur of getCurrencies()) {
     const boost = BOOSTED_CURRENCY_CODES.has(cur.code) ? CURRENCY_BOOST : undefined;
     const boosted = boost !== undefined ? { boost } : {};
     out.push({
