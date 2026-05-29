@@ -12,7 +12,6 @@
     "bench": "vitest bench src/benchmarks",
     "test:watch": "vitest",
     "grammar": "lezer-generator ./src/language/baseline/calculus-language.grammar -o ./src/language/baseline/calculus-language.ts",
-    "grammar-inline-units": "node --experimental-strip-types scripts/generate-inline-units-lezer.ts",
     "prepare": "husky"
   },
   "devDependencies": {

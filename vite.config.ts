@@ -2,11 +2,9 @@ import fs from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
-import { buildCurrencyUnitAlternationBody } from './src/language/inline-units/currency-unit-alternation'
 import { parseCurrenciesCsv } from './src/units/parse-currencies-csv'
 
 const projectRoot = dirname(fileURLToPath(import.meta.url))
@@ -15,28 +13,6 @@ const currenciesCsv = fs.readFileSync(
   'utf8',
 )
 const currencies = parseCurrenciesCsv(currenciesCsv)
-
-const UNIT_MARKER = 'Unit { "@@INJECT@@" }'
-
-function injectInlineUnitsCurrencyGrammar(): Plugin {
-  return {
-    name: 'inject-inline-units-currency-grammar',
-    enforce: 'pre',
-    load(id) {
-      const normalized = id.replace(/\\/g, '/')
-      if (!normalized.includes('inline-units/calculus-language.grammar')) return null
-      if (!/\?raw(?:&|$)/.test(normalized) && !normalized.endsWith('?raw')) return null
-      const pathOnly = id.split('?')[0]
-      let source = fs.readFileSync(pathOnly, 'utf8')
-      if (!source.includes('@@INJECT@@')) return null
-      source = source.replace(
-        UNIT_MARKER,
-        `Unit { ${buildCurrencyUnitAlternationBody(currencies.map((c) => c.code))} }`,
-      )
-      return `export default ${JSON.stringify(source)}`
-    },
-  }
-}
 
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
@@ -59,7 +35,6 @@ export default defineConfig({
     }
   },
   plugins: [
-    injectInlineUnitsCurrencyGrammar(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons.svg'],
