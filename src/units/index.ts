@@ -27,9 +27,6 @@ export {
     formatUnitChoiceLabel,
 } from './unit-display';
 export {
-    getCompatibleConvertUnits
-} from './compatible-units';
-export {
     getMeasureDecimalPlaces,
     getMeasureDisplayDecimalPlaces,
     magnitudeAwareDecimalPlaces,
