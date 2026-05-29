@@ -7,7 +7,7 @@ import {
 	loadSnapshot as defaultLoadSnapshot,
 	saveSnapshot as defaultSaveSnapshot,
 } from "./persistence";
-import type { CurrencyCode } from '../units/currency';
+import type { CurrencyCode } from '../units';
 import {
 	STALE_AFTER_MS,
 	WARMUP_QUOTES,

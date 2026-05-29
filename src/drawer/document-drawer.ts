@@ -1,4 +1,4 @@
-import type { DocumentSummary } from '../documents/document-repository'
+import type { DocumentSummary } from '../documents'
 
 export type DrawerDocument = DocumentSummary & { isActive: boolean }
 

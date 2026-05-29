@@ -1,8 +1,7 @@
 import Decimal from 'decimal.js'
 
 import { CalcValue } from '../calculator'
-import { getCurrencyDecimalPlaces, isCurrency } from '../units/currency'
-import { getMeasureDisplayDecimalPlaces } from '../units/measure-display-precision'
+import { getMeasureDisplayDecimalPlaces, getCurrencyDecimalPlaces, isCurrency } from '../units'
 
 function formatNumber(n: Decimal, decimalPlaces?: number): string {
     if (!n.isFinite()) return n.toString();

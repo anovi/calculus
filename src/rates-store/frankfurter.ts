@@ -1,4 +1,4 @@
-import { isCurrencyCode, type CurrencyCode } from '../units/currency';
+import { isCurrencyCode, type CurrencyCode } from '../units';
 import type { PairEntry } from './types';
 
 const API_BASE = "https://api.frankfurter.dev/v2/rates";

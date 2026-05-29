@@ -9,7 +9,7 @@ import {
     canConvert,
     convertValue,
 } from '../units';
-import { isCurrency } from '../units/currency';
+import { isCurrency } from '../units';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
 import { builtinHandlers } from './builtin-handlers';

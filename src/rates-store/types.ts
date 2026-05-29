@@ -1,4 +1,4 @@
-import type { CurrencyCode } from '../units/currency';
+import type { CurrencyCode } from '../units';
 
 /** Canonical key for a directional currency pair: `"FROM->TO"` (uppercase). */
 export type PairKey = string;

@@ -1,7 +1,6 @@
 export { RatesStore } from './store';
 export type { RatesFetcher, RatesPersistence, RatesStoreDeps } from './store';
 export type { PairEntry, PairKey, PairState } from './types';
-export type { CurrencyCode } from '../units/currency';
 export { STALE_AFTER_MS, WARMUP_QUOTES } from './types';
 export { pairKey, parsePairKey } from './pair-key';
 import { RatesStore } from './store';

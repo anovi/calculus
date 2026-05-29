@@ -1,3 +1,4 @@
+export * from './create-editor';
 export * from './calc-clipboard';
 export * from './values-field';
 export * from './values-view-plugin';
@@ -7,3 +8,4 @@ export * from './basic-setup';
 export * from './base-theme';
 export * from './safari-focus-scroll-fix';
 export * from './calculus-language';
+export * from './document-controls-panel';

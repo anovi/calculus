@@ -1,35 +1,16 @@
 import { registerSW } from 'virtual:pwa-register'
 
 import { EditorView } from 'codemirror'
-import { EditorState, type Extension } from '@codemirror/state'
-import { syntaxHighlighting } from '@codemirror/language'
 import { syntaxTree } from '@codemirror/language'
-import { placeholder } from '@codemirror/view'
 
-import {
-  basicSetup,
-  calcClipboard,
-  calcRanges,
-  calcResultsPlugin,
-  calculus,
-  editorTheme,
-  // safariFocusScrollFix,
-  formatOnType,
-  unitCompletionSource,
-  variableCompletionSource,
-} from './editor'
-import { helpPanel } from './editor/panel'
-import { initializeRatesStore } from './rates-store'
-import { calculusHighlightStyle } from './language/baseline/calculus-lang-highlighting'
-import { autocompletion } from '@codemirror/autocomplete'
 import { printTree } from './lib/tree'
-import { calcSyntaxLinter } from './editor/linter'
-import { DocumentRepository } from './documents/document-repository'
-import { DocumentSession } from './documents/document-session'
-import { DocumentDrawer } from './editor/document-drawer'
-import { AppPreferencesStore } from './documents/app-preferences-store'
-import { createDocumentControlsPanel } from './editor/document-controls-panel'
 import { isMobileDevice } from './lib/mobile-device'
+
+import { createEditor, createDocumentControlsPanel } from './editor'
+import { initializeRatesStore } from './rates-store'
+import { AppPreferencesStore, DocumentRepository, DocumentSession } from './documents'
+import { DocumentDrawer } from './drawer'
+
 
 const DEFAULT_DOC = `// Welcome to calculus.
 // Each line is either a comment, an expression, or a named binding.
@@ -76,34 +57,11 @@ const controlsPanel = createDocumentControlsPanel({
   },
 })
 
-const editorExtensions: Extension[] = [
-  basicSetup(),
-  calculus(),
-  autocompletion({
-    maxRenderedOptions: 20,
-    override: [unitCompletionSource, variableCompletionSource],
-  }),
-  formatOnType(),
-  calcRanges(),
-  calcClipboard(),
-  calcResultsPlugin,
-  persist,
-  syntaxHighlighting(calculusHighlightStyle),
-  helpPanel(),
-  ...controlsPanel.extensions,
-  placeholder('Start with a formula or variable…'),
-  editorTheme,
-  calcSyntaxLinter,
-  // safariFocusScrollFix(),
-  // emptyLineGutter,
-]
-
-const view = new EditorView({
+const { view, setDocument: setEditorDocument } = createEditor({
   parent: root,
-  state: EditorState.create({
-    doc: initialDocument.content,
-    extensions: editorExtensions,
-  }),
+  doc: initialDocument.content,
+  extraExtensions: [persist],
+  panelExtensions: controlsPanel.extensions,
 })
 
 drawer = new DocumentDrawer({
@@ -118,10 +76,7 @@ drawer = new DocumentDrawer({
 
 const applyDocument = (content: string) => {
   isApplyingDocument = true
-  view.setState(EditorState.create({
-    doc: content,
-    extensions: editorExtensions,
-  }))
+  setEditorDocument(content)
   isApplyingDocument = false
 }
 

@@ -1,4 +1,4 @@
-import { isCurrencyCode, type CurrencyCode } from '../units/currency';
+import { isCurrencyCode, type CurrencyCode } from '../units';
 import type { PairKey } from './types';
 
 const SEPARATOR = "->";

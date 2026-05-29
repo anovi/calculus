@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CalcValue } from '../calculator';
 import { formatCalcSuffix, formatResult } from './calc-result-format';
-import { getCurrencyDecimalPlaces } from '../units/currency';
+import { getCurrencyDecimalPlaces } from '../units';
 
 function calc(result: Decimal, unit?: string): CalcValue {
     return new CalcValue(result, undefined, undefined, unit);

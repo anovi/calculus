@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { RatesStore, type RatesFetcher, type RatesPersistence } from "./store";
-import type { CurrencyCode } from '../units/currency';
+import type { CurrencyCode } from '../units';
 import {
 	STALE_AFTER_MS,
 	type PairEntry,
