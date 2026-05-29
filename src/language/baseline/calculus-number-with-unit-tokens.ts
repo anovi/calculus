@@ -1,6 +1,6 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
-import { unitsPrefixTrie } from '../../units';
+import { longestRecognizedUnitSpelling } from '../../units';
 import { Unit } from './calculus-language.terms';
 
 export type UnitTokenizerTerms = {
@@ -39,7 +39,7 @@ function isStandaloneInKeyword(input: InputStream, len: number) {
 
 export function createUnitTokenizer(terms: UnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
-    const suffixLen = unitsPrefixTrie.longestMatchUtf16((rel) => input.peek(rel));
+    const suffixLen = longestRecognizedUnitSpelling((rel) => input.peek(rel));
 
     if (suffixLen === 0) return;
     if (!hasUnitSuffixBoundary(input, suffixLen)) return;

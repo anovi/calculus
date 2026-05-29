@@ -21,7 +21,10 @@ function decimalPlacesFromNumberToBasic(numberToBasic: number | undefined): numb
 	return exponent;
 }
 
-/** ISO currency display precision from minor-units-per-major (`number_to_basic` in CSV). */
+/**
+ * ISO currency display precision from minor-units-per-major.
+ * E.g. for "EUR" returns 100.
+ */
 export function getCurrencyDecimalPlaces(code: string): number | undefined {
 	return DECIMAL_PLACES_BY_CODE.get(code.toUpperCase());
 }

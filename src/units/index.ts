@@ -10,7 +10,7 @@ export {
     getMeasurementUnits,
 } from './unit-converter';
 export {
-    unitsPrefixTrie // TODO: probably should not expose it, and add API
+    longestRecognizedUnitSpelling,
 } from './all-units-vocabluary';
 export {
     getCurrencyDecimalPlaces,
