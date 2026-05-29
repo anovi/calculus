@@ -1,6 +1,7 @@
 import { Range } from "@codemirror/state";
 
-import { pairKey, RatesStore, type CurrencyCode, type PairEntry, type PairKey } from "../rates-store";
+import { pairKey, RatesStore, type PairEntry, type PairKey } from "../rates-store";
+import type { CurrencyCode } from "../units";
 import type { CalcValue, MathCalculator } from "./calculator";
 
 /** Currency rates referenced by fixtures below. Keep in sync with `expected` values. */

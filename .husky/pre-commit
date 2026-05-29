@@ -7,4 +7,4 @@ if [ "$branch" != "main" ]; then
 fi
 
 echo "Running pre-commit checks on main..."
-npm test && npm run typecheck
+npm test && npm run typecheck && npm run lint
