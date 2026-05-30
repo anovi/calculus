@@ -2,7 +2,6 @@ import { combineConfig, Facet, type Extension } from '@codemirror/state'
 import {
   activateHover,
   closeHoverTooltips,
-  EditorView,
   hoverTooltip,
   tooltips,
   type EditorView as EditorViewType,
@@ -81,6 +80,9 @@ function tooltipForValue(
       return {
         dom: buildTooltipDom(content),
         getCoords: () => pillCoords(view, anchorPos) ?? view.coordsAtPos(anchorPos)!,
+        mount: (view) => {
+          console.log(view.dom.querySelector('.cm-tooltip-hover')?.innerHTML)
+        }
       }
     },
   }
@@ -95,28 +97,12 @@ export const calcResultHoverTooltip = hoverTooltip(
   { hideOnChange: true },
 )
 
-const calcResultTooltipTheme = EditorView.baseTheme({
-  '& .cm-tooltip.cm-calc-result-tooltip': {
-    padding: '6px 10px',
-    fontVariantNumeric: 'tabular-nums',
-  },
-  '& .cm-calc-result-tooltip__value': {
-    fontWeight: '600',
-  },
-  '& .cm-calc-result-tooltip__unit': {
-    marginTop: '2px',
-    fontSize: '0.9em',
-    opacity: '0.85',
-  },
-})
-
 /** CodeMirror tooltip for calculation result pills. */
 export function calcResultTooltips(config: CalcResultTooltipConfig = {}): Extension {
   return [
     calcResultTooltipConfig.of(config),
     tooltips(),
     calcResultHoverTooltip,
-    calcResultTooltipTheme,
   ]
 }
 

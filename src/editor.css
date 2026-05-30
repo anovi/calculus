@@ -287,25 +287,113 @@ body {
   border-color: rgba(251, 146, 60, 0.35);
 }
 
+/* ----------- Tooltip generic ---------- */
+
+#editor .cm-tooltip {
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  border: 1px solid var(--tooltip-border-color);
+  border-radius: 6px;
+  box-shadow: var(--tooltip-shadow);
+}
+
+#editor .cm-tooltip-section:not(:first-child) {
+  border-top: 1px solid var(--tooltip-section-border-color);
+}
+
+#editor .cm-tooltip.cm-tooltip-above .cm-tooltip-arrow::before {
+  border-top-color: var(--tooltip-arrow-border-color);
+}
+
+#editor .cm-tooltip.cm-tooltip-above .cm-tooltip-arrow::after {
+  border-top-color: var(--tooltip-arrow-fill-color);
+}
+
+#editor .cm-tooltip.cm-tooltip-below .cm-tooltip-arrow::before {
+  border-bottom-color: var(--tooltip-arrow-border-color);
+}
+
+#editor .cm-tooltip.cm-tooltip-below .cm-tooltip-arrow::after {
+  border-bottom-color: var(--tooltip-arrow-fill-color);
+}
+
+#editor .cm-tooltip-autocomplete,
+#editor .cm-tooltip.cm-completionInfo {
+  background: var(--autocomplete-bg);
+  color: var(--autocomplete-fg);
+  border-color: var(--autocomplete-border);
+  box-shadow: var(--autocomplete-shadow);
+}
+
 /* ----------- Diagnostics tooltip ---------- */
 
-.cm-diagnosticText {
+#editor .cm-tooltip-lint {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+#editor .cm-diagnostic {
+  padding: 0.4rem;
+  color: var(--tooltip-diagnostic-fg);
+}
+
+#editor .cm-diagnostic-error {
+  border-left: 5px solid var(--tooltip-diagnostic-error-accent);
+}
+
+#editor .cm-diagnostic-warning {
+  border-left: 5px solid var(--tooltip-diagnostic-warning-accent);
+}
+
+#editor .cm-diagnostic-info {
+  border-left: 5px solid var(--tooltip-diagnostic-info-accent);
+}
+
+#editor .cm-diagnostic-hint {
+  border-left: 5px solid var(--tooltip-diagnostic-hint-accent);
+}
+
+#editor .cm-diagnosticText {
   display: block;
+}
+
+#editor .cm-diagnosticAction {
+  font: inherit;
+  border: none;
+  padding: 2px 4px;
+  margin-left: 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--tooltip-diagnostic-action-bg);
+  color: var(--tooltip-diagnostic-action-fg);
+}
+
+#editor .cm-diagnosticSource {
+  font-size: 70%;
+  color: var(--tooltip-diagnostic-source-fg);
 }
 
 /* ----------- Calc result tooltip ---------- */
 
-#editor .cm-tooltip.cm-calc-result-tooltip {
+#editor .cm-calc-result-tooltip {
+  padding: 0.4rem;
   font-family: inherit;
   line-height: 1.35;
+  color: var(--tooltip-fg);
 }
 
 #editor .cm-calc-result-tooltip__value {
-  color: #7dd3fc;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--tooltip-calc-value-fg);
 }
 
 #editor .cm-calc-result-tooltip__unit {
-  color: var(--autocomplete-detail-fg, #94a3b8);
+  margin-top: 2px;
+  font-size: 0.9em;
+  opacity: 0.85;
+  color: var(--tooltip-calc-unit-fg);
 }
 
 
@@ -466,10 +554,59 @@ body {
   --autocomplete-selected-fg: var(--heading);
   --autocomplete-detail-fg: rgba(200, 209, 224, 0.55);
   --autocomplete-matched-fg: var(--accent);
+  --autocomplete-shadow-color: rgb(0 0 0 / 0.35);
+  --autocomplete-shadow: 0 4px 16px var(--autocomplete-shadow-color);
+
+  --tooltip-bg: var(--bg);
+  --tooltip-fg: var(--text);
+  --tooltip-border-color: #3c4456;
+  --tooltip-section-border-color: var(--tooltip-border-color);
+  --tooltip-shadow-color: #030712;
+  /* https://smoothshadows.com/#djEsMiw1LDAuMDgsMjQsMTgsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
+  --tooltip-shadow:
+    0px 1px 1px color-mix(in srgb, var(--tooltip-shadow-color) 8%, transparent),
+    0px 3px 4px color-mix(in srgb, var(--tooltip-shadow-color) 6%, transparent),
+    0px 6px 9px color-mix(in srgb, var(--tooltip-shadow-color) 5%, transparent),
+    0px 12px 15px color-mix(in srgb, var(--tooltip-shadow-color) 3%, transparent),
+    0px 18px 24px color-mix(in srgb, var(--tooltip-shadow-color) 2%, transparent);
+  --tooltip-arrow-border-color: var(--tooltip-border-color);
+  --tooltip-arrow-fill-color: var(--tooltip-bg);
+
+  --tooltip-diagnostic-fg: var(--tooltip-fg);
+  --tooltip-diagnostic-error-accent: var(--error);
+  --tooltip-diagnostic-warning-accent: #fb923c;
+  --tooltip-diagnostic-info-accent: rgba(200, 209, 224, 0.55);
+  --tooltip-diagnostic-hint-accent: #818cf8;
+  --tooltip-diagnostic-action-bg: rgba(255, 255, 255, 0.1);
+  --tooltip-diagnostic-action-fg: var(--heading);
+  --tooltip-diagnostic-source-fg: var(--autocomplete-detail-fg);
+
+  --tooltip-calc-value-fg: var(--accent);
+  --tooltip-calc-unit-fg: var(--text);
 
   --z-layer-base: 0;
   --z-layer-overlay: 900;
   --z-layer-backdrop: 1000;
   --z-layer-drawer: 1010;
   --z-layer-floating: 9999;
+}
+
+/* ----------- Syntax highlighting ---------- */
+
+:root {
+  --accent: #7dd3fc;
+  --ok: #86efac;
+  --error: #fca5a5;
+
+  --cm-hl-variable: var(--heading);
+  --cm-hl-operator: var(--accent);
+  --cm-hl-number: #93c5fd;
+  --cm-hl-string: var(--error);
+  --cm-hl-literal: var(--ok);
+  --cm-hl-bool: #93c5fd;
+  --cm-hl-bracket: rgba(200, 209, 224, 0.55);
+  --cm-hl-logic: var(--accent);
+  --cm-hl-type: var(--ok);
+  --cm-hl-comment: rgba(200, 209, 224, 0.45);
+  --cm-hl-unit: #c4b5fd;
 }

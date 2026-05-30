@@ -1,13 +1,6 @@
 import { EditorView } from "codemirror";
 
 const autocompleteTheme = EditorView.baseTheme({
-    "& .cm-tooltip": {
-        backgroundColor: "var(--autocomplete-bg)",
-        color: "var(--autocomplete-fg)",
-        border: "1px solid var(--autocomplete-border)",
-        borderRadius: "6px",
-        boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
-    },
     "& .cm-tooltip-autocomplete > ul": {
         fontFamily: "inherit",
     },
@@ -32,12 +25,6 @@ const autocompleteTheme = EditorView.baseTheme({
     },
     "& .cm-completionIcon": {
         opacity: 0.7,
-    },
-    "& .cm-tooltip.cm-completionInfo": {
-        backgroundColor: "var(--autocomplete-bg)",
-        color: "var(--autocomplete-fg)",
-        border: "1px solid var(--autocomplete-border)",
-        borderRadius: "6px",
     },
     "& .cm-completionListIncompleteTop:before, & .cm-completionListIncompleteBottom:after": {
         color: "var(--autocomplete-detail-fg)",
