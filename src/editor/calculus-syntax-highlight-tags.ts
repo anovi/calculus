@@ -2,6 +2,7 @@ import { tags } from "@lezer/highlight"
 import { HighlightStyle } from "@codemirror/language"
 
 export const calculusHighlightStyle = HighlightStyle.define([
+	{ tag: tags.function(tags.name), color: 'var(--cm-hl-function)' },
 	{ tag: tags.variableName, color: 'var(--cm-hl-variable)' },
 	{ tag: tags.operator, color: 'var(--cm-hl-operator)' },
 	{ tag: tags.number, color: 'var(--cm-hl-number)' },

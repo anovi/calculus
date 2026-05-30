@@ -9,7 +9,7 @@ const autocompleteTheme = EditorView.baseTheme({
         color: "var(--autocomplete-selected-fg)",
     },
     "& .cm-tooltip-autocomplete-disabled > ul > li[aria-selected]": {
-        backgroundColor: "rgba(200, 209, 224, 0.12)",
+        backgroundColor: "var(--autocomplete-disabled-selected-bg)",
         color: "var(--autocomplete-fg)",
     },
     "& .cm-tooltip-autocomplete > ul > completion-section": {
