@@ -11,6 +11,7 @@ import {
 } from '@codemirror/view'
 import { CalcValue } from '../calculator'
 import { bindResultPillTooltip } from './calc-result-tooltip'
+import { copyTextToClipboard } from './copy-text'
 import { formatResult } from './calc-result-format'
 import { calcRangesField, getCalcRanges } from './values-field'
 import { parsePairKey, ratesStore } from '../rates-store'
@@ -51,16 +52,6 @@ class ResultWidget extends WidgetType {
     wrap.className = 'cm-calc-result';
     wrap.dataset.calcAnchor = String(this.anchorPos);
     wrap.setAttribute('aria-hidden', 'true');
-    wrap.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      console.log(e);
-      this.#focusLine(view);
-    });
-    wrap.addEventListener('click', (e) => {
-      e.preventDefault();
-      console.log(e);
-      this.#focusLine(view);
-    });
 
     const pill = document.createElement('span');
     if (this.value.error != null) {
@@ -71,6 +62,13 @@ class ResultWidget extends WidgetType {
       pill.className = 'cm-calc-result__pill';
       pill.textContent = `= ${formatResult(this.value)}`;
       bindResultPillTooltip(pill, view, this.anchorPos);
+      const activate = (e: Event) => {
+        e.preventDefault();
+        this.#copyResult();
+        this.#focusLine(view);
+      };
+      pill.addEventListener('touchend', activate);
+      pill.addEventListener('click', activate);
     }
     wrap.appendChild(pill);
 
@@ -95,6 +93,11 @@ class ResultWidget extends WidgetType {
       }
       cur.next();
     }
+  }
+
+  #copyResult(): void {
+    if (this.value.error != null) return;
+    copyTextToClipboard(formatResult(this.value));
   }
 }
 

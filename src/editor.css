@@ -279,6 +279,21 @@ body {
   background: rgba(125, 211, 252, 0.1);
   border: 1px solid rgba(125, 211, 252, 0.25);
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):hover {
+    color: #bae6fd;
+    background: rgba(125, 211, 252, 0.18);
+    border-color: rgba(125, 211, 252, 0.45);
+  }
+}
+
+#editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):active {
+  background: rgba(125, 211, 252, 0.24);
+  border-color: rgba(125, 211, 252, 0.55);
 }
 
 #editor .cm-calc-result__pill--error {
