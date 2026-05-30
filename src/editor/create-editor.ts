@@ -7,6 +7,7 @@ import { autocompletion } from '@codemirror/autocomplete'
 import { basicSetup } from './basic-setup'
 import { calcClipboard } from './calc-clipboard'
 import { calcRanges } from './values-field'
+import { calcResultTooltips } from './calc-result-tooltip'
 import { calcResultsPlugin } from './values-view-plugin'
 import { calculus } from './calculus-language'
 import { editorTheme } from './base-theme'
@@ -46,6 +47,7 @@ export function createEditor({
     calcRanges(),
     calcClipboard(),
     calcResultsPlugin,
+    calcResultTooltips(),
     ...extraExtensions,
     syntaxHighlighting(calculusHighlightStyle),
     helpPanel(),

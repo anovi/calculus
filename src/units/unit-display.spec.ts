@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { formatUnitChoiceLabel } from './unit-display';
+import { formatUnitChoiceLabel, formatUnitFullName } from './unit-display';
 
 
 describe('formatUnitChoiceLabel', () => {
@@ -12,5 +12,12 @@ describe('formatUnitChoiceLabel', () => {
 
   it('labels currencies', () => {
     assert.strictEqual(formatUnitChoiceLabel('EUR'), 'Euro (EUR)');
+  });
+});
+
+describe('formatUnitFullName', () => {
+  it('returns primary name without abbreviation', () => {
+    assert.strictEqual(formatUnitFullName('EUR'), 'Euro');
+    assert.strictEqual(formatUnitFullName('usd'), 'United States dollar');
   });
 });

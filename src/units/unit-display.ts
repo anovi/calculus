@@ -14,17 +14,24 @@ const currencyNameByCode = new Map(
   getCurrencies().map((c) => [c.code, c.name] as const),
 );
 
-/** Human-readable label for a canonical unit spelling, e.g. `milliseconds (ms)`. */
-export function formatUnitChoiceLabel(spelling: string): string {
-  const currencyName = currencyNameByCode.get(spelling);
-  if (currencyName != null) {
-    return `${currencyName} (${spelling})`;
-  }
+function unitFullName(spelling: string): string | undefined {
+  const currencyName = currencyNameByCode.get(spelling.toUpperCase());
+  if (currencyName != null) return currencyName;
 
   const entry = measureEntryBySpelling.get(spelling);
-  if (entry != null) {
-    return `${entry.names[0]} (${spelling})`;
-  }
+  if (entry != null) return entry.names[0];
 
+  return undefined;
+}
+
+/** Primary human-readable unit name, e.g. `Euro` or `kilometers`. */
+export function formatUnitFullName(spelling: string): string {
+  return unitFullName(spelling) ?? spelling;
+}
+
+/** Human-readable label for a canonical unit spelling, e.g. `milliseconds (ms)`. */
+export function formatUnitChoiceLabel(spelling: string): string {
+  const name = unitFullName(spelling);
+  if (name != null) return `${name} (${spelling})`;
   return spelling;
 }

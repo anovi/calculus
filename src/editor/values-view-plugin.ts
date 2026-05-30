@@ -10,6 +10,7 @@ import {
   type ViewUpdate,
 } from '@codemirror/view'
 import { CalcValue } from '../calculator'
+import { bindResultPillTooltip } from './calc-result-tooltip'
 import { formatResult } from './calc-result-format'
 import { calcRangesField, getCalcRanges } from './values-field'
 import { parsePairKey, ratesStore } from '../rates-store'
@@ -24,10 +25,12 @@ import { CurrencyRateUpdated } from './effects'
  */
 class ResultWidget extends WidgetType {
   readonly value: CalcValue
+  readonly anchorPos: number
 
-  constructor(value: CalcValue) {
+  constructor(value: CalcValue, anchorPos: number) {
     super();
     this.value = value;
+    this.anchorPos = anchorPos;
   }
 
   eq(other: ResultWidget): boolean {
@@ -46,6 +49,7 @@ class ResultWidget extends WidgetType {
     // by transparent padding on the outer.
     const wrap = document.createElement('span');
     wrap.className = 'cm-calc-result';
+    wrap.dataset.calcAnchor = String(this.anchorPos);
     wrap.setAttribute('aria-hidden', 'true');
     wrap.addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -66,6 +70,7 @@ class ResultWidget extends WidgetType {
     } else {
       pill.className = 'cm-calc-result__pill';
       pill.textContent = `= ${formatResult(this.value)}`;
+      bindResultPillTooltip(pill, view, this.anchorPos);
     }
     wrap.appendChild(pill);
 
@@ -111,7 +116,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     if (!cursor.value.error)
       widgets.push(
         Decoration.widget({
-          widget: new ResultWidget(cursor.value),
+          widget: new ResultWidget(cursor.value, lineEnd),
           side: 1,
         }).range(lineEnd),
       )

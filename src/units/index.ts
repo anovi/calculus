@@ -25,6 +25,7 @@ export {
 } from './unit-name-normalizer';
 export {
     formatUnitChoiceLabel,
+    formatUnitFullName,
 } from './unit-display';
 export {
     getMeasureDecimalPlaces,

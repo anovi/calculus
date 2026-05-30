@@ -2,7 +2,7 @@ import Decimal from 'decimal.js';
 import { describe, expect, it } from 'vitest';
 
 import { CalcValue } from '../calculator';
-import { formatCalcSuffix, formatResult } from './calc-result-format';
+import { formatCalcSuffix, formatResult, getResultTooltipContent } from './calc-result-format';
 import { getCurrencyDecimalPlaces } from '../units';
 
 function calc(result: Decimal, unit?: string): CalcValue {
@@ -45,6 +45,30 @@ describe('formatResult', () => {
 
     it('appends unit when present', () => {
         expect(formatResult(calc(new Decimal(26), 'USD'))).toBe('26 USD');
+    });
+});
+
+describe('getResultTooltipContent', () => {
+    it('shows high-precision value without unit', () => {
+        expect(getResultTooltipContent(calc(new Decimal('1.23456789')))).toEqual({
+            value: '1.23456789',
+        });
+    });
+
+    it('adds full unit name', () => {
+        expect(getResultTooltipContent(calc(new Decimal('92.3456'), 'USD'))).toEqual({
+            value: '92.3456',
+            unit: 'United States dollar',
+        });
+        expect(getResultTooltipContent(calc(new Decimal('1.23456789'), 'km'))).toEqual({
+            value: '1.23456789',
+            unit: 'kilometer',
+        });
+    });
+
+    it('returns null for errors', () => {
+        const value = new CalcValue(new Decimal(0), undefined, undefined, undefined, 'bad');
+        expect(getResultTooltipContent(value)).toBeNull();
     });
 });
 
