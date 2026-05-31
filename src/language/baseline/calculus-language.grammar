@@ -17,6 +17,7 @@ statement {
 	Binding
 	| NoBinding
 	| Comment
+	| Heading
 }
 
 Binding { Identifier EqualSign expression end }
@@ -91,13 +92,13 @@ ConvertOp { in }
 	Opr { "(" }
 	Cpr { ")" }
 
-	// Comment
 	Comment { "//" ![\n]* }
 
+	Heading { "#" ![\n]* }
 
 	@precedence { lineEnd, space }
 
-	@precedence { Comment, TimesBinaryOp, PowBinaryOp }
+	@precedence { Comment, Heading, TimesBinaryOp, PowBinaryOp }
 
 	// Whitespace
 	space { $[ \t]+ }

@@ -335,4 +335,16 @@ expectedTree: `CalcDoc
       ConvertOp
       Unit`,
 },
+{
+name: 'comment',
+doc: '// 232 + 232',
+expectedTree: `CalcDoc
+  Comment`,
+},
+{
+name: 'heading',
+doc: '# 232 + 232',
+expectedTree: `CalcDoc
+  Heading`,
+},
 ];

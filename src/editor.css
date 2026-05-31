@@ -408,13 +408,13 @@ body {
   padding: 0.4rem;
   font-family: inherit;
   line-height: 1.35;
-  color: var(--tooltip-fg);
+  color: var(--result-color);
 }
 
 #editor .cm-calc-result-tooltip__value {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--tooltip-calc-value-fg);
+  color: var(--result-color);
 }
 
 #editor .cm-calc-result-tooltip__unit {
@@ -724,7 +724,7 @@ body {
   --cm-hl-string: var(--error);
   --cm-hl-literal: var(--ok);
   --cm-hl-bool: var(--bluish-400);
-  --cm-hl-bracket: var(--text-subtle);
+  --cm-hl-bracket: var(--greenish-200);
   --cm-hl-logic: var(--accent);
   --cm-hl-type: var(--ok);
   --cm-hl-comment: var(--text-subtle);

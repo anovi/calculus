@@ -23,4 +23,5 @@ export const
   String = 21,
   Date = 22,
   NoBinding = 23,
-  Comment = 24
+  Comment = 24,
+  Heading = 25
