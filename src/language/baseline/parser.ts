@@ -1,6 +1,6 @@
 import { buildParser } from "@lezer/generator";
 import grammarSource from './calculus-language.grammar?raw';
-import { createUnitTokenizer } from './calculus-number-with-unit-tokens';
+import { createNumberWithUnitTokensTokenizer } from './calculus-number-with-unit-tokens';
 
 
 export const calculusParser = buildParser(grammarSource, {
@@ -10,6 +10,9 @@ export const calculusParser = buildParser(grammarSource, {
 		if (name !== 'numberWithUnitTokens') {
 			throw new Error(`Unexpected external tokenizer: ${name}`);
 		}
-		return createUnitTokenizer({ Unit: terms.Unit });
+		return createNumberWithUnitTokensTokenizer({
+			Unit: terms.Unit,
+			PercentSuffix: terms.PercentSuffix,
+		});
 	},
 })

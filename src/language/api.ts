@@ -27,11 +27,13 @@ export function isLiteral(node: SyntaxNode): boolean {
     switch (id) {
     case terms.Literal:
     case terms.Number:
+    case terms.PercentLiteral:
     case terms.String:
     case terms.Date:
         return true;
     default:
         if (id === terms.Unit && node.parent && node.parent.type.id === terms.NumberWithUnit) return true;
+        if (id === terms.PercentSuffix && node.parent && node.parent.type.id === terms.PercentLiteral) return true;
         return false;
     }
 }
@@ -45,7 +47,15 @@ export function getLiteralTopNode(node: SyntaxNode): SyntaxNode|null {
         if (node.parent && node.parent.type.id === terms.NumberWithUnit) {
             if (node.parent.parent) return getLiteralTopNode(node.parent.parent);
         }
+        if (node.parent && node.parent.type.id === terms.PercentLiteral) {
+            if (node.parent.parent) return getLiteralTopNode(node.parent.parent);
+        }
         if (node.parent) return getLiteralTopNode(node.parent);
+        break;
+    case terms.PercentSuffix:
+        if (node.parent && node.parent.type.id === terms.PercentLiteral) {
+            if (node.parent.parent) return getLiteralTopNode(node.parent.parent);
+        }
         break;
     case terms.String:
     case terms.Date:

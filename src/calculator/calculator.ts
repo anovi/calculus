@@ -109,6 +109,37 @@ function isResultWithUnit(expr: ExpressionResult): expr is ExpressionResult & {u
     return Boolean(expr.unit && typeof expr.unit === 'string');
 }
 
+function isPercentOperand(expr: ExpressionResult): boolean {
+    return !isExpressionResultError(expr) && expr.isPercent === true;
+}
+
+const PERCENT_ERROR = 'Percentage must be used with +, -, or *.';
+
+function applyPercentOperation(
+    cursor: TreeCursor,
+    operator: '+' | '-' | '*',
+    left: ExpressionResult,
+    right: ExpressionResult,
+): ExpressionResult {
+    if (operator === '+' && isPercentOperand(right) && !isPercentOperand(left)) {
+        const portion = left.n.times(right.n.div(100));
+        return { n: left.n.plus(portion), unit: left.unit };
+    }
+    if (operator === '-' && isPercentOperand(right) && !isPercentOperand(left)) {
+        const portion = left.n.times(right.n.div(100));
+        return { n: left.n.minus(portion), unit: left.unit };
+    }
+    if (operator === '*') {
+        if (isPercentOperand(right) && !isPercentOperand(left)) {
+            return { n: left.n.times(right.n.div(100)), unit: left.unit };
+        }
+        if (isPercentOperand(left) && !isPercentOperand(right)) {
+            return { n: right.n.times(left.n.div(100)), unit: right.unit };
+        }
+    }
+    return expressionError(PERCENT_ERROR, cursor, left.unit);
+}
+
 const IdentifierEvalContext: TermValue[] = [
     terms.ExpExpression,
     terms.AddExpression,
@@ -171,6 +202,13 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             }
             return null;
         }
+    },
+    [terms.PercentLiteral]: {
+        props: [{ key: 'number', expect: [terms.Number] }],
+        process: (_ctx, props: { number: ExpressionResult }): ExpressionResult => ({
+            n: props.number.n,
+            isPercent: true,
+        }),
     },
 
     // ID of a variable or a function
@@ -370,9 +408,17 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.Literal]: {
         props: [{
             key: 'value',
-            expect: [terms.NumberWithUnit, terms.Number]
+            expect: [terms.NumberWithUnit, terms.PercentLiteral, terms.Number]
         }],
-        process: (_ctx, params): ExpressionResult => params.value,
+        process: (ctx, params: { value: ExpressionResult }): ExpressionResult => {
+            if (isPercentOperand(params.value)) {
+                const parent = ctx.parentNodeType();
+                if (parent === terms.NoBinding || parent === terms.Binding) {
+                    return expressionError(PERCENT_ERROR, ctx.cursor);
+                }
+            }
+            return params.value;
+        },
     },
 
     // Unit
@@ -499,6 +545,16 @@ export class MathCalculator implements Ctx {
 
         if (operator === '-' && args.length === 1) {
             return { n: args[0].n.negated(), unit: args[0].unit };
+        }
+
+        if (args.length === 2) {
+            const [left, right] = args;
+            if (isPercentOperand(left) || isPercentOperand(right)) {
+                if (operator === '+' || operator === '-' || operator === '*') {
+                    return applyPercentOperation(cursor, operator, left, right);
+                }
+                return expressionError(PERCENT_ERROR, cursor, left.unit);
+            }
         }
 
         let baseUnit: string | undefined;

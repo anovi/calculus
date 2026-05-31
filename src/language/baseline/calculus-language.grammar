@@ -5,6 +5,7 @@
 // stay in `src/units/currencies-list.ts` instead of being pasted into this grammar.
 @external tokens numberWithUnitTokens from "./calculus-number-with-unit-tokens.ts" {
 	Unit
+	PercentSuffix
 }
 
 @top CalcDoc { pipeline }
@@ -42,9 +43,10 @@ ConvertExpression { expression !_convert ConvertOp Unit }
 FunctionCall { Identifier Opr ArgList? Cpr }
 ArgList { expression ("," expression)* }
 
-Literal { NumberWithUnit | Number | String | Date }
+Literal { NumberWithUnit | PercentLiteral | Number | String | Date }
 
 NumberWithUnit { Number Unit }
+PercentLiteral { Number PercentSuffix }
 
 ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 

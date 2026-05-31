@@ -8,7 +8,13 @@ type DecimalNaN = {
     // isFinite: () => false,
 }
 
-export type ExpressionResultOk = { n: Decimal; unit?: string; error?: undefined };
+export type ExpressionResultOk = {
+    n: Decimal;
+    unit?: string;
+    /** Postfix literal such as `20%` (not a plain numeric value). */
+    isPercent?: boolean;
+    error?: undefined;
+};
 
 export type ExpressionResultError = {
     n: Decimal & DecimalNaN;

@@ -1,11 +1,16 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { longestRecognizedUnitSpelling } from '../../units';
-import { Unit } from './calculus-language.terms';
+import { PercentSuffix, Unit } from './calculus-language.terms';
 
-export type UnitTokenizerTerms = {
+export type NumberWithUnitTokenizerTerms = {
   Unit: number;
+  PercentSuffix: number;
 };
+
+function isDigit(code: number) {
+  return code >= 48 && code <= 57;
+}
 
 function isIdentifierChar(code: number) {
   return (
@@ -37,8 +42,19 @@ function isStandaloneInKeyword(input: InputStream, len: number) {
   );
 }
 
-export function createUnitTokenizer(terms: UnitTokenizerTerms) {
+/** Postfix `%` on a number (`20%`); spaced `%` stays binary modulo (`10 % 3`). */
+function tryPercentSuffix(input: InputStream, terms: NumberWithUnitTokenizerTerms) {
+  if (input.peek(0) !== 37) return false;
+  if (!isDigit(input.peek(-1))) return false;
+  input.advance();
+  input.acceptToken(terms.PercentSuffix);
+  return true;
+}
+
+export function createNumberWithUnitTokensTokenizer(terms: NumberWithUnitTokenizerTerms) {
   return new ExternalTokenizer((input: InputStream) => {
+    if (tryPercentSuffix(input, terms)) return;
+
     const suffixLen = longestRecognizedUnitSpelling((rel) => input.peek(rel));
 
     if (suffixLen === 0) return;
@@ -50,5 +66,10 @@ export function createUnitTokenizer(terms: UnitTokenizerTerms) {
   });
 }
 
+/** @deprecated Use {@link createNumberWithUnitTokensTokenizer}. */
+export function createUnitTokenizer(terms: { Unit: number }) {
+  return createNumberWithUnitTokensTokenizer({ Unit: terms.Unit, PercentSuffix });
+}
+
 /** Wired into the generated parser; term ids come from `calculus-language.terms`. */
-export const numberWithUnitTokens = createUnitTokenizer({ Unit });
+export const numberWithUnitTokens = createNumberWithUnitTokensTokenizer({ Unit, PercentSuffix });

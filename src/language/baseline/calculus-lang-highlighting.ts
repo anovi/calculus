@@ -12,6 +12,7 @@ export const calculusLangHighlight = styleTags({
 	'PowBinaryOp': tags.operator,
 	'PlusBinaryOp': tags.operator,
 	'Number': tags.number,
+	'PercentLiteral': tags.number,
 	'String': tags.string,
 	'Date': tags.literal,
 	'Comment': tags.comment,

@@ -174,6 +174,20 @@ expectedTree: `CalcDoc
         Number`,
 },
 {
+name: 'percent add',
+doc: '100 + 20%',
+expectedTree: `CalcDoc
+  NoBinding
+    AddExpression
+      Literal
+        Number
+      PlusBinaryOp
+      Literal
+        PercentLiteral
+          Number
+          PercentSuffix`,
+},
+{
 name: 'precedence exponent over multiply',
 doc: '2 * 2 ^ 3',
 expectedTree: `CalcDoc
