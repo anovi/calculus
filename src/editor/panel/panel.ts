@@ -1,7 +1,8 @@
 import { ViewPlugin, type Panel, type ViewUpdate } from "@codemirror/view";
 import { EditorView } from "@codemirror/view";
 
-import { OPERATION_ICON, setButtonIcon } from '../button-icons';
+import { createIconButton } from '../../components/icon-button';
+import { OPERATION_ICON } from './operation-icons';
 import { toggleInlineFormat } from '../editor-commands';
 import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
 import { toggleHelp } from './effects';
@@ -21,9 +22,11 @@ function button(
     onclick: (op: OperationDef) => void,
     scrollContainer?: HTMLElement,
 ) {
-    const dom = document.createElement('button');
+    const dom = createIconButton({
+        icon: OPERATION_ICON[op.operation],
+        ariaLabel: op.operation,
+    });
     dom.dataset.operation = op.operation;
-    setButtonIcon(dom, OPERATION_ICON[op.operation]);
     bindFocusPreservingButton(dom, onclick.bind(null, op), scrollContainer);
     return dom;
 }

@@ -34,4 +34,14 @@ describe('AppPreferencesStore', () => {
     await store.setHasVisited(false)
     assert.strictEqual(await store.getHasVisited(), false)
   })
+
+  it('stores and reads colorScheme', async () => {
+    const store = new AppPreferencesStore({ storage: new FakeStorage() })
+
+    assert.strictEqual(await store.getColorScheme(), null)
+    await store.setColorScheme('light')
+    assert.strictEqual(await store.getColorScheme(), 'light')
+    await store.setColorScheme('dark')
+    assert.strictEqual(await store.getColorScheme(), 'dark')
+  })
 })

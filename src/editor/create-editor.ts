@@ -10,7 +10,7 @@ import { calcRanges } from './values-field'
 import { calcResultTooltips } from './calc-result-tooltip'
 import { calcResultsPlugin } from './values-view-plugin'
 import { calculus } from './calculus-language'
-import { editorTheme } from './base-theme'
+import { createEditorTheme, reconfigureEditorTheme } from './base-theme'
 import { formatOnType } from './formatting'
 import { unitCompletionSource, variableCompletionSource } from './autocompletion'
 import { helpPanel } from './panel'
@@ -20,6 +20,7 @@ import { calculusHighlightStyle } from './calculus-syntax-highlight-tags'
 export type CreateEditorOptions = {
   parent: HTMLElement
   doc: string
+  isDark?: boolean
   extraExtensions?: Extension[]
   panelExtensions?: Extension[]
 }
@@ -28,15 +29,19 @@ export type EditorInstance = {
   view: EditorView
   extensions: Extension[]
   setDocument: (content: string) => void
+  setColorScheme: (isDark: boolean) => void
 }
 
 export function createEditor({
   parent,
   doc,
+  isDark = true,
   extraExtensions = [],
   panelExtensions = [],
 }: CreateEditorOptions): EditorInstance {
-  const extensions: Extension[] = [
+  let currentIsDark = isDark
+
+  const buildExtensions = (dark: boolean): Extension[] => [
     basicSetup(),
     calculus(),
     autocompletion({
@@ -53,11 +58,13 @@ export function createEditor({
     helpPanel(),
     ...panelExtensions,
     placeholder('Start with a formula or variable…'),
-    editorTheme,
+    createEditorTheme(dark),
     calcSyntaxLinter,
     // safariFocusScrollFix(),
     // emptyLineGutter,
   ]
+
+  const extensions = buildExtensions(currentIsDark)
 
   const view = new EditorView({
     parent,
@@ -68,7 +75,11 @@ export function createEditor({
     view,
     extensions,
     setDocument(content: string) {
-      view.setState(EditorState.create({ doc: content, extensions }))
+      view.setState(EditorState.create({ doc: content, extensions: buildExtensions(currentIsDark) }))
+    },
+    setColorScheme(nextIsDark: boolean) {
+      currentIsDark = nextIsDark
+      reconfigureEditorTheme(view, nextIsDark)
     },
   }
 }

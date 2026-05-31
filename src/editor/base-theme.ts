@@ -1,4 +1,5 @@
-import { EditorView } from "codemirror";
+import { Compartment, type Extension } from '@codemirror/state'
+import { EditorView } from 'codemirror'
 
 const autocompleteTheme = EditorView.baseTheme({
     "& .cm-tooltip-autocomplete > ul": {
@@ -35,13 +36,30 @@ const panelTheme = EditorView.baseTheme({
     "& .cm-panels": {
         backgroundColor: "var(--panel-bg-color)",
         borderColor: "var(--panel-border-color)",
-        color: "var(--panel-color)",
+        color: "var(--panel-text-color)",
     },
 });
 
-/** Editor chrome aligned with CSS variables in editor.css. */
-export const editorTheme = [
-    EditorView.darkTheme.of(true),
+const editorThemeCompartment = new Compartment()
+
+const staticEditorTheme: Extension[] = [
     panelTheme,
     autocompleteTheme,
-];
+]
+
+/** Editor chrome aligned with CSS variables in editor.css. */
+export function createEditorTheme(isDark: boolean): Extension[] {
+    return [
+        editorThemeCompartment.of(EditorView.darkTheme.of(isDark)),
+        ...staticEditorTheme,
+    ]
+}
+
+export function reconfigureEditorTheme(view: EditorView, isDark: boolean): void {
+    view.dispatch({
+        effects: editorThemeCompartment.reconfigure(EditorView.darkTheme.of(isDark)),
+    })
+}
+
+/** @deprecated Use createEditorTheme(isDark) */
+export const editorTheme = createEditorTheme(true)

@@ -2,17 +2,22 @@ import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands'
 import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } from '@codemirror/view'
 import type { EditorState, Extension } from '@codemirror/state'
 
-import { setButtonIcon } from './button-icons'
+import { createIconButton } from '../components/icon-button'
 import { bindFocusPreservingButton } from './focus-preserving-button'
+import { syncThemeToggleButton } from '../theme'
+import type { ColorScheme } from '../theme'
 
 export type DocumentControlsPanelDeps = {
   onToggleDocuments: () => void
   onCreateDocument: () => void
+  onToggleTheme: () => void
+  initialTheme: ColorScheme
 }
 
 export type DocumentControlsPanel = {
   extensions: Extension[]
   toggleButton: HTMLButtonElement
+  themeButton: HTMLButtonElement
 }
 
 type HistoryButtons = {
@@ -29,11 +34,11 @@ function createHistoryButton(
   view: EditorView,
   kind: 'undo' | 'redo',
 ): HTMLButtonElement {
-  const btn = document.createElement('button')
-  btn.type = 'button'
-  btn.className = 'cm-document-controls__button cm-document-controls__history-button'
-  btn.setAttribute('aria-label', kind === 'undo' ? 'Undo' : 'Redo')
-  setButtonIcon(btn, kind)
+  const btn = createIconButton({
+    icon: kind,
+    ariaLabel: kind === 'undo' ? 'Undo' : 'Redo',
+    className: 'cm-document-controls__button cm-document-controls__history-button',
+  })
   bindFocusPreservingButton(btn, () => {
     if (btn.disabled) return
     const run = kind === 'undo' ? undo : redo
@@ -48,22 +53,31 @@ function createHistoryButton(
 }
 
 export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): DocumentControlsPanel {
-  const toggleButton = document.createElement('button')
-  toggleButton.type = 'button'
-  toggleButton.id = 'documents-toggle'
-  toggleButton.className = 'cm-document-controls__button cm-document-controls__menu-button'
-  toggleButton.setAttribute('aria-label', 'Open documents')
+  const toggleButton = createIconButton({
+    icon: 'menu',
+    ariaLabel: 'Open documents',
+    id: 'documents-toggle',
+    className: 'cm-document-controls__button cm-document-controls__menu-button',
+    onClick: () => deps.onToggleDocuments(),
+  })
   toggleButton.setAttribute('aria-expanded', 'false')
-  setButtonIcon(toggleButton, 'menu')
-  toggleButton.addEventListener('click', () => deps.onToggleDocuments())
 
-  const createButton = document.createElement('button')
-  createButton.type = 'button'
-  createButton.id = 'documents-create'
-  createButton.className = 'cm-document-controls__button'
-  createButton.setAttribute('aria-label', 'Create new document')
-  setButtonIcon(createButton, 'plus')
-  createButton.addEventListener('click', () => deps.onCreateDocument())
+  const createButton = createIconButton({
+    icon: 'plus',
+    ariaLabel: 'Create new document',
+    id: 'documents-create',
+    className: 'cm-document-controls__button',
+    onClick: () => deps.onCreateDocument(),
+  })
+
+  const themeButton = createIconButton({
+    icon: 'sun',
+    ariaLabel: 'Switch theme',
+    id: 'theme-toggle',
+    className: 'cm-document-controls__button cm-document-controls__theme-button',
+    onClick: () => deps.onToggleTheme(),
+  })
+  syncThemeToggleButton(themeButton, deps.initialTheme)
 
   let historyButtons: HistoryButtons | null = null
 
@@ -82,7 +96,7 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
 
     const end = document.createElement('div')
     end.className = 'cm-document-controls-panel__end'
-    end.append(undoBtn, redoBtn)
+    end.append(undoBtn, redoBtn, themeButton)
 
     dom.append(start, end)
     return { dom, top: true }
@@ -98,5 +112,6 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
   return {
     extensions: [panelExtension, historyButtonSync],
     toggleButton,
+    themeButton,
   }
 }

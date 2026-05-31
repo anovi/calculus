@@ -4,7 +4,7 @@ import path from 'node:path';
 const ASSET_IMPORT = /\.(svg|css|png|jpe?g|gif|webp|csv|txt)(\?|$)/i;
 const VIRTUAL_IMPORT = /[?&]/;
 /** Top-level folder allowed as a deep-import target across module boundaries. */
-const DEEP_IMPORT_EXCEPTION = 'lib';
+const DEEP_IMPORT_EXCEPTION = ['lib', 'components'];
 
 /** @param {string} dir */
 function collectPublicModuleDirs(dir) {
@@ -122,7 +122,7 @@ export default {
 			}
 
 			if (isPublicModuleEntry(resolved, srcDir, publicModules)) return;
-			if (targetModule === DEEP_IMPORT_EXCEPTION) return;
+			if (DEEP_IMPORT_EXCEPTION.includes(targetModule)) return;
 
 			const targetRel = path.relative(srcDir, resolved).replace(/\\/g, '/');
 			const entry = suggestPublicEntry(targetRel, targetModule, publicModules);

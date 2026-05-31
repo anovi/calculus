@@ -10,6 +10,13 @@ import { createEditor, createDocumentControlsPanel } from './editor'
 import { initializeRatesStore } from './rates-store'
 import { AppPreferencesStore, DocumentRepository, DocumentSession } from './documents'
 import { DocumentDrawer } from './drawer'
+import {
+  applyTheme,
+  oppositeColorScheme,
+  resolveInitialTheme,
+  syncThemeToggleButton,
+  type ColorScheme,
+} from './theme'
 
 
 const DEFAULT_DOC = `// Welcome to calculus.
@@ -26,6 +33,10 @@ if (!root) {
 }
 const repository = new DocumentRepository()
 const preferencesStore = new AppPreferencesStore()
+const storedColorScheme = await preferencesStore.getColorScheme()
+let colorScheme: ColorScheme = resolveInitialTheme(storedColorScheme)
+applyTheme(colorScheme, { persistCache: storedColorScheme !== null })
+
 const session = new DocumentSession({ repository, preferencesStore, firstDocumentContent: DEFAULT_DOC })
 const initialDocument = await session.initialize()
 let drawer: DocumentDrawer | null = null
@@ -48,21 +59,38 @@ const persist = EditorView.updateListener.of((update) => {
 })
 
 { (() => {
-const controlsPanel = createDocumentControlsPanel({
+let controlsPanel: ReturnType<typeof createDocumentControlsPanel>
+
+const toggleTheme = () => {
+  colorScheme = oppositeColorScheme(colorScheme)
+  applyTheme(colorScheme)
+  void preferencesStore.setColorScheme(colorScheme)
+  syncThemeToggleButton(controlsPanel.themeButton, colorScheme)
+  setEditorColorScheme(colorScheme === 'dark')
+}
+
+controlsPanel = createDocumentControlsPanel({
   onToggleDocuments: () => {
     drawer?.toggle()
   },
   onCreateDocument: () => {
     void createDocument()
   },
+  onToggleTheme: toggleTheme,
+  initialTheme: colorScheme,
 })
 
-const { view, setDocument: setEditorDocument } = createEditor({
+let setEditorColorScheme: (isDark: boolean) => void = () => {}
+
+const editor = createEditor({
   parent: root,
   doc: initialDocument.content,
+  isDark: colorScheme === 'dark',
   extraExtensions: [persist],
   panelExtensions: controlsPanel.extensions,
 })
+setEditorColorScheme = editor.setColorScheme
+const { view, setDocument: setEditorDocument } = editor
 
 drawer = new DocumentDrawer({
   toggleButton: controlsPanel.toggleButton,

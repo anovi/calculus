@@ -6,6 +6,7 @@ import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
 import { parseCurrenciesCsv } from './src/units/parse-currencies-csv'
+import { DARK_MODE_BG } from './src/theme/colors'
 
 const projectRoot = dirname(fileURLToPath(import.meta.url))
 const currenciesCsv = fs.readFileSync(
@@ -42,8 +43,8 @@ export default defineConfig({
         name: 'Calculus',
         short_name: 'Calculus',
         description: 'A tiny notebook editor for everyday math.',
-        theme_color: '#141c2e',
-        background_color: '#141c2e',
+        theme_color: DARK_MODE_BG,
+        background_color: DARK_MODE_BG,
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: './',
