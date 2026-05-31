@@ -12,15 +12,30 @@ import {
 /** Fractional digits for result tooltips — full underlying value, not display rounding. */
 const TOOLTIP_DECIMAL_PLACES = 15
 
+function addThousandsSeparators(raw: string): string {
+    const dot = raw.indexOf('.')
+    const intPart = dot === -1 ? raw : raw.slice(0, dot)
+    const fracPart = dot === -1 ? undefined : raw.slice(dot + 1)
+
+    const sign = intPart.startsWith('-') ? '-' : ''
+    const digits = sign ? intPart.slice(1) : intPart
+    const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+
+    if (fracPart === undefined) return `${sign}${grouped}`
+    return `${sign}${grouped}.${fracPart}`
+}
+
 function formatNumber(n: Decimal, decimalPlaces?: number): string {
     if (!n.isFinite()) return n.toString();
+    let raw: string
     if (decimalPlaces != null) {
-        const rounded = n.toDecimalPlaces(decimalPlaces, Decimal.ROUND_HALF_UP);
-        if (rounded.isInteger()) return rounded.toString();
-        return rounded.toString();
+        raw = n.toDecimalPlaces(decimalPlaces, Decimal.ROUND_HALF_UP).toString()
+    } else if (n.isInteger()) {
+        raw = n.toString()
+    } else {
+        raw = n.toDecimalPlaces(6).toString()
     }
-    if (n.isInteger()) return n.toString();
-    return n.toDecimalPlaces(6).toString();
+    return addThousandsSeparators(raw)
 }
 
 function decimalPlacesForValue(value: CalcValue): number | undefined {

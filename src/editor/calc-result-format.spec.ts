@@ -31,8 +31,12 @@ describe('formatResult', () => {
     });
 
     it('uses fewer fractional digits for large magnitudes', () => {
-        expect(formatResult(calc(new Decimal('1234.56789'), 'km'))).toBe('1234.57 km');
-        expect(formatResult(calc(new Decimal('1234567.89'), 'km'))).toBe('1234568 km');
+        expect(formatResult(calc(new Decimal('1234.56789'), 'km'))).toBe('1 234.57 km');
+        expect(formatResult(calc(new Decimal('1234567.89'), 'km'))).toBe('1 234 568 km');
+    });
+
+    it('groups integer digits with spaces', () => {
+        expect(formatResult(calc(new Decimal('1222323.23232')))).toBe('1 222 323.23232');
     });
 
     it('uses six fractional digits for unitless values', () => {
@@ -75,6 +79,7 @@ describe('getResultTooltipContent', () => {
 describe('formatCalcSuffix', () => {
     it('prefixes formatted value with equals sign', () => {
         expect(formatCalcSuffix(calc(new Decimal('10.999'), 'EUR'))).toBe('= 11 EUR');
+        expect(formatCalcSuffix(calc(new Decimal('1000000.5')))).toBe('= 1 000 000.5');
     });
 
     it('returns error suffix without formatting number', () => {
