@@ -166,10 +166,10 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.String]: SKIP,
     [terms.EqualSign]: SKIP,
     [terms.Heading]: SKIP,
+    [terms.PercentSuffix]: SKIP,
     
     // Operators
     [terms.ConvertOp]: SKIP,
-    [terms._in]: SKIP,
     [terms.TimesBinaryOp]: SLICE,
     [terms.PlusBinaryOp]: SLICE,
     [terms.PowBinaryOp]: SLICE,
