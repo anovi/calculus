@@ -46,7 +46,7 @@ Literal { NumberWithUnit | Number | String | Date }
 
 NumberWithUnit { Number Unit }
 
-ConvertOp { in }
+ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 
 @precedence {
 	// Results deeper in AST
@@ -64,11 +64,7 @@ ConvertOp { in }
 
 @tokens {
 
-	// Converter
-	in { "IN" | "in" | "into" | "as" | "to" }
-
 	// Arithmetic
-
 	TimesBinaryOp { "/" | "*" | "%" }
 	PowBinaryOp { "^" }
 	PlusBinaryOp { "+" | "-" }
@@ -103,11 +99,6 @@ ConvertOp { in }
 	// Whitespace
 	space { $[ \t]+ }
 	lineEnd { "\n" | "\r" }
-
-	@precedence {
-		in,
-		Identifier
-	}
 
 	end { lineEnd | @eof }
 

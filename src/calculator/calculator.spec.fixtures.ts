@@ -75,6 +75,8 @@ export const calculatorFixtures: CalculatorFixture[] = [
   { name: 'Tertiary', doc: '2 + 2 * 3', expected: [8] },
   { name: 'Grouping', doc: '(2 + 2) * 3', expected: [12] },
   { name: 'Division', doc: '12 / 3', expected: [4] },
+  { name: 'Modulo', doc: '10 % 3', expected: [1] },
+  { name: 'Modulo precedence', doc: '10 + 3 % 4', expected: [13] },
   { name: 'Exponent', doc: '2^4', expected: [16] },
   { name: 'Exponent over multiply', doc: '2*2^3', expected: [16] },
   { name: 'Right-associative exponent', doc: '2^3^2', expected: [512] },

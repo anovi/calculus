@@ -126,7 +126,7 @@ export function unitCompletionSite(
   }
 
   // Icomplete unit after a conversion expression
-  if (prevNode && prevNode.type.id === terms.ConvertOp) {
+  if (prevNode && (prevNode.type.id === terms.ConvertOp || prevNode.type.id === terms._in)) {
     console.log('convert in prevNode')
     return { kind: 'convert', from: node.from };
   }
