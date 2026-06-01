@@ -7,11 +7,13 @@ export type TermValue = typeof terms[keyof typeof terms];
 export const calculusLangHighlight = styleTags({
 	//@ts-ignore
 	'FunctionCall/Identifier': tags.function(tags.name),
+	'Heading': tags.heading,
 	'Identifier': tags.variableName,
 	'TimesBinaryOp': tags.operator,
 	'PowBinaryOp': tags.operator,
 	'PlusBinaryOp': tags.operator,
 	'Number': tags.number,
+	'ConvertOp': tags.operator,
 	'PercentLiteral': tags.number,
 	'String': tags.string,
 	'Date': tags.literal,

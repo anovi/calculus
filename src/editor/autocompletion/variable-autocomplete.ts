@@ -47,6 +47,7 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
             options.push({
                 label: fnDef.name,
                 detail: fnDef.doc,
+                info: fnDef.doc,
                 type: 'function',
                 apply: (view, _completion, from, to) => {
                     const insert = `${fnDef.name}()`;

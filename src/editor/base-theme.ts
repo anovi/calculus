@@ -1,20 +1,44 @@
 import { Compartment, type Extension } from '@codemirror/state'
 import { EditorView } from 'codemirror'
 
+
 const autocompleteTheme = EditorView.baseTheme({
+    "& .cm-tooltip-autocomplete": {
+        border: "none!important",
+        boxShadow: "var(--autocomplete-shadow)",
+        background: "var(--autocomplete-bg)",
+        color: "var(--autocomplete-fg)",
+    },
     "& .cm-tooltip-autocomplete > ul": {
         fontFamily: "inherit",
+        border: "none!important",
+    },
+    "& .cm-tooltip-autocomplete > ul > li": {
+        borderRadius: "4px",
+        position: "relative",
+        paddingTop: "2px!important",
+        paddingBottom: "2px!important",
     },
     "& .cm-tooltip-autocomplete > ul > li[aria-selected]": {
+        background: "transparent!important",
+        color: "var(--autocomplete-selected-fg)!important",
+        position: "relative",
+    },
+    "& .cm-tooltip-autocomplete > ul > li[aria-selected]::after": {
+        content: "''",
         backgroundColor: "var(--autocomplete-selected-bg)",
-        color: "var(--autocomplete-selected-fg)",
+        position: "absolute",
+        display: "block",
+        top: "2px", left: "2px", right: "2px", bottom: "2px",
+        zIndex: -1,
+        borderRadius: "4px",
+        pointerEvents: "none",
     },
     "& .cm-tooltip-autocomplete-disabled > ul > li[aria-selected]": {
-        backgroundColor: "var(--autocomplete-disabled-selected-bg)",
         color: "var(--autocomplete-fg)",
     },
     "& .cm-tooltip-autocomplete > ul > completion-section": {
-        borderBottomColor: "var(--autocomplete-border)",
+        border: "none",
         color: "var(--autocomplete-detail-fg)",
     },
     "& .cm-completionMatchedText": {
@@ -23,6 +47,9 @@ const autocompleteTheme = EditorView.baseTheme({
     },
     "& .cm-completionDetail": {
         color: "var(--autocomplete-detail-fg)",
+    },
+    "& [aria-selected] > .cm-completionDetail": {
+        color: "var(--autocomplete-selected-detail-fg)",
     },
     "& .cm-completionIcon": {
         opacity: 0.7,

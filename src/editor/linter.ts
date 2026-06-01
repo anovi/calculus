@@ -33,7 +33,7 @@ export const calcSyntaxLinter = linter(view => {
             diagnostics.push({
                 from: cur.value.errorFrom!,
                 to: cur.value.errorTo!,
-                severity: "warning",
+                severity: "error",
                 message: cur.value.error,
                 actions: [{
                     name: "Remove",

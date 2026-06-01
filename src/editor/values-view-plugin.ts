@@ -60,7 +60,7 @@ class ResultWidget extends WidgetType {
       pill.title = this.value.error;
     } else {
       pill.className = 'cm-calc-result__pill';
-      pill.textContent = `= ${formatResult(this.value)}`;
+      pill.textContent = `${formatResult(this.value)}`;
       bindResultPillTooltip(pill, view, this.anchorPos);
       const activate = (e: Event) => {
         e.preventDefault();
@@ -173,7 +173,6 @@ export const calcResultsPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   },
 )
-
 const emptyMarker = new class extends GutterMarker {
   toDOM() { return document.createTextNode("1000000") }
 }
