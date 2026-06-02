@@ -77,8 +77,8 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
 	
 	// Literals
-	Float { @digit+ ((" " | ",") @digit+)* "." @digit+ (" "? @digit+)* }
-	Integer { @digit+ ((" " | ",") @digit+)* }
+	Float { @digit+ ((" " | "," | "_") @digit+)* "." @digit+ }
+	Integer { @digit+ ((" " | "," | "_") @digit+)* }
 	Number { Integer | Float }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }

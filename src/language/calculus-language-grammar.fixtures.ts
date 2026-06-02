@@ -135,6 +135,33 @@ expectedTree: `CalcDoc
       Number`,
 },
 {
+name: 'integer with underscore separators',
+doc: '1_233_232',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number`,
+},
+{
+name: 'float with underscore separators',
+doc: '1_233_232.232',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number`,
+},
+{
+name: 'float with underscore in fractional part is invalid',
+doc: '1_233_232.232_333',
+expectedTree: `CalcDoc
+  NoBinding
+    Literal
+      Number
+    ⚠
+  NoBinding
+    Identifier`,
+},
+{
 name: 'float with comma in fractional part is invalid',
 doc: '1,233,232.232,333',
 expectedTree: `CalcDoc

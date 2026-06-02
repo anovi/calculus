@@ -236,6 +236,16 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: ['1233232.232'],
   },
   {
+    name: 'integer with underscore separators',
+    doc: '1_233_232',
+    expected: [1233232],
+  },
+  {
+    name: 'float with underscore separators',
+    doc: '1_233_232.232',
+    expected: ['1233232.232'],
+  },
+  {
     name: 'negative',
     doc: '-2',
     expected: [-2],

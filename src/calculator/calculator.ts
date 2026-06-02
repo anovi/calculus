@@ -180,7 +180,8 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             const raw = ctx
                 .sliceDoc(ctx.cursor.from, ctx.cursor.to)
                 .replaceAll(' ', '')
-                .replaceAll(',', '');
+                .replaceAll(',', '')
+                .replaceAll('_', '');
             try {
                 return { n: new Decimal(raw) };
             } catch {
