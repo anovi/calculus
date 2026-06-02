@@ -1,12 +1,9 @@
 import { combineConfig, Facet, type Extension } from '@codemirror/state'
 import {
-  activateHover,
-  closeHoverTooltips,
   hoverTooltip,
   tooltips,
   type EditorView as EditorViewType,
-  type Rect,
-  type Tooltip,
+  type Tooltip
 } from '@codemirror/view'
 
 import type { CalcValue } from '../calculator'
@@ -39,15 +36,6 @@ function calcValueAtAnchor(view: EditorViewType, pos: number): CalcValue | null 
     if (doc.lineAt(from).to === pos) found = val
   })
   return found
-}
-
-function pillCoords(view: EditorViewType, anchorPos: number): Rect | null {
-  const pill = view.dom.querySelector(
-    `.cm-calc-result[data-calc-anchor="${anchorPos}"] .cm-calc-result__pill`,
-  ) as HTMLElement | null
-  if (!pill) return null
-  const r = pill.getBoundingClientRect()
-  return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
 }
 
 function buildTooltipDom(content: { name?: string; value: string; unit?: string }): HTMLElement {
@@ -85,10 +73,7 @@ function tooltipForValue(
     create() {
       return {
         dom: buildTooltipDom(content),
-        getCoords: () => pillCoords(view, anchorPos) ?? view.coordsAtPos(anchorPos)!,
-        mount: (view) => {
-          console.log(view.dom.querySelector('.cm-tooltip-hover')?.innerHTML)
-        }
+        getCoords: () => view.coordsAtPos(anchorPos)!,
       }
     },
   }
@@ -110,29 +95,4 @@ export function calcResultTooltips(config: CalcResultTooltipConfig = {}): Extens
     tooltips(),
     calcResultHoverTooltip,
   ]
-}
-
-/** Show the result tooltip after the configured hover delay (for widget pills). */
-export function bindResultPillTooltip(
-  pill: HTMLElement,
-  view: EditorViewType,
-  anchorPos: number,
-): void {
-  let hoverTimer: ReturnType<typeof setTimeout> | undefined
-
-  pill.addEventListener('mouseenter', () => {
-    const { hoverTime } = view.state.facet(calcResultTooltipConfig)
-    hoverTimer = setTimeout(() => {
-      hoverTimer = undefined
-      activateHover(view, anchorPos, 1, {
-        tooltip: calcResultHoverTooltip,
-        until: (tr) => tr.docChanged,
-      })
-    }, hoverTime)
-  })
-
-  pill.addEventListener('mouseleave', () => {
-    if (hoverTimer != null) clearTimeout(hoverTimer)
-    view.dispatch({ effects: closeHoverTooltips })
-  })
 }

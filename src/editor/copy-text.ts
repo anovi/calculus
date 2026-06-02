@@ -1,5 +1,17 @@
+const noop = () => {};
+
 /** Copy plain text within a user gesture (click/touchend). Sync — required on iOS Safari. */
-export function copyTextToClipboard(text: string): boolean {
+export function copyTextToClipboard(text: string): { ok: boolean, clear: () => void} {
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(text);
+      return { ok: true, clear: noop};
+    }
+  } catch (error) {
+    // do nothing, continue
+  }
+
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.setAttribute('readonly', '');
@@ -21,12 +33,8 @@ export function copyTextToClipboard(text: string): boolean {
   try {
     ok = document.execCommand('copy');
   } finally {
-    document.body.removeChild(textarea);
+    // clearing happens in callback
   }
 
-  if (!ok && navigator.clipboard?.writeText) {
-    void navigator.clipboard.writeText(text);
-  }
-
-  return ok;
+  return { ok, clear: () => document.body.removeChild(textarea) };
 }

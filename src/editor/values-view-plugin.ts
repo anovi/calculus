@@ -10,7 +10,6 @@ import {
   type ViewUpdate,
 } from '@codemirror/view'
 import { CalcValue } from '../calculator'
-import { bindResultPillTooltip } from './calc-result-tooltip'
 import { copyTextToClipboard } from './copy-text'
 import { formatResult } from './calc-result-format'
 import { calcRangesField, getCalcRanges } from './values-field'
@@ -26,12 +25,10 @@ import { CurrencyRateUpdated } from './effects'
  */
 class ResultWidget extends WidgetType {
   readonly value: CalcValue
-  readonly anchorPos: number
 
-  constructor(value: CalcValue, anchorPos: number) {
+  constructor(value: CalcValue) {
     super();
     this.value = value;
-    this.anchorPos = anchorPos;
   }
 
   eq(other: ResultWidget): boolean {
@@ -50,22 +47,20 @@ class ResultWidget extends WidgetType {
     // by transparent padding on the outer.
     const wrap = document.createElement('span');
     wrap.className = 'cm-calc-result';
-    wrap.dataset.calcAnchor = String(this.anchorPos);
     wrap.setAttribute('aria-hidden', 'true');
 
     const pill = document.createElement('span');
     if (this.value.error != null) {
+      // KEEP IT FOR DEBUGGING
       pill.className = 'cm-calc-result__pill cm-calc-result__pill--error';
       pill.textContent = '= Error';
       pill.title = this.value.error;
     } else {
       pill.className = 'cm-calc-result__pill';
       pill.textContent = `${formatResult(this.value)}`;
-      bindResultPillTooltip(pill, view, this.anchorPos);
       const activate = (e: Event) => {
         e.preventDefault();
-        this.#copyResult();
-        this.#focusLine(view);
+        this.#copyResult(() => this.#focusLine(view, pill));
       };
       pill.addEventListener('touchend', activate);
       pill.addEventListener('click', activate);
@@ -80,24 +75,20 @@ class ResultWidget extends WidgetType {
     return true;
   }
 
-  #focusLine(view: EditorView) {
-    const values = view.state.field(calcRangesField);
-    const cur = values.ranges.iter();
-    while (cur.value) {
-      if (cur.value === this.value) {
-        view.dispatch({
-          selection: { anchor: cur.to - 1 }
-        });
-        if (!view.hasFocus) view.focus();
-        break;
-      }
-      cur.next();
-    }
+  #focusLine(view: EditorView, dom: HTMLSpanElement) {
+    const pos = view.posAtDOM(dom);
+    console.log(pos)
+    view.dispatch({
+      selection: { anchor: pos }
+    });
+    if (!view.hasFocus) view.focus();
   }
 
-  #copyResult(): void {
+  #copyResult(cb?: () => void): void {
     if (this.value.error != null) return;
-    copyTextToClipboard(formatResult(this.value));
+    const res = copyTextToClipboard(formatResult(this.value));
+    if (cb) cb();
+    res.clear();
   }
 }
 
@@ -119,7 +110,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     if (!cursor.value.error)
       widgets.push(
         Decoration.widget({
-          widget: new ResultWidget(cursor.value, lineEnd),
+          widget: new ResultWidget(cursor.value),
           side: 1,
         }).range(lineEnd),
       )
