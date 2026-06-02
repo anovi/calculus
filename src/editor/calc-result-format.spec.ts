@@ -5,8 +5,8 @@ import { CalcValue } from '../calculator';
 import { formatCalcSuffix, formatResult, getResultTooltipContent } from './calc-result-format';
 import { getCurrencyDecimalPlaces } from '../units';
 
-function calc(result: Decimal, unit?: string): CalcValue {
-    return new CalcValue(result, undefined, undefined, unit);
+function calc(result: Decimal, unit?: string, name?: string): CalcValue {
+    return new CalcValue(result, name, undefined, unit);
 }
 
 describe('getCurrencyDecimalPlaces', () => {
@@ -53,6 +53,13 @@ describe('formatResult', () => {
 });
 
 describe('getResultTooltipContent', () => {
+    it('shows binding name on first line when present', () => {
+        expect(getResultTooltipContent(calc(new Decimal('1.23456789'), undefined, 'total'))).toEqual({
+            name: 'total',
+            value: '1.23456789',
+        });
+    });
+
     it('shows high-precision value without unit', () => {
         expect(getResultTooltipContent(calc(new Decimal('1.23456789')))).toEqual({
             value: '1.23456789',

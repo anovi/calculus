@@ -50,9 +50,15 @@ function pillCoords(view: EditorViewType, anchorPos: number): Rect | null {
   return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
 }
 
-function buildTooltipDom(content: { value: string; unit?: string }): HTMLElement {
+function buildTooltipDom(content: { name?: string; value: string; unit?: string }): HTMLElement {
   const dom = document.createElement('div')
   dom.className = 'cm-calc-result-tooltip'
+  if (content.name) {
+    const nameEl = document.createElement('div')
+    nameEl.className = 'cm-calc-result-tooltip__name'
+    nameEl.textContent = content.name
+    dom.appendChild(nameEl)
+  }
   const valueEl = document.createElement('div')
   valueEl.className = 'cm-calc-result-tooltip__value'
   valueEl.textContent = content.value

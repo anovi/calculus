@@ -59,6 +59,7 @@ function unitSpellingForDisplay(unit: string): string {
 }
 
 export type ResultTooltipContent = {
+    name?: string
     value: string
     unit?: string
 }
@@ -68,7 +69,10 @@ export function getResultTooltipContent(value: CalcValue): ResultTooltipContent 
     if (value.error != null) return null
     const n = value.result
     if (n == null || n.isNaN()) return { value: 'NaN' }
-    const content: ResultTooltipContent = { value: formatHighPrecision(n) }
+    const content: ResultTooltipContent = {
+        name: value.name,
+        value: formatHighPrecision(n),
+    }
     if (value.unit) {
         content.unit = formatUnitFullName(unitSpellingForDisplay(value.unit))
     }
