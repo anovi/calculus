@@ -3,8 +3,8 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--background);
+  color: var(--text-primary);
   touch-action: none;
 }
 
@@ -18,6 +18,14 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+#app-shell .button-icon {
+  color: var(--icon-color);
+}
+
+#cm-suggestions-panel .button-icon {
+  color: inherit;
 }
 
 
@@ -35,23 +43,25 @@ body {
   transform: translateX(-100%);
   transition: transform 180ms ease-out;
   transition-duration: 100ms;
-  background: var(--bg);
-  border-right: 1px solid var(--border-color-100);
+  background: var(--background);
+  border-right: 1px solid var(--border-level-1);
   display: flex;
   flex-direction: column;
   padding-top: 64px;
   box-shadow: var(--shadow-lg);
+  visibility: none;
 }
 
 #documents-drawer.is-open {
   transform: translateX(0);
+  visibility: visible;
 }
 
 #documents-backdrop {
   position: fixed;
   inset: 0;
   z-index: var(--z-layer-backdrop);
-  background: color-mix(in srgb, var(--bg) 50%, transparent);
+  background: color-mix(in srgb, var(--background) 50%, transparent);
   opacity: 0;
   pointer-events: none;
   transition: opacity 180ms ease-out;
@@ -75,16 +85,16 @@ body {
 
 .documents-list__item {
   &:first-of-type .documents-list__button {
-    border-top: 1px solid var(--border-color-100);  
+    border-top: 1px solid var(--border-level-1);  
   }
 }
 
 .documents-list__button {
   width: 100%;
   border: none;
-  border-bottom: 1px solid var(--border-color-100);
-  background: var(--surface);
-  color: var(--text);
+  border-bottom: 1px solid var(--border-level-1);
+  background: var(--background);
+  color: var(--text-primary);
   padding: 10px 12px;
   text-align: left;
   cursor: pointer;
@@ -95,23 +105,26 @@ body {
   gap: 2px;
   transition: background 200ms ease;
   &:hover {
-    background-color: color-mix(in oklch, var(--surface) 97%, black);
+    background-color: color-mix(in oklch, var(--background) 97%, black);
   }
 }
 
 /* Selected State */
 .documents-list__button.is-active {
-  border-color: var(--accent);
   border-radius: 6px;
   position: relative;
-  background-color: var(--accent-subtle-bg);;
+  background-color: var(--accent);
   border-color: transparent;
+  color: var(--on-accent-primary);
+  & .documents-list__date {
+    color: var(--on-accent-secondary);
+  }
   & .documents-list__date:after {
     content: "Current";
     position: absolute;
     right: 12px;
     bottom: 8px;
-    color: var(--accent);
+    color: var(--on-accent-primary);
     font-weight: 600;
     border-radius: 6px;
     pointer-events: none;
@@ -130,7 +143,7 @@ body {
 
 .documents-list__date {
   /* font-size: 0.78em; */
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 @media (max-width: 640px) {
@@ -156,6 +169,7 @@ body {
 
 #editor .cm-panels-top {
   border: 0;
+  border-bottom: 1px solid var(--border-level-1);
   background: transparent;
   z-index: var(--z-layer-drawer);
 }
@@ -185,7 +199,7 @@ body {
   border: 0;
   outline: none;
   background: transparent;
-  color: var(--heading-muted);
+  color: var(--icon-color);
   font: inherit;
   line-height: 1;
   padding: 0;
@@ -212,8 +226,8 @@ body {
 }
 
 #editor .cm-document-controls__button:is(:hover, :focus-visible) {
-  color: var(--heading);
-  background: var(--interactive-hover-bg);
+  color: var(--text-primary);
+  background: var(--surface-level-2);
 }
 
 #editor .cm-document-controls__button:disabled {
@@ -223,14 +237,14 @@ body {
 }
 
 #editor .cm-document-controls__button:disabled:is(:hover, :focus-visible) {
-  color: var(--heading-muted);
+  color: var(--icon-color);
   background: transparent;
 }
 
 #editor .cm-editor {
   flex: 1 1 auto;
-  background: var(--surface);
-  color: var(--text);
+  background: var(--background);
+  color: var(--editor-base);
 }
 
 [data-theme="dark"] #editor .cm-editor {
@@ -253,24 +267,24 @@ body {
 }
 
 #editor .cm-gutters {
-  background: var(--bg);
-  color: var(--text-subtle);
-  border-right: 1px solid var(--border);
+  background: var(--background);
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border-level-2);
 }
 
 #editor .cm-activeLine,
 #editor .cm-activeLineGutter {
-  background: var(--accent-line-bg);
+  background: var(--surface-level-1);
 }
 
 #editor .cm-cursor {
-  border-left-color: var(--heading);
+  border-left-color: var(--text-primary);
 }
 
 #editor .cm-selectionBackground,
 #editor .cm-focused .cm-selectionBackground,
 #editor ::selection {
-  background: var(--accent-selection-bg);
+  background: var(--accent-b);
 }
 
 #editor .cm-content {
@@ -278,7 +292,7 @@ body {
 }
 
 #editor .cm-placeholder {
-  color: var(--text-placeholder);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -308,7 +322,7 @@ body {
   position: relative;
   padding: 0 8px;
   font-variant-numeric: tabular-nums;
-  color: var(--result-color);
+  color: var(--editor-result);
   cursor: pointer;
   /* border: 1px solid var(--result-border-color); */
 
@@ -318,7 +332,7 @@ body {
     z-index: -1;
     content: '';
     display: block;
-    background: var(--result-bg);
+    background: var(--editor-result-bg);
     border-radius: 0.3em;
     transition:
       background 0.15s ease, border-color 0.15s ease, color 0.15s ease,
@@ -331,16 +345,15 @@ body {
 @media (hover: hover) and (pointer: fine) {
   #editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):hover {
     &:after {
-      color: var(--result-hover-color);
-      background: var(--result-hover-bg);
-      box-shadow: inset 0 0 0 1px var(--result-hover-border-color);
+      color: var(--editor-result);
+      background: oklch(from var(--editor-result-bg) calc(l - 0.02) calc(c + 0.02) calc(h - 23));
     }
   }
 }
 
 #editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):active {
-  background: var(--accent-active-bg);
-  border-color: var(--accent-active-border);
+  background: color-mix(in oklch, var(--accent) 24%, transparent);
+  border-color: color-mix(in oklch, var(--accent) 55%, transparent);
 }
 
 #editor .cm-calc-result__pill--error {
@@ -354,7 +367,7 @@ body {
 
 #editor .cm-tooltip {
   background: var(--tooltip-bg);
-  color: var(--tooltip-fg);
+  color: var(--text-primary);
   border: none;
   border-radius: 6px;
   box-shadow: var(--tooltip-shadow)!important;
@@ -394,11 +407,12 @@ body {
 
 #editor .cm-diagnostic {
   padding: 0.4rem;
-  color: var(--tooltip-diagnostic-fg);
+  color: var(--text-primary);
 }
 
 #editor .cm-diagnostic-error {
-  border-left: 5px solid var(--tooltip-diagnostic-error-accent);
+  /* border-left: 5px solid var(--tooltip-diagnostic-error-accent); */
+  border-left: none;
 }
 
 #editor .cm-diagnostic-warning {
@@ -458,20 +472,20 @@ body {
   padding: 0.4rem;
   font-family: inherit;
   line-height: 1.35;
-  color: var(--result-color);
+  color: var(--editor-result);
 }
 
 #editor .cm-calc-result-tooltip__value {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--result-color);
+  color: var(--editor-result);
 }
 
 #editor .cm-calc-result-tooltip__unit {
   margin-top: 2px;
   font-size: 0.9em;
   opacity: 0.85;
-  color: var(--tooltip-calc-unit-fg);
+  color: var(--text-primary);
 }
 
 
@@ -604,68 +618,9 @@ body {
 }
 
 
-/*=============================================
-=                 Color Palette               =
-=============================================*/
-/* Raw palette — assign semantic theme tokens from these scales. */
-
 :root {
-  --dark-mode-bg: #181818;
-  --light-mode-bg: #FFFFFF;
-}
-
-/*
-  Generated via Harmonizer: https://harmonizer.evilmartians.com/#jZM9b4MwEIb_y3WlyB-AgS1K1amd0q3q4IADqI6NDGSJ8t9rR0mwqUSLJ7939_juNT7DSZih0wpKHIEUJyEHKD_PoPhRQAkYIYig0mo0fBihLFK7a40-cihRjAi9b7e8vymX6FFNFtV5ElSnLMckRfePBCw1Semh6ALFWIAKQH-gkgUqC1AYJyj7b1fZEhXYg5M8oWxG0TUUWx0Qk3DC1a7y5aWhAIVogErWUMUStbCd-a4j_Bv1FUE7ieCfMqK2TK4aaXcExYl33nEaRm7qZ21sXMxpLIuJl7aXUze0HgWnceHFtanazjuFUuRFJT8JVQvj1Rck4G9601V6nBNSHDM3yyDGsVONnef8cOVd10LaIt5X3FbUnRHVaJ-U012vzYd-beBuzU21L01Zbd9stdTmrWta6y48HQ6HWX3h5tuJOHfrql8Td9Yim-0uzqXtel45ZE_hcvkB
-*/
-:root {
-  --red-100: oklch(0.96 0.02 20.4);
-  --red-200: oklch(0.9 0.06 20.4);
-  --red-300: oklch(0.87 0.08 20.4);
-  --red-400: oklch(0.81 0.11 20.4);
-  --red-600: oklch(0.67 0.15 20.4);
-  --red-700: oklch(0.58 0.13 20.4);
-  --red-800: oklch(0.47 0.1 20.4);
-  --red-900: oklch(0.39 0.09 20.4);
-  --mustard-orange-100: oklch(0.95 0.02 76.2);
-  --mustard-orange-200: oklch(0.9 0.06 76.2);
-  --mustard-orange-300: oklch(0.86 0.08 76.2);
-  --mustard-orange-400: oklch(0.8 0.11 76.2);
-  --mustard-orange-600: oklch(0.65 0.15 76.2);
-  --mustard-orange-700: oklch(0.57 0.13 76.2);
-  --mustard-orange-800: oklch(0.46 0.1 76.2);
-  --mustard-orange-900: oklch(0.38 0.09 76.2);
-  --bluish-100: oklch(0.95 0.02 215.9);
-  --bluish-200: oklch(0.89 0.06 215.9);
-  --bluish-300: oklch(0.85 0.08 215.9);
-  --bluish-400: oklch(0.79 0.11 215.9);
-  --bluish-600: oklch(0.63 0.15 215.9);
-  --bluish-700: oklch(0.55 0.13 215.9);
-  --bluish-800: oklch(0.44 0.1 215.9);
-  --bluish-900: oklch(0.37 0.09 215.9);
-  --orchid-100: oklch(0.96 0.02 330);
-  --orchid-200: oklch(0.9 0.06 330);
-  --orchid-300: oklch(0.87 0.08 330);
-  --orchid-400: oklch(0.81 0.11 330);
-  --orchid-600: oklch(0.67 0.15 330);
-  --orchid-700: oklch(0.58 0.13 330);
-  --orchid-800: oklch(0.47 0.1 330);
-  --orchid-900: oklch(0.39 0.09 330);
-  --lavender-100: oklch(0.95 0.02 292.2);
-  --lavender-200: oklch(0.9 0.06 292.2);
-  --lavender-300: oklch(0.86 0.08 292.2);
-  --lavender-400: oklch(0.81 0.11 292.2);
-  --lavender-600: oklch(0.66 0.15 292.2);
-  --lavender-700: oklch(0.58 0.13 292.2);
-  --lavender-800: oklch(0.46 0.1 292.2);
-  --lavender-900: oklch(0.39 0.09 292.2);
-  --apricot-100: oklch(0.95 0.02 51.7);
-  --apricot-200: oklch(0.9 0.06 51.7);
-  --apricot-300: oklch(0.86 0.08 51.7);
-  --apricot-400: oklch(0.81 0.11 51.7);
-  --apricot-600: oklch(0.66 0.15 51.7);
-  --apricot-700: oklch(0.57 0.13 51.7);
-  --apricot-800: oklch(0.46 0.1 51.7);
-  --apricot-900: oklch(0.39 0.09 51.7);
+  --dark-mode-bg: #1f1f1f;
+  --light-mode-bg: #ffffff;
 }
 
 /*=============================================
@@ -685,266 +640,236 @@ body {
   
 }
 
+/* =========================================
+   CALC THEME TOKENS
+   Default: Dark
+========================================= */
+
+:root,
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: var(--dark-mode-bg);
-  --surface: var(--dark-mode-bg);
-  --surface-raised: var(--bluish-800);
-  --border: color-mix(in oklch, var(--bluish-100) 8%, transparent);
-  --text: #CDCDCD;
-  --heading: var(--bluish-100);
-  --text-muted: color-mix(in oklch, var(--text) 60%, transparent);
-  --text-subtle: color-mix(in oklch, var(--text) 67%, transparent);
-  --text-placeholder: color-mix(in oklch, var(--text) 58%, transparent);
-  --heading-muted: color-mix(in oklch, var(--heading) 90%, transparent);
-  --interactive-hover-bg: color-mix(in oklch, var(--heading) 8%, transparent);
+  /* Layout */
+  --side-padding: 18px;
 
-  --border-color-100: color-mix(in oklch, var(--text) 10%, transparent);
-  --border-color-200: color-mix(in oklch, var(--text) 20%, transparent);
-  --border-color-300: color-mix(in oklch, var(--text) 30%, transparent);
+  /* Base */
+  --background: #20201f;
 
-  /* https://smoothshadows.com/#djEsMiwzLDAuMDgsMjcsMTIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
+  --text-primary: #ffffff;
+  --text-secondary: #cdcdcd;
+
+  --icon-color: #79cec9;
+
+  /* Accent */
+  --accent: #19706a;
+  --accent-text: #50ece0;
+
+  --on-accent-primary: #ffffff;
+  --on-accent-secondary: #c7e6e4;
+
+  --accent-b: #674617;
+
+  --on-accent-b-primary: #ffffff;
+  --on-accent-b-secondary: #ffd394;
+
+  /* Borders */
+  --border-level-1: rgb(255 255 255 / 6%);
+  --border-level-2: rgb(255 255 255 / 12%);
+  --border-level-3: rgb(255 255 255 / 18%);
+
+  /* Surfaces */
+  --surface-level-1: #262626;
+  --surface-level-2: #313030;
+  --surface-level-3: #3b3b3b;
+
+  /* Editor */
+  --editor-base: #cdcdcd;
+
+  --editor-comment: rgb(255 255 255 / 67%);
+  --editor-number: #ffffff;
+  --editor-unit: #ffffff;
+
+  --editor-result: #55fdf1;
+  --editor-result-bg: rgb(85 253 241 / 8%);
+  --editor-result-stroke: rgb(85 253 241 / 14%);
+
+  --editor-operator: #cda4ff;
+  --editor-variable: #b9f7f3;
+
+  --editor-parenthesis-lvl1: #c6d6d5;
+  --editor-parenthesis-lvl2: #c6d6d5;
+  --editor-parenthesis-lvl3: #c6d6d5;
+
+  --editor-function: #f8e2ba;
+
   --shadow-sm:
-  0px 1px 3px rgba(3, 7, 18, 0.08),
-  0px 5px 12px rgba(3, 7, 18, 0.05),
-  0px 12px 27px rgba(3, 7, 18, 0.03);
-
+    0px 1px 3px rgba(3, 7, 18, 0.08),
+    0px 5px 12px rgba(3, 7, 18, 0.05),
+    0px 12px 27px rgba(3, 7, 18, 0.03);
   --shadow-md:
-  /* https://smoothshadows.com/#djEsMiw1LDAuMjIsMjQsMzIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
-  0px 1px 1px rgba(3, 7, 18, 0.22),
-  0px 5px 4px rgba(3, 7, 18, 0.18),
-  0px 12px 9px rgba(3, 7, 18, 0.13),
-  0px 20px 15px rgba(3, 7, 18, 0.09),
-  0px 32px 24px rgba(3, 7, 18, 0.04)
-  0px 32px 24px red;
-
+    0px 1px 1px rgba(3, 7, 18, 0.22),
+    0px 5px 4px rgba(3, 7, 18, 0.18),
+    0px 12px 9px rgba(3, 7, 18, 0.13),
+    0px 20px 15px rgba(3, 7, 18, 0.09),
+    0px 32px 24px rgba(3, 7, 18, 0.04);
   --shadow-lg:
-  /* https://smoothshadows.com/#djEsMSw1LDAuMDgsMjcsMTIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
-  0px 0px 1px rgba(3, 7, 18, 0.02),
-  0px 2px 4px rgba(3, 7, 18, 0.03),
-  0px 4px 10px rgba(3, 7, 18, 0.05),
-  0px 8px 17px rgba(3, 7, 18, 0.06),
-  0px 12px 27px rgba(3, 7, 18, 0.08);
+    0px 0px 1px rgba(3, 7, 18, 0.02),
+    0px 2px 4px rgba(3, 7, 18, 0.03),
+    0px 4px 10px rgba(3, 7, 18, 0.05),
+    0px 8px 17px rgba(3, 7, 18, 0.06),
+    0px 12px 27px rgba(3, 7, 18, 0.08);
 
-  --accent: var(--mustard-orange-400);
-  --accent-hover: var(--bluish-300);
-  --accent-line-bg: color-mix(in oklch, var(--accent) 6%, transparent);
-  --accent-selection-bg: color-mix(in oklch, var(--accent) 22%, transparent);
-  --accent-subtle-bg: color-mix(in oklch, var(--accent) 10%, transparent);
-  --accent-subtle-border: color-mix(in oklch, var(--accent) 25%, transparent);
-  --accent-hover-bg: color-mix(in oklch, var(--accent) 18%, transparent);
-  --accent-hover-border: color-mix(in oklch, var(--accent) 45%, transparent);
-  --accent-active-bg: color-mix(in oklch, var(--accent) 24%, transparent);
-  --accent-active-border: color-mix(in oklch, var(--accent) 55%, transparent);
-
-  --ok: var(--greenish-400);
-  --error: var(--orchid-300);
-  --warning: var(--orchid-600);
+  --error: var(--editor-function);
+  --warning: var(--editor-operator);
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --panel-text-color: black;
-  --panel-bg-color: transparent;
-  --panel-border-color: transparent;
+  --autocomplete-bg: color-mix(in oklch, var(--background) 97%, white);
+  --autocomplete-selected-bg: var(--accent);
+  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-matched-fg: var(--accent-text);
+  --autocomplete-selected-matched-fg: var(--on-accent-primary);
+  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
-  --autocomplete-bg: var(--bg);
-  --autocomplete-fg: var(--text);
-  --autocomplete-selected-bg: var(--accent-subtle-bg);
-  --autocomplete-selected-fg: var(--text);
-  --autocomplete-selected-detail-fg: color-mix(in oklch, var(--text-subtle) 80%, var(--accent));
-  --autocomplete-matched-fg: var(--accent);
-  --autocomplete-detail-fg: var(--text-subtle);
-  --autocomplete-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 0 2px rgba(0,0,0,0.3),
-    var(--shadow-sm);
-
-  --tooltip-bg: color-mix(in oklch, var(--bg) 97%, white );
-  --tooltip-fg: var(--text);
-  --tooltip-border-color: var(--bluish-800);
+  --tooltip-bg: color-mix(in oklch, var(--background) 97%, white);
+  --tooltip-fg: var(--text-primary);
+  --tooltip-border-color: var(--border-level-3);
   --tooltip-section-border-color: var(--tooltip-border-color);
-  --tooltip-shadow-color: var(--bluish-900);
   --tooltip-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 0 2px rgba(0,0,0,0.3),
+    0 0 0 2px rgba(0, 0, 0, 0.3),
     var(--shadow-sm);
   --tooltip-arrow-border-color: var(--tooltip-border-color);
   --tooltip-arrow-fill-color: var(--tooltip-bg);
-
   --tooltip-diagnostic-fg: var(--tooltip-fg);
   --tooltip-diagnostic-error-accent: var(--error);
   --tooltip-diagnostic-warning-accent: var(--warning);
-  --tooltip-diagnostic-info-accent: var(--text-subtle);
-  --tooltip-diagnostic-hint-accent: var(--bluish-600);
-  --tooltip-diagnostic-action-bg: color-mix(in oklch, var(--heading) 10%, transparent);
-  --tooltip-diagnostic-action-fg: var(--heading);
-  --tooltip-diagnostic-source-fg: var(--autocomplete-detail-fg);
+  --tooltip-diagnostic-info-accent: var(--text-secondary);
+  --tooltip-diagnostic-hint-accent: var(--accent);
+  --tooltip-diagnostic-action-bg: var(--surface-level-2);
+  --tooltip-diagnostic-action-fg: var(--text-primary);
+  --tooltip-diagnostic-source-fg: var(--text-secondary);
   --tooltip-diagnostic-action-hover-bg: color-mix(in oklch, var(--tooltip-diagnostic-action-bg) 90%, black 5%);
   --tooltip-diagnostic-action-hover-fg: var(--tooltip-diagnostic-action-fg);
 
-  --tooltip-calc-value-fg: var(--accent);
-  --tooltip-calc-unit-fg: var(--text);
+  --suggestions-button-bg: var(--accent);
+  --suggestions-button-hover-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-main-button-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-main-button-hover-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-button-fg: var(--on-accent-primary);
 
-  --suggestions-button-bg: var(--mustard-orange-600);
-  --suggestions-button-hover-bg: var(--mustard-orange-700);
-  --suggestions-main-button-bg: var(--mustard-orange-700);
-  --suggestions-main-button-hover-bg: var(--mustard-orange-800);
-  --suggestions-button-fg: var(--bluish-100);
-
-  --result-color: var(--mustard-orange-400);
-  --result-bg: color-mix(in srgb, var(--mustard-orange-400) 15%, transparent);
-  --result-border-color: transparent;
-  --result-hover-color: var(--mustard-orange-400);
-  --result-hover-bg: color-mix(in srgb, var(--mustard-orange-400) 20%, transparent);
+  --result-border-color: var(--editor-result-stroke);
   --result-hover-border-color: transparent;
-
-  --cm-hl-variable: var(--bluish-300);
-  --cm-hl-function: var(--red-300);
-  --cm-hl-operator: var(--orchid-400);
-  --cm-hl-number: #FFF;
-  --cm-hl-string: var(--error);
-  --cm-hl-literal: var(--ok);
-  --cm-hl-bracket: var(--lavender-400);
-  --cm-hl-comment: var(--text-subtle);
-  --cm-hl-unit: var(--greenish-200);
-  --cm-hl-heading: var(--text);
 }
+
+/* =========================================
+   LIGHT THEME
+========================================= */
 
 [data-theme="light"] {
   color-scheme: light;
 
-  --bg: #fff;
-  --surface: #fff;
-  --surface-raised: #f0f0f0;
-  --text: #1F2329;
-  --heading: #1F2329;
-  --text-muted: color-mix(in oklch, var(--text) 67%, transparent);
-  --text-subtle: color-mix(in oklch, var(--text) 67%, transparent);
-  --text-placeholder: color-mix(in oklch, var(--text) 58%, transparent);
-  --heading-muted: color-mix(in oklch, var(--heading) 80%, transparent);
-  --interactive-hover-bg: color-mix(in oklch, var(--heading) 8%, transparent);
+  --background: #f8f8f6;
 
-  /* https://smoothshadows.com/#djEsMiwzLDAuMDgsMjcsMTIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
+  --text-primary: #4a515b;
+  --text-secondary: #67696d;
+
+  --icon-color: #19706a;
+
+  --accent: #19706a;
+  --accent-text: #19706a;
+
+  --on-accent-primary: #ffffff;
+  --on-accent-secondary: #c7e6e4;
+
+  --accent-b: #edfaf8;
+
+  --on-accent-b-primary: #024b44;
+  --on-accent-b-secondary: #4192a6;
+
+  --border-level-1: rgb(0 0 0 / 6%);
+  --border-level-2: rgb(0 0 0 / 12%);
+  --border-level-3: rgb(0 0 0 / 18%);
+
+  --surface-level-1: #f3f3f1;
+  --surface-level-2: #efefeb;
+  --surface-level-3: #e6e6e0;
+
+  --editor-base: #4a515b;
+
+  --editor-comment: #67696d;
+  --editor-number: #1f2329;
+  --editor-unit: #1f2329;
+
+  --editor-result: #006861;
+  --editor-result-bg: #edfaf8;
+  --editor-result-stroke: #7dcbc5;
+
+  --editor-operator: #8a2aff;
+  --editor-variable: #19706a;
+
+  --editor-parenthesis-lvl1: #7e7e7e;
+  --editor-parenthesis-lvl2: #7e7e7e;
+  --editor-parenthesis-lvl3: #7e7e7e;
+
+  --editor-function: #966305;
+
   --shadow-sm:
-  0px 1px 3px rgba(3, 7, 18, 0.08),
-  0px 5px 12px rgba(3, 7, 18, 0.05),
-  0px 12px 27px rgba(3, 7, 18, 0.03);
-
+    0px 1px 3px rgba(3, 7, 18, 0.08),
+    0px 5px 12px rgba(3, 7, 18, 0.05),
+    0px 12px 27px rgba(3, 7, 18, 0.03);
   --shadow-md:
-  /* https://smoothshadows.com/#djEsMiw1LDAuMDgsMjQsMzIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
-  0px 0px 1px rgba(3, 7, 18, 0.08),
-  0px 4px 4px rgba(3, 7, 18, 0.06),
-  0px 11px 9px rgba(3, 7, 18, 0.05),
-  0px 18px 15px rgba(3, 7, 18, 0.03),
-  0px 30px 24px rgba(3, 7, 18, 0.02);
-
+    0px 0px 1px rgba(3, 7, 18, 0.08),
+    0px 4px 4px rgba(3, 7, 18, 0.06),
+    0px 11px 9px rgba(3, 7, 18, 0.05),
+    0px 18px 15px rgba(3, 7, 18, 0.03),
+    0px 30px 24px rgba(3, 7, 18, 0.02);
   --shadow-lg:
-  /* https://smoothshadows.com/#djEsMSw1LDAuMDgsMjcsMTIsMCwjMDMwNzEyLCNmM2Y0ZjYsI2ZmZmZmZiwy */
-  0px 0px 1px rgba(3, 7, 18, 0.02),
-  0px 2px 4px rgba(3, 7, 18, 0.03),
-  0px 4px 10px rgba(3, 7, 18, 0.05),
-  0px 8px 17px rgba(3, 7, 18, 0.06),
-  0px 12px 27px rgba(3, 7, 18, 0.08);
+    0px 0px 1px rgba(3, 7, 18, 0.02),
+    0px 2px 4px rgba(3, 7, 18, 0.03),
+    0px 4px 10px rgba(3, 7, 18, 0.05),
+    0px 8px 17px rgba(3, 7, 18, 0.06),
+    0px 12px 27px rgba(3, 7, 18, 0.08);
 
-  --border-color-100: color-mix(in oklch, var(--text) 10%, transparent);
-  --border-color-200: color-mix(in oklch, var(--text) 20%, transparent);
-  --border-color-300: color-mix(in oklch, var(--text) 30%, transparent);
-
-  --accent: var(--mustard-orange-600);
-  --accent-hover: var(--mustard-orange-600);
-  --accent-line-bg: color-mix(in oklch, var(--accent) 6%, transparent);
-  --accent-selection-bg: #FFF3E1;
-  --accent-subtle-bg: #FFF3E1;
-  --accent-subtle-border: color-mix(in oklch, var(--accent) 25%, transparent);
-  --accent-hover-bg: color-mix(in oklch, var(--accent) 18%, transparent);
-  --accent-hover-border: color-mix(in oklch, var(--accent) 45%, transparent);
-  --accent-active-bg: color-mix(in oklch, var(--accent) 24%, transparent);
-  --accent-active-border: color-mix(in oklch, var(--accent) 55%, transparent);
-
-  --ok: var(--text);
-  --error: #C10606;
-  --warning: #C10606;;
+  --error: var(--editor-function);
+  --warning: var(--editor-function);
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --panel-text-color: var(--heading);
-  --panel-bg-color: transparent;
-  --panel-border-color: transparent;
+  --autocomplete-bg: var(--background);
+  --autocomplete-selected-bg: var(--accent);
+  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-matched-fg: var(--accent-text);
+  --autocomplete-selected-matched-fg: var(--on-accent-primary);
+  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
-  --autocomplete-bg: var(--bg);
-  --autocomplete-fg: var(--text);
-  --autocomplete-selected-bg: var(--accent-subtle-bg);
-  --autocomplete-selected-fg: var(--text);
-  --autocomplete-detail-fg: var(--text-subtle);
-  --autocomplete-selected-detail-fg: color-mix(in oklch, var(--text-subtle) 80%, var(--accent));
-  --autocomplete-matched-fg: var(--accent);
-  --autocomplete-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 0 0 2px rgba(0,0,0,0.12),
-    var(--shadow-md);
-  
-  --tooltip-bg: var(--surface-raised);
-  --tooltip-fg: var(--text);
+  --tooltip-bg: var(--surface-level-2);
+  --tooltip-fg: var(--text-primary);
   --tooltip-border-color: transparent;
   --tooltip-section-border-color: var(--tooltip-border-color);
-  --tooltip-shadow-color: black;
   --tooltip-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.9),
-    0 0 0 2px rgba(0,0,0,0.12),
+    0 0 0 2px rgba(0, 0, 0, 0.12),
     var(--shadow-md);
   --tooltip-arrow-border-color: var(--tooltip-border-color);
   --tooltip-arrow-fill-color: var(--tooltip-bg);
-
   --tooltip-diagnostic-fg: var(--tooltip-fg);
   --tooltip-diagnostic-error-accent: var(--error);
   --tooltip-diagnostic-warning-accent: var(--warning);
-  --tooltip-diagnostic-info-accent: var(--text-subtle);
-  --tooltip-diagnostic-hint-accent: var(--bluish-400);
-  --tooltip-diagnostic-action-bg: color-mix(in oklch, var(--heading) 10%, transparent);
-  --tooltip-diagnostic-action-fg: var(--heading);
-  --tooltip-diagnostic-source-fg: var(--autocomplete-detail-fg);
+  --tooltip-diagnostic-info-accent: var(--text-secondary);
+  --tooltip-diagnostic-hint-accent: var(--accent);
+  --tooltip-diagnostic-action-bg: var(--surface-level-2);
+  --tooltip-diagnostic-action-fg: var(--text-primary);
+  --tooltip-diagnostic-source-fg: var(--text-secondary);
   --tooltip-diagnostic-action-hover-bg: color-mix(in oklch, var(--tooltip-diagnostic-action-bg) 90%, black 5%);
   --tooltip-diagnostic-action-hover-fg: var(--tooltip-diagnostic-action-fg);
 
-  --tooltip-calc-value-fg: var(--accent);
-  --tooltip-calc-unit-fg: var(--text);
+  --suggestions-button-bg: var(--accent);
+  --suggestions-button-hover-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-main-button-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-main-button-hover-bg: color-mix(in oklch, var(--accent) 90%, black);
+  --suggestions-button-fg: var(--on-accent-primary);
 
-  --suggestions-button-bg: oklch(from var(--bg) calc(l - 0.05) c h);
-  --suggestions-button-hover-bg: var(--mustard-orange-300);
-  --suggestions-main-button-bg: var(--mustard-orange-300);
-  --suggestions-main-button-hover-bg: var(--mustard-orange-200);
-  --suggestions-button-fg: #4A515B;
-
-  --result-color: #8D4200;
-  --result-bg: oklch(from var(--apricot-600) calc(l + 0.12) calc(c * 1.2) calc(h * 1.2) / 0.2);
-  --result-border-color: transparent;
-  --result-hover-color: var(--apricot-600);
-  --result-hover-bg: color-mix(in srgb, var(--apricot-600) 20%, transparent);
+  --result-border-color: var(--editor-result-stroke);
   --result-hover-border-color: transparent;
-
-  --cm-hl-variable: #076883;
-  --cm-hl-function: #C10606;
-  --cm-hl-operator: #BB00AA;
-  --cm-hl-number: #1F2329;
-  --cm-hl-string: green;
-  --cm-hl-literal: #1F2329;
-  --cm-hl-bracket: #5D2BFF;
-  --cm-hl-comment: var(--text-subtle);
-  --cm-hl-unit: var(--text);
-  --cm-hl-heading: var(--text);
-  
 }
-
-
-/* #1F2329
-#4A515B
-#076883
-#BB00AA
-#8D4200
-#FFF3E1
-#5D2BFF
-#FFFFFF
-#D5D5D5
-#000000
-#C10606 */

@@ -5,9 +5,9 @@ import { EditorView } from 'codemirror'
 const autocompleteTheme = EditorView.baseTheme({
     "& .cm-tooltip-autocomplete": {
         border: "none!important",
-        boxShadow: "var(--autocomplete-shadow)",
-        background: "var(--autocomplete-bg)",
-        color: "var(--autocomplete-fg)",
+        boxShadow: "var(--shadow-sm)",
+        background: "var(--autocomplete-bg) !important",
+        color: "var(--text-primary)",
     },
     "& .cm-tooltip-autocomplete > ul": {
         fontFamily: "inherit",
@@ -35,35 +35,44 @@ const autocompleteTheme = EditorView.baseTheme({
         pointerEvents: "none",
     },
     "& .cm-tooltip-autocomplete-disabled > ul > li[aria-selected]": {
-        color: "var(--autocomplete-fg)",
+        color: "var(--text-primary)",
     },
     "& .cm-tooltip-autocomplete > ul > completion-section": {
         border: "none",
-        color: "var(--autocomplete-detail-fg)",
+        color: "var(--text-secondary)",
     },
     "& .cm-completionMatchedText": {
         color: "var(--autocomplete-matched-fg)",
         textDecorationColor: "var(--autocomplete-matched-fg)",
     },
+    "& li[aria-selected] .cm-completionMatchedText": {
+        color: "var(--autocomplete-selected-matched-fg)",
+        textDecorationColor: "var(--autocomplete-selected-matched-fg)",
+    },
     "& .cm-completionDetail": {
-        color: "var(--autocomplete-detail-fg)",
+        color: "var(--text-secondary)",
     },
     "& [aria-selected] > .cm-completionDetail": {
         color: "var(--autocomplete-selected-detail-fg)",
     },
     "& .cm-completionIcon": {
+        color: "var(--icon-color)",
         opacity: 0.7,
     },
+    "& li[aria-selected] .cm-completionIcon": {
+        color: "var(--autocomplete-selected-detail-fg)",
+        opacity: 1,
+    },
     "& .cm-completionListIncompleteTop:before, & .cm-completionListIncompleteBottom:after": {
-        color: "var(--autocomplete-detail-fg)",
+        color: "var(--text-secondary)",
     },
 });
 
 const panelTheme = EditorView.baseTheme({
     "& .cm-panels": {
-        backgroundColor: "var(--panel-bg-color)",
-        borderColor: "var(--panel-border-color)",
-        color: "var(--panel-text-color)",
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        color: "var(--text-primary)",
     },
 });
 

@@ -2,16 +2,15 @@ import { tags } from "@lezer/highlight"
 import { HighlightStyle } from "@codemirror/language"
 
 export const calculusHighlightStyle = HighlightStyle.define([
-	{ tag: tags.function(tags.name), color: 'var(--cm-hl-function)' },
-	// { tag: tags.arithmeticOperator, color: '#f00' },
-	{ tag: tags.variableName, color: 'var(--cm-hl-variable)' },
-	{ tag: tags.operator, color: 'var(--cm-hl-operator)' },
-	{ tag: tags.number, color: 'var(--cm-hl-number)' },
-	{ tag: tags.string, color: 'var(--cm-hl-string)' },
-	{ tag: tags.literal, color: 'var(--cm-hl-literal)' },
-	{ tag: tags.bracket, color: 'var(--cm-hl-bracket)' },
-	{ tag: tags.paren, color: 'var(--cm-hl-bracket)' },
-	{ tag: tags.comment, color: 'var(--cm-hl-comment)' },
-	{ tag: tags.unit, color: 'var(--cm-hl-unit)' },
-	{ tag: tags.heading, color: 'var(--cm-hl-heading)', fontWeight: 600 },
+	{ tag: tags.function(tags.name), color: 'var(--editor-function)' },
+	{ tag: tags.variableName, color: 'var(--editor-variable)' },
+	{ tag: tags.operator, color: 'var(--editor-operator)' },
+	{ tag: tags.number, color: 'var(--editor-number)' },
+	{ tag: tags.string, color: 'var(--editor-function)' },
+	{ tag: tags.literal, color: 'var(--editor-number)' },
+	{ tag: tags.bracket, color: 'var(--editor-parenthesis-lvl1)' },
+	{ tag: tags.paren, color: 'var(--editor-parenthesis-lvl1)' },
+	{ tag: tags.comment, color: 'var(--editor-comment)' },
+	{ tag: tags.unit, color: 'var(--editor-unit)' },
+	{ tag: tags.heading, color: 'var(--editor-base)', fontWeight: 600 },
 ])
