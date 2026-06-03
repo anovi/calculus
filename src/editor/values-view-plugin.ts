@@ -1,5 +1,7 @@
 import type { Range } from '@codemirror/state'
 import {
+  activateHover,
+  closeHoverTooltip,
   Decoration,
   gutter,
   GutterMarker,
@@ -10,6 +12,8 @@ import {
   type ViewUpdate,
 } from '@codemirror/view'
 import { CalcValue } from '../calculator'
+import { isMobileDevice } from '../lib/mobile-device'
+import { calcResultHoverTooltip } from './calc-result-tooltip'
 import { copyTextToClipboard } from './copy-text'
 import { formatResult } from './calc-result-format'
 import { calcRangesField, getCalcRanges } from './values-field'
@@ -58,8 +62,25 @@ class ResultWidget extends WidgetType {
     } else {
       pill.className = 'cm-calc-result__pill';
       pill.textContent = `${formatResult(this.value)}`;
+      let open = false;
       const activate = (e: Event) => {
         e.preventDefault();
+        if (isMobileDevice()) {
+          if (open) {
+            view.dispatch({
+              effects: closeHoverTooltip(calcResultHoverTooltip)
+            })
+            open = false;
+            return;
+          }
+          const pos = view.posAtDOM(pill);
+          activateHover(view, pos, 1, {
+            tooltip: calcResultHoverTooltip,
+            until: (tr) => tr.selection != null,
+          });
+          open = true;
+          return;
+        }
         this.#copyResult(() => this.#focusLine(view, pill));
       };
       pill.addEventListener('touchend', activate);
@@ -77,7 +98,6 @@ class ResultWidget extends WidgetType {
 
   #focusLine(view: EditorView, dom: HTMLSpanElement) {
     const pos = view.posAtDOM(dom);
-    console.log(pos)
     view.dispatch({
       selection: { anchor: pos }
     });
