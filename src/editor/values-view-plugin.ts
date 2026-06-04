@@ -2,6 +2,7 @@ import type { Range } from '@codemirror/state'
 import {
   activateHover,
   closeHoverTooltip,
+  closeHoverTooltips,
   Decoration,
   gutter,
   GutterMarker,
@@ -74,6 +75,7 @@ class ResultWidget extends WidgetType {
             return;
           }
           const pos = view.posAtDOM(pill);
+          view.dispatch({ effects: closeHoverTooltips });
           activateHover(view, pos, 1, {
             tooltip: calcResultHoverTooltip,
             until: (tr) => tr.selection != null,

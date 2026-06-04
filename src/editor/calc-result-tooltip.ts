@@ -11,6 +11,7 @@ import {
 import type { CalcValue } from '../calculator'
 import { isMobileDevice } from '../lib/mobile-device'
 import { copyTextToClipboard } from './copy-text'
+import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
 import { formatResult, getResultTooltipContent } from './calc-result-format'
 import { bindFocusPreservingButton } from './focus-preserving-button'
 import { getCalcRanges } from './values-field'
@@ -42,28 +43,6 @@ function calcValueAtAnchor(view: EditorViewType, pos: number): CalcValue | null 
     if (doc.lineAt(from).to === pos) found = val
   })
   return found
-}
-
-function buildTooltipContentDom(content: { name?: string; value: string; unit?: string }): HTMLElement {
-  const dom = document.createElement('div')
-  dom.className = 'cm-calc-result-tooltip cm-tooltip-section'
-  if (content.name) {
-    const nameEl = document.createElement('div')
-    nameEl.className = 'cm-calc-result-tooltip__name'
-    nameEl.textContent = content.name
-    dom.appendChild(nameEl)
-  }
-  const valueEl = document.createElement('div')
-  valueEl.className = 'cm-calc-result-tooltip__value'
-  valueEl.textContent = content.value
-  dom.appendChild(valueEl)
-  if (content.unit) {
-    const unitEl = document.createElement('div')
-    unitEl.className = 'cm-calc-result-tooltip__unit'
-    unitEl.textContent = content.unit
-    dom.appendChild(unitEl)
-  }
-  return dom
 }
 
 function buildMobileActionsDom(
@@ -107,7 +86,7 @@ function buildTooltipDom(
 ): HTMLElement {
   const wrap = document.createElement('div')
   wrap.className = 'cm-calc-result-tooltip-wrap'
-  wrap.appendChild(buildTooltipContentDom(content))
+  wrap.appendChild(buildCalcTooltipContentDom(content))
   if (isMobileDevice()) {
     wrap.appendChild(buildMobileActionsDom(view, anchorPos, value))
   }
@@ -123,7 +102,6 @@ function pillCoords(view: EditorViewType, anchorPos: number): Rect | null {
       node = node.parentElement
     }
     if (node?.nodeType === Node.ELEMENT_NODE) {
-      console.log(node)
       if ((node as HTMLElement).classList.contains('cm-calc-result')) {
         pill = node
         break;
@@ -147,7 +125,6 @@ function tooltipForValue(
 ): Tooltip | null {
   const content = getResultTooltipContent(value)
   if (content == null) return null
-  console.log('anchorPos', anchorPos)
   return {
     pos: anchorPos,
     above: true,

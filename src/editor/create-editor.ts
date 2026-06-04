@@ -8,6 +8,7 @@ import { basicSetup } from './basic-setup'
 import { calcClipboard } from './calc-clipboard'
 import { calcRanges } from './values-field'
 import { calcResultTooltips } from './calc-result-tooltip'
+import { variableHoverTooltip } from './variable-tooltip'
 import { calcResultsPlugin } from './values-view-plugin'
 import { calculus } from './calculus-language'
 import { createEditorTheme, reconfigureEditorTheme } from './base-theme'
@@ -53,6 +54,7 @@ export function createEditor({
     calcClipboard(),
     calcResultsPlugin,
     calcResultTooltips(),
+    variableHoverTooltip,
     ...extraExtensions,
     syntaxHighlighting(calculusHighlightStyle),
     helpPanel(),
