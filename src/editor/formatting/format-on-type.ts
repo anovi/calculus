@@ -8,6 +8,7 @@ import {
 } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 
+import { isMobileDevice } from '../../lib/mobile-device';
 import { formatTextLine } from '../editor-commands';
 
 /** Marks transactions produced by format-on-type so filters do not recurse. */
@@ -28,6 +29,8 @@ function linesTouchedByChanges(tr: Transaction): number[] {
 function formatOnTypeFilter(tr: Transaction): TransactionSpec | readonly TransactionSpec[] {
 	if (!tr.docChanged) return tr;
 	if (tr.annotation(formatOnTypeAnnotation)) return tr;
+	if (!isMobileDevice()) return tr;
+	if (tr.isUserEvent('input.paste')) return tr;
 	if (!tr.isUserEvent('input') && !tr.isUserEvent('delete')) return tr;
 
 	const lineNumbers = linesTouchedByChanges(tr);
@@ -60,7 +63,7 @@ function formatOnTypeFilter(tr: Transaction): TransactionSpec | readonly Transac
 	};
 }
 
-/** Applies `formatTextLine` to edited lines on user input via `transactionFilter`. */
+/** Formats a line on typing (not paste) on mobile devices. */
 export function formatOnType(): Extension {
 	return EditorState.transactionFilter.of(formatOnTypeFilter);
 }
