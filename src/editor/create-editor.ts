@@ -17,6 +17,7 @@ import { unitCompletionSource, variableCompletionSource } from './autocompletion
 import { helpPanel } from './panel'
 import { calcSyntaxLinter } from './linter'
 import { calculusHighlightStyle } from './calculus-syntax-highlight-tags'
+import { hackSafariTouchSelection } from './safari-selection-hack'
 
 export type CreateEditorOptions = {
   parent: HTMLElement
@@ -49,6 +50,7 @@ export function createEditor({
       maxRenderedOptions: 20,
       override: [unitCompletionSource, variableCompletionSource],
     }),
+    hackSafariTouchSelection,
     formatOnType(),
     calcRanges(),
     calcClipboard(),

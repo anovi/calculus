@@ -275,7 +275,7 @@ body {
 #editor .cm-gutters {
   background: var(--background);
   color: var(--text-secondary);
-  border-right: 1px solid var(--border-level-2);
+  border-right: none;
 }
 
 #editor .cm-activeLine,
