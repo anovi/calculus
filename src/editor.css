@@ -330,6 +330,10 @@ body {
   font-variant-numeric: tabular-nums;
   color: var(--editor-result);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
   /* border: 1px solid var(--result-border-color); */
 
   &:after {
@@ -355,11 +359,12 @@ body {
       background: oklch(from var(--editor-result-bg) calc(l - 0.02) calc(c + 0.02) calc(h - 23));
     }
   }
-}
 
-#editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):active {
-  background: color-mix(in oklch, var(--accent) 24%, transparent);
-  border-color: color-mix(in oklch, var(--accent) 55%, transparent);
+  /* :active on touch devices sticks after preventDefault() on touchend (iOS). */
+  #editor .cm-calc-result__pill:not(.cm-calc-result__pill--error):active {
+    background: color-mix(in oklch, var(--accent) 24%, transparent);
+    border-color: color-mix(in oklch, var(--accent) 55%, transparent);
+  }
 }
 
 #editor .cm-calc-result__pill--error {
