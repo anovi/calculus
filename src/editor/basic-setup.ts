@@ -2,7 +2,6 @@
 import {
 	keymap,
 	highlightSpecialChars,
-	drawSelection,
 	dropCursor,
 	highlightActiveLineGutter,
 	EditorView
@@ -42,7 +41,7 @@ export const basicSetup: () => Extension = () => [
 	// foldGutter(),
 
 	// https://codemirror.net/docs/ref/#view.drawSelection
-	drawSelection(),
+	// drawSelection(),
 
 	// https://codemirror.net/docs/ref/#view.dropCursor
 	dropCursor(),

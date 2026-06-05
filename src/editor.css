@@ -287,10 +287,14 @@ body {
   border-left-color: var(--text-primary);
 }
 
-#editor .cm-selectionBackground,
-#editor .cm-focused .cm-selectionBackground,
-#editor ::selection {
-  background: var(--accent-b);
+#editor .cm-content::selection,
+#editor .cm-content ::selection {
+  background: var(--editor-selection);
+}
+
+#editor .cm-content::-moz-selection,
+#editor .cm-content ::-moz-selection {
+  background: var(--editor-selection);
 }
 
 #editor .cm-content {
@@ -311,9 +315,28 @@ body {
  * The wrapper stays display:inline so the outer-left edge is still the gap
  * start — CodeMirror draws the caret at the real end-of-line for side:1.
  */
+#editor .cm-calc-result,
+#editor .cm-calc-result::before,
+#editor .cm-calc-result__pill {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#editor .cm-calc-result::selection,
+#editor .cm-calc-result ::selection,
+#editor .cm-calc-result::-moz-selection,
+#editor .cm-calc-result ::-moz-selection {
+  background: transparent;
+}
+
+/* Buffers around uneditable inline widgets (CodeMirror-internal). */
+#editor .cm-widgetBuffer {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 #editor .cm-calc-result {
   display: inline;
-  user-select: none;
   /* pointer-events: none; */
 }
 
@@ -767,6 +790,7 @@ body {
   --surface-level-3: #3b3b3b;
 
   /* Editor */
+  --editor-selection: oklch(from var(--editor-operator) calc(l - 0.36) c h / 0.7);
   --editor-base: #cdcdcd;
 
   --editor-comment: rgb(255 255 255 / 67%);
@@ -876,6 +900,7 @@ body {
   --surface-level-2: #efefeb;
   --surface-level-3: #e6e6e0;
 
+  --editor-selection: color-mix(in oklch, var(--editor-operator) 20%, var(--background));
   --editor-base: #4a515b;
 
   --editor-comment: #67696d;

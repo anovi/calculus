@@ -53,6 +53,7 @@ class ResultWidget extends WidgetType {
     const wrap = document.createElement('span');
     wrap.className = 'cm-calc-result';
     wrap.setAttribute('aria-hidden', 'true');
+    wrap.style.userSelect = 'none';
 
     const pill = document.createElement('span');
     if (this.value.error != null) {
