@@ -390,6 +390,25 @@ body {
   }
 }
 
+#editor .cm-calc-result__pill--active {
+  color: var(--on-accent-primary);
+
+  &:after {
+    background: var(--accent);
+    box-shadow: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #editor .cm-calc-result__pill--active:hover {
+    color: var(--on-accent-primary)!important;
+
+    &:after {
+      background: var(--accent)!important;
+    }
+  }
+}
+
 #editor .cm-calc-result__pill--error {
   color: var(--warning);
   background: var(--warning-subtle-bg);

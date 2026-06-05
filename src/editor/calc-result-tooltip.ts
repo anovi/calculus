@@ -14,7 +14,8 @@ import { copyTextToClipboard } from './copy-text'
 import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
 import { formatResult, getResultTooltipContent } from './calc-result-format'
 import { bindFocusPreservingButton } from './focus-preserving-button'
-import { getCalcRanges } from './values-field'
+import { calcValueAtAnchor } from './values-field'
+import { resultPillAt, setResultPillActive } from './result-pill-dom'
 
 
 export type CalcResultTooltipConfig = {
@@ -34,16 +35,6 @@ export const calcResultTooltipConfig = Facet.define<
     return combineConfig(configs, defaultConfig)
   },
 })
-
-function calcValueAtAnchor(view: EditorViewType, pos: number): CalcValue | null {
-  const ranges = getCalcRanges(view.state)
-  let found: CalcValue | null = null
-  const doc = view.state.doc
-  ranges.between(0, doc.length, (from, _to, val) => {
-    if (doc.lineAt(from).to === pos) found = val
-  })
-  return found
-}
 
 function buildMobileActionsDom(
   view: EditorViewType,
@@ -94,28 +85,10 @@ function buildTooltipDom(
 }
 
 function pillCoords(view: EditorViewType, anchorPos: number): Rect | null {
-  let node: Node|null = view.domAtPos(anchorPos, -1).node;
-  let pill: Node|null = null;
-
-  while (node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      node = node.parentElement
-    }
-    if (node?.nodeType === Node.ELEMENT_NODE) {
-      if ((node as HTMLElement).classList.contains('cm-calc-result')) {
-        pill = node
-        break;
-      }
-      else node = node.nextSibling;
-    }
-  }
-
-  if (pill) {
-    const r = (pill as HTMLElement).getBoundingClientRect()
-    return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
-  }
-
-  return null;
+  const wrap = resultPillAt(view, anchorPos)?.closest('.cm-calc-result')
+  if (!wrap) return null
+  const r = wrap.getBoundingClientRect()
+  return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }
 }
 
 function tooltipForValue(
@@ -131,9 +104,9 @@ function tooltipForValue(
     create() {
       return {
         dom: buildTooltipDom(view, anchorPos, value, content),
-        // getCoords: () => view.coordsAtPos(anchorPos)!,
         getCoords: () => pillCoords(view, anchorPos) ?? view.coordsAtPos(anchorPos)!,
-
+        mount: () => setResultPillActive(view, anchorPos, true),
+        destroy: () => setResultPillActive(view, anchorPos, false),
       }
     },
   }
@@ -141,7 +114,7 @@ function tooltipForValue(
 
 export const calcResultHoverTooltip = hoverTooltip(
   (view, pos) => {
-    const value = calcValueAtAnchor(view, pos)
+    const value = calcValueAtAnchor(view.state, pos)
     if (value == null || value.error != null) return null
     return tooltipForValue(view, pos, value)
   },

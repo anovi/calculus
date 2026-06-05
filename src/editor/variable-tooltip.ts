@@ -7,7 +7,7 @@ import type { CalcValue } from '../calculator'
 import { terms, type TermValue } from '../language'
 import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
 import { getResultTooltipContent, type ResultTooltipContent } from './calc-result-format'
-import { getCalcRanges } from './values-field'
+import { calcValueAtAnchor, getCalcRanges } from './values-field'
 
 const identifierUseParents = new Set<TermValue>([
   terms.ExpExpression,
@@ -70,6 +70,7 @@ function tooltipForVariable(view: EditorView, from: number, to: number, name: st
 
 export const variableHoverTooltip = hoverTooltip(
   (view, pos) => {
+    if (calcValueAtAnchor(view.state, pos) != null) return null
     const node = syntaxTree(view.state).resolveInner(pos, -1)
     if (!isVariableIdentifierUse(node)) return null
     const name = view.state.sliceDoc(node.from, node.to)

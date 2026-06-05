@@ -60,6 +60,17 @@ export function getCalcRanges(state: EditorState): RangeSet<CalcValue> {
   return state.field(calcRangesField).ranges;
 }
 
+/** Calc value whose result pill is anchored at `pos` (line end), if any. */
+export function calcValueAtAnchor(state: EditorState, pos: number): CalcValue | null {
+  const ranges = getCalcRanges(state)
+  let found: CalcValue | null = null
+  const doc = state.doc
+  ranges.between(0, doc.length, (from, _to, val) => {
+    if (doc.lineAt(from).to === pos) found = val
+  })
+  return found
+}
+
 /** Editor extension that installs `calcRangesField`. */
 export function calcRanges(): Extension {
   return calcRangesField
