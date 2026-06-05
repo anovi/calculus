@@ -11,6 +11,10 @@ export const parser = LRParser.deserialize({
   goto: "$StPPPPuPPyPyPyPy!ZyP!bPy!eP!ePPuPP!u!{PPP#R#U#YTWOYmUOPVY^_`dev!P!Q!R!SZbQhps}RrdmTOPVY^_`dev!P!Q!R!SQYORkYQwpR!OwRZOTXOYSQOYQ[PQhVQl^Qm_Qn`QpdQseQt!PQz!QQ{!RQ|!SR}v",
   nodeNames: "⚠ Unit PercentSuffix CalcDoc Binding Identifier EqualSign AddExpression PlusBinaryOp MulExpression TimesBinaryOp ExpExpression PowBinaryOp ConvertExpression ConvertOp FunctionCall Opr ArgList Cpr Literal NumberWithUnit Number PercentLiteral String Date NoBinding Comment Heading",
   maxTerm: 39,
+  nodeProps: [
+    ["closedBy", 16,"Cpr"],
+    ["openedBy", 18,"Opr"]
+  ],
   propSources: [calculusLangHighlight],
   skippedNodes: [0],
   repeatNodeCount: 2,

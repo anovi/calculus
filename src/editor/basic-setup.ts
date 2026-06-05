@@ -10,8 +10,8 @@ import { type Extension } from "@codemirror/state"
 import {
 	defaultHighlightStyle,
 	syntaxHighlighting,
-	bracketMatching,
-	foldKeymap
+	foldKeymap,
+	bracketMatching
 } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { searchKeymap } from "@codemirror/search"

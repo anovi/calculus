@@ -415,6 +415,16 @@ body {
   border-color: var(--warning-subtle-border);
 }
 
+/* ----------- Bracket ---------- */
+
+#editor .cm-editor.cm-focused .cm-matchingBracket {
+  background-color: oklch(from var(--accent) calc(l + 0.2) calc(c + 0.1) h / 0.2);
+}
+
+#editor .cm-editor.cm-focused .cm-nonmatchingBracket {
+  background-color: oklch(from var(--error) calc(l + 0.2) calc(c + 0.1) h / 0.2);
+}
+
 
 /* ----------- Tooltip generic ---------- */
 
@@ -859,7 +869,7 @@ body {
   --autocomplete-selected-matched-fg: var(--on-accent-primary);
   --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
-  --tooltip-bg: color-mix(in oklch, var(--background) 97%, white);
+  --tooltip-bg: color-mix(in oklch, var(--accent) 10%, var(--surface-level-1));
   --tooltip-fg: var(--text-primary);
   --tooltip-border-color: var(--border-level-2);
   --tooltip-section-border-color: var(--tooltip-border-color);

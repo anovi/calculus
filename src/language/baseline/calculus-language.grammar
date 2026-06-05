@@ -87,8 +87,8 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 
 	@precedence { PlusBinaryOp, Number }
 
-	Opr { "(" }
-	Cpr { ")" }
+	Opr[closedBy=Cpr] { "(" }
+	Cpr[openedBy=Opr] { ")" }
 
 	Comment { "//" ![\n]* }
 
