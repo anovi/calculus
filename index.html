@@ -15,6 +15,16 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
+    <script>
+      window.__calculusDeferredInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (event) {
+        event.preventDefault();
+        window.__calculusDeferredInstallPrompt = event;
+      });
+      window.addEventListener('appinstalled', function () {
+        window.__calculusDeferredInstallPrompt = null;
+      });
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
     <link rel="stylesheet" href="/src/assets/normalize.css" />
