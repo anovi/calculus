@@ -77,13 +77,12 @@ body {
   display: flex;
   flex-direction: column;
   padding-top: 64px;
-  box-shadow: var(--shadow-lg);
-  visibility: none;
+  box-shadow: none;
 }
 
 #documents-drawer.is-open {
   transform: translateX(0);
-  visibility: visible;
+  box-shadow: var(--shadow-lg);
 }
 
 #documents-backdrop {
