@@ -1,11 +1,11 @@
 import { registerSW } from 'virtual:pwa-register'
-
 import { EditorView } from 'codemirror'
 import { syntaxTree } from '@codemirror/language'
 
 import { printTree } from './lib/tree'
 import { isMobileDevice } from './lib/mobile-device'
 
+import { mountInstallPromptButton } from './pwa'
 import { createEditor, createDocumentControlsPanel } from './editor'
 import { initializeRatesStore } from './rates-store'
 import { AppPreferencesStore, DocumentRepository, DocumentSession } from './documents'
@@ -139,5 +139,6 @@ globalThis.printTree = () => printTree(syntaxTree(view.state))
 })() }
 
 registerSW({ immediate: true })
+mountInstallPromptButton()
 
 void initializeRatesStore()
