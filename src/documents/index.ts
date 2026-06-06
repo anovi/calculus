@@ -1,4 +1,4 @@
-export { DocumentSession } from "./document-session";
+export { DocumentSession, type ActiveDocument } from "./document-session";
 export {
     DocumentRepository,
     type DocumentSummary

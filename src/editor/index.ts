@@ -9,3 +9,4 @@ export * from './base-theme';
 export * from './safari-focus-scroll-fix';
 export * from './calculus-language';
 export * from './document-controls-panel';
+export * from './persist-document';

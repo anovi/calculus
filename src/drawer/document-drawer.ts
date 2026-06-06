@@ -1,11 +1,11 @@
+import { isMobileDevice } from '../lib/mobile-device'
+import type { AppContext } from '../app'
 import type { DocumentSummary } from '../documents'
 
 export type DrawerDocument = DocumentSummary & { isActive: boolean }
 
-export type DocumentDrawerDeps = {
+export type DocumentDrawerOptions = {
   toggleButton: HTMLButtonElement
-  onSelectDocument: (id: string) => void
-  onClose?: () => void
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('sv-SE', {
@@ -18,15 +18,14 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('sv-SE', {
 })
 
 export class DocumentDrawer {
+  private readonly ctx: AppContext
   private readonly toggleButton: HTMLButtonElement
   private readonly drawer: HTMLElement
   private readonly list: HTMLUListElement
   private readonly backdrop: HTMLElement
-  private readonly onSelectDocument: (id: string) => void
-  private readonly onClose?: () => void
   private isOpen = false
 
-  constructor(deps: DocumentDrawerDeps) {
+  constructor(ctx: AppContext, options: DocumentDrawerOptions) {
     const drawer = document.querySelector<HTMLElement>('#documents-drawer')
     const list = document.querySelector<HTMLUListElement>('#documents-list')
     const backdrop = document.querySelector<HTMLElement>('#documents-backdrop')
@@ -35,18 +34,17 @@ export class DocumentDrawer {
       throw new Error('Document drawer markup is missing')
     }
 
-    this.toggleButton = deps.toggleButton
+    this.ctx = ctx
+    this.toggleButton = options.toggleButton
     this.drawer = drawer
     this.list = list
     this.backdrop = backdrop
-    this.onSelectDocument = deps.onSelectDocument
-    this.onClose = deps.onClose
 
     this.backdrop.addEventListener('click', () => this.close())
     this.setOpen(false)
   }
 
-  renderDocuments(documents: DrawerDocument[]): void {
+  private renderDocuments(documents: DrawerDocument[]): void {
     this.list.replaceChildren()
 
     for (const doc of documents) {
@@ -68,7 +66,7 @@ export class DocumentDrawer {
       button.append(title, date)
       button.addEventListener('click', () => {
         button.blur()
-        this.onSelectDocument(doc.id)
+        void this.ctx.documents.open(doc.id)
         this.close()
       })
       item.append(button)
@@ -94,9 +92,21 @@ export class DocumentDrawer {
     this.backdrop.classList.toggle('is-open', open)
     this.drawer.setAttribute('aria-hidden', open ? 'false' : 'true')
     this.backdrop.setAttribute('aria-hidden', open ? 'false' : 'true')
-    if (wasOpen && !open) {
-      this.onClose?.()
+    if (!wasOpen && open) {
+      void this.loadAndRender()
+    } else if (wasOpen && !open) {
+      this.onClose()
     }
+  }
+
+  private onClose(): void {
+    if (isMobileDevice()) return
+    this.ctx.ui.editor?.view.focus()
+  }
+
+  private async loadAndRender(): Promise<void> {
+    const documents = await this.ctx.documents.listForDrawer()
+    this.renderDocuments(documents)
   }
 
   private formatDate(doc: DrawerDocument): string {

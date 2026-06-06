@@ -2,18 +2,11 @@ import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands'
 import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } from '@codemirror/view'
 import type { EditorState, Extension } from '@codemirror/state'
 
+import type { AppContext } from '../app'
 import { mountAppMenu } from '../app-menu'
 import { createIconButton } from '../components/icon-button'
 import { bindFocusPreservingButton } from '../components/focus-preserving-button'
 import { syncThemeToggleButton } from '../theme'
-import type { ColorScheme } from '../theme'
-
-export type DocumentControlsPanelDeps = {
-  onToggleDocuments: () => void
-  onCreateDocument: () => void
-  onToggleTheme: () => void
-  initialTheme: ColorScheme
-}
 
 export type DocumentControlsPanel = {
   extensions: Extension[]
@@ -53,13 +46,13 @@ function createHistoryButton(
   return btn
 }
 
-export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): DocumentControlsPanel {
+export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPanel {
   const toggleButton = createIconButton({
     icon: 'menu',
     ariaLabel: 'Open documents',
     id: 'documents-toggle',
     className: 'cm-document-controls__button cm-document-controls__menu-button',
-    onClick: () => deps.onToggleDocuments(),
+    onClick: () => ctx.ui.drawer?.toggle(),
   })
   toggleButton.setAttribute('aria-expanded', 'false')
 
@@ -68,7 +61,7 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
     ariaLabel: 'Create new document',
     id: 'documents-create',
     className: 'cm-document-controls__button',
-    onClick: () => deps.onCreateDocument(),
+    onClick: () => { void ctx.documents.create() },
   })
 
   const themeButton = createIconButton({
@@ -76,9 +69,9 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
     ariaLabel: 'Switch theme',
     id: 'theme-toggle',
     className: 'cm-document-controls__button cm-document-controls__theme-button',
-    onClick: () => deps.onToggleTheme(),
+    onClick: () => ctx.theme.toggle(),
   })
-  syncThemeToggleButton(themeButton, deps.initialTheme)
+  syncThemeToggleButton(themeButton, ctx.theme.scheme)
 
   const appMenuButton = createIconButton({
     icon: 'equl',
