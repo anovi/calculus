@@ -75,6 +75,8 @@ function suggestPublicEntry(targetRel, targetModule, publicModules) {
 function isPublicModuleEntry(resolvedPath, srcDir, publicModules) {
 	const rel = path.relative(srcDir, resolvedPath).replace(/\\/g, '/');
 	if (!rel || rel.startsWith('..')) return true;
+	// Top-level src/*.ts(x) files are their own public entries
+	if (!rel.includes('/') && /\.tsx?$/.test(rel)) return true;
 	if (!/\/index\.tsx?$/.test(rel)) return false;
 	const dir = path.posix.dirname(rel);
 	return publicModules.has(dir);
