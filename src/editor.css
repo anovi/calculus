@@ -482,6 +482,61 @@ body {
   border-bottom-color: var(--tooltip-arrow-fill-color);
 }
 
+/* ----------- Popup menu ---------- */
+
+.popup-menu {
+  position: fixed;
+  z-index: var(--z-layer-floating);
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 4px 4px;
+  font-family: var(--main-font);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  background: var(--tooltip-bg);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  box-shadow: var(--tooltip-shadow);
+}
+
+.popup-menu[hidden] {
+  display: none;
+}
+
+.popup-menu__item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  border-radius: 6px;
+}
+
+.popup-menu__item[hidden] {
+  display: none;
+}
+
+.popup-menu__item:is(:hover, :focus-visible) {
+  background: var(--accent);
+  color: var(--on-accent-primary);
+  outline: none;
+}
+
+.popup-menu__separator {
+  margin: 4px 0;
+  padding: 0;
+  border-top: 1px solid var(--tooltip-section-border-color);
+}
+
 /* ----------- Autocompletion ---------- */
 
 /* it's all in base theme */

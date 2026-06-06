@@ -2,8 +2,9 @@ import { undo, redo, undoDepth, redoDepth } from '@codemirror/commands'
 import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } from '@codemirror/view'
 import type { EditorState, Extension } from '@codemirror/state'
 
+import { mountAppMenu } from '../app-menu'
 import { createIconButton } from '../components/icon-button'
-import { bindFocusPreservingButton } from './focus-preserving-button'
+import { bindFocusPreservingButton } from '../components/focus-preserving-button'
 import { syncThemeToggleButton } from '../theme'
 import type { ColorScheme } from '../theme'
 
@@ -79,6 +80,14 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
   })
   syncThemeToggleButton(themeButton, deps.initialTheme)
 
+  const appMenuButton = createIconButton({
+    icon: 'equl',
+    ariaLabel: 'App menu',
+    id: 'app-menu-toggle',
+    className: 'cm-document-controls__button cm-document-controls__app-menu-button',
+  })
+  const unmountAppMenu = mountAppMenu(appMenuButton)
+
   let historyButtons: HistoryButtons | null = null
 
   const panelExtension = showPanel.of((view: EditorView): Panel => {
@@ -96,10 +105,10 @@ export function createDocumentControlsPanel(deps: DocumentControlsPanelDeps): Do
 
     const end = document.createElement('div')
     end.className = 'cm-document-controls-panel__end'
-    end.append(undoBtn, redoBtn, themeButton)
+    end.append(undoBtn, redoBtn, themeButton, appMenuButton)
 
     dom.append(start, end)
-    return { dom, top: true }
+    return { dom, top: true, destroy: unmountAppMenu }
   })
 
   const historyButtonSync = ViewPlugin.fromClass(class {

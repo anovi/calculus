@@ -9,7 +9,7 @@ import { toggleHelp } from './effects';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
 import { helpPanelState } from "./state";
 import { isMobileDevice } from "../../lib/mobile-device";
-import { bindFocusPreservingButton } from '../focus-preserving-button';
+import { bindFocusPreservingButton } from '../../components/focus-preserving-button';
 
 
 /*===============================================================================

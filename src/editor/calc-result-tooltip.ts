@@ -13,7 +13,7 @@ import { isMobileDevice } from '../lib/mobile-device'
 import { copyTextToClipboard } from './copy-text'
 import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
 import { formatResult, getResultTooltipContent } from './calc-result-format'
-import { bindFocusPreservingButton } from './focus-preserving-button'
+import { bindFocusPreservingButton } from '../components/focus-preserving-button'
 import { calcValueAtAnchor } from './values-field'
 import { resultPillAt, setResultPillActive } from './result-pill-dom'
 
