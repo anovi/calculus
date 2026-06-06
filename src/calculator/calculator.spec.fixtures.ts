@@ -378,5 +378,11 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: '1 999 232',
     expected: [1_999_232],
   },
+  // Comments
+  {
+    name: 'expression with comment',
+    doc: '2 + 2 // some',
+    expected: [4],
+  },
 ];
 

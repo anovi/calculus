@@ -17,7 +17,6 @@ pipeline {
 statement {
 	Binding
 	| NoBinding
-	| Comment
 	| Heading
 }
 
@@ -106,6 +105,6 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 
 }
 
-@skip { space }
+@skip { space | Comment }
 
 @external propSource calculusLangHighlight from "./calculus-lang-highlighting"

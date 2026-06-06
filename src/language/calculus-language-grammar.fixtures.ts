@@ -377,9 +377,22 @@ expectedTree: `CalcDoc
       Unit`,
 },
 {
-name: 'comment',
+name: 'comment line',
 doc: '// 232 + 232',
 expectedTree: `CalcDoc
+  Comment`,
+},
+{
+name: 'expression with trailing comment',
+doc: '2 + 2 // some',
+expectedTree: `CalcDoc
+  NoBinding
+    AddExpression
+      Literal
+        Number
+      PlusBinaryOp
+      Literal
+        Number
   Comment`,
 },
 {
