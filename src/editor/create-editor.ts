@@ -16,6 +16,7 @@ import { formatOnType } from './formatting'
 import { unitCompletionSource, variableCompletionSource } from './autocompletion'
 import { helpPanel } from './panel'
 import { calcSyntaxLinter } from './linter'
+import { renameVariableReferences } from './rename-variable-references'
 import { calculusHighlightStyle } from './calculus-syntax-highlight-tags'
 import { hackSafariTouchSelection } from './safari-selection-hack'
 
@@ -50,6 +51,7 @@ export function createEditor({
     }),
     hackSafariTouchSelection,
     formatOnType(),
+    renameVariableReferences(),
     calcRanges(),
     calcClipboard(),
     calcResultsPlugin,

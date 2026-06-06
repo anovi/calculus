@@ -21,6 +21,7 @@ import {
 	closeBracketsKeymap,
 } from "@codemirror/autocomplete"
 import { lintKeymap } from "@codemirror/lint"
+import { renameVariableReferencesHistoryConfig } from "./rename-variable-references"
 
 /**
  * Basic codemirror plugins.
@@ -35,7 +36,7 @@ export const basicSetup: () => Extension = () => [
 	highlightSpecialChars(),
 
 	// https://codemirror.net/docs/ref/#commands.history
-	history(),
+	history(renameVariableReferencesHistoryConfig),
 
 	// https://codemirror.net/docs/ref/#language.foldGutter
 	// foldGutter(),
