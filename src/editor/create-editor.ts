@@ -24,7 +24,6 @@ export type CreateEditorOptions = {
   doc: string
   isDark?: boolean
   extraExtensions?: Extension[]
-  panelExtensions?: Extension[]
 }
 
 export type EditorInstance = {
@@ -39,7 +38,6 @@ export function createEditor({
   doc,
   isDark = true,
   extraExtensions = [],
-  panelExtensions = [],
 }: CreateEditorOptions): EditorInstance {
   let currentIsDark = isDark
 
@@ -62,10 +60,9 @@ export function createEditor({
     placeholder('Start with a formula or variable…'),
     createEditorTheme(dark),
     calcSyntaxLinter,
-    ...panelExtensions,
-    ...extraExtensions,
     // safariFocusScrollFix(),
     // emptyLineGutter,
+    ...extraExtensions,
   ]
 
   const extensions = buildExtensions(currentIsDark)

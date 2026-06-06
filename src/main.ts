@@ -86,8 +86,7 @@ const editor = createEditor({
   parent: root,
   doc: initialDocument.content,
   isDark: colorScheme === 'dark',
-  extraExtensions: [persist],
-  panelExtensions: controlsPanel.extensions,
+  extraExtensions: [persist, controlsPanel.extensions]
 })
 setEditorColorScheme = editor.setColorScheme
 const { view, setDocument: setEditorDocument } = editor
