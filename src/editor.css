@@ -22,6 +22,20 @@ body {
   height: 100%;
 }
 
+.button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.button-icon__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 #app-shell .button-icon {
   color: var(--icon-color);
 }
@@ -218,7 +232,6 @@ body {
 #editor .cm-document-controls-panel__end {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
 #editor .cm-document-controls-panel__end {
@@ -247,8 +260,8 @@ body {
 }
 
 #editor .cm-document-controls__button .button-icon {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
 }
 
 #editor .cm-document-controls__button .button-icon__svg {
@@ -263,9 +276,12 @@ body {
 }
 
 #editor .cm-document-controls__button:disabled {
-  opacity: 0.35;
   cursor: default;
   pointer-events: none;
+
+  .button-icon__svg {
+    color: oklch(from var(--icon-color) l calc(c - 0.05) h / 0.35);
+  }
 }
 
 #editor .cm-document-controls__button:disabled:is(:hover, :focus-visible) {
@@ -485,14 +501,21 @@ body {
 /* ----------- Popup menu ---------- */
 
 .popup-menu {
+  --popup-menu-font-size: 0.9rem;
+  --popup-menu-line-height: 1.35;
+  --popup-menu-item-padding-y: 0.45rem;
+  --popup-menu-label-block-size: calc(
+    var(--popup-menu-line-height) * var(--popup-menu-font-size) + 2 * var(--popup-menu-item-padding-y) * 0.6
+  );
+
   position: fixed;
   z-index: var(--z-layer-floating);
   min-width: 220px;
   max-width: min(320px, calc(100vw - 16px));
   padding: 4px 4px;
   font-family: var(--main-font);
-  font-size: 0.9rem;
-  line-height: 1.35;
+  font-size: var(--popup-menu-font-size);
+  line-height: var(--popup-menu-line-height);
   background: var(--tooltip-bg);
   color: var(--text-primary);
   border: none;
@@ -505,10 +528,12 @@ body {
 }
 
 .popup-menu__item {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   margin: 0;
-  padding: 0.45rem 0.75rem;
+  padding: 0;
+  
   border: none;
   background: transparent;
   color: var(--text-primary);
@@ -519,6 +544,31 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   border-radius: 6px;
+}
+
+.popup-menu__icon {
+  width: var(--popup-menu-label-block-size);
+  height: var(--popup-menu-label-block-size);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 0.2rem;
+}
+
+.popup-menu__icon-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.popup-menu__label {
+  flex: 1;
+  min-width: 0;
+  padding: var(--popup-menu-item-padding-y) 0.75rem;
+  .popup-menu__icon + & {
+    padding-left: 0.2rem;
+  }
 }
 
 .popup-menu__item[hidden] {
@@ -803,8 +853,8 @@ body {
   }
 
   .button-icon {
-    width: 48px;
-    height: 48px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;

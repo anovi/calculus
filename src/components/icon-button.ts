@@ -1,6 +1,8 @@
 
 import { iconSvg, type IconName } from './icons'
 
+/** Optical size for 32×32 icon assets (matches former 48×48 canvas appearance). */
+export const BUTTON_ICON_SIZE_PX = 32
 
 function buttonIcon(svg: string): HTMLSpanElement {
   const markup = svg
@@ -9,6 +11,8 @@ function buttonIcon(svg: string): HTMLSpanElement {
 
   const wrap = document.createElement('span')
   wrap.className = 'button-icon'
+  wrap.style.width = `${BUTTON_ICON_SIZE_PX}px`
+  wrap.style.height = `${BUTTON_ICON_SIZE_PX}px`
   wrap.setAttribute('aria-hidden', 'true')
   wrap.innerHTML = markup
   return wrap

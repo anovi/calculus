@@ -43,9 +43,15 @@ export function applyTheme(theme: ColorScheme, options: { persistCache?: boolean
   }
 }
 
+export function themeToggleIcon(theme: ColorScheme): IconName {
+  return theme === 'dark' ? 'sun' : 'moon'
+}
+
+export function themeToggleLabel(theme: ColorScheme): string {
+  return theme === 'dark' ? 'Light mode' : 'Dark mode'
+}
+
 export function syncThemeToggleButton(button: HTMLButtonElement, theme: ColorScheme): void {
-  const icon: IconName = theme === 'dark' ? 'sun' : 'moon'
-  const label = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'
-  setIconButtonIcon(button, icon)
-  button.setAttribute('aria-label', label)
+  setIconButtonIcon(button, themeToggleIcon(theme))
+  button.setAttribute('aria-label', themeToggleLabel(theme))
 }

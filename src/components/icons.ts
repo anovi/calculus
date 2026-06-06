@@ -1,5 +1,6 @@
 import divIcon from '../assets/icons/div.svg?raw'
 import equlIcon from '../assets/icons/equl.svg?raw'
+import gearIcon from '../assets/icons/gear.svg?raw'
 import menuIcon from '../assets/icons/menu.svg?raw'
 import minusIcon from '../assets/icons/minus.svg?raw'
 import moonIcon from '../assets/icons/moon.svg?raw'
@@ -22,6 +23,7 @@ export type IconName =
   | 'undo'
   | 'redo'
   | 'menu'
+  | 'gear'
   | 'sun'
   | 'moon'
 
@@ -36,6 +38,7 @@ const ICONS: Record<IconName, string> = {
   undo: undoIcon,
   redo: redoIcon,
   menu: menuIcon,
+  gear: gearIcon,
   sun: sunIcon,
   moon: moonIcon,
 }

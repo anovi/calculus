@@ -1,3 +1,4 @@
+import type { AppContext } from './app'
 import { mountPopupMenu } from './components/popup-menu'
 import {
   isStandaloneApp,
@@ -5,15 +6,23 @@ import {
   onInstallAvailabilityChange,
   triggerInstallPrompt,
 } from './pwa'
+import { themeToggleIcon, themeToggleLabel } from './theme'
 
 function isInstallMenuItemVisible(): boolean {
   return !isStandaloneApp() && isInstallPromptAvailable()
 }
 
 /** Popup menu for app links and install; toggles from `trigger`. */
-export function mountAppMenu(trigger: HTMLButtonElement): () => void {
+export function mountAppMenu(trigger: HTMLButtonElement, ctx: AppContext): () => void {
   const popup = mountPopupMenu(trigger, {
     items: () => [
+      {
+        kind: 'action',
+        id: 'theme',
+        label: themeToggleLabel(ctx.theme.scheme),
+        icon: themeToggleIcon(ctx.theme.scheme),
+        onClick: () => ctx.theme.toggle(),
+      },
       {
         kind: 'action',
         id: 'install',

@@ -18,7 +18,7 @@ export async function mountApp(root: HTMLElement): Promise<void> {
   })
 
   ctx.ui.editor = editor
-  ctx.theme.bind({ editor, themeButton: controlsPanel.themeButton })
+  ctx.theme.bind({ editor })
 
   ctx.ui.drawer = new DocumentDrawer(ctx, {
     toggleButton: controlsPanel.toggleButton,

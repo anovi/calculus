@@ -6,12 +6,9 @@ import type { AppContext } from '../app'
 import { mountAppMenu } from '../app-menu'
 import { createIconButton } from '../components/icon-button'
 import { bindFocusPreservingButton } from '../components/focus-preserving-button'
-import { syncThemeToggleButton } from '../theme'
-
 export type DocumentControlsPanel = {
   extensions: Extension[]
   toggleButton: HTMLButtonElement
-  themeButton: HTMLButtonElement
 }
 
 type HistoryButtons = {
@@ -64,22 +61,13 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
     onClick: () => { void ctx.documents.create() },
   })
 
-  const themeButton = createIconButton({
-    icon: 'sun',
-    ariaLabel: 'Switch theme',
-    id: 'theme-toggle',
-    className: 'cm-document-controls__button cm-document-controls__theme-button',
-    onClick: () => ctx.theme.toggle(),
-  })
-  syncThemeToggleButton(themeButton, ctx.theme.scheme)
-
   const appMenuButton = createIconButton({
-    icon: 'equl',
+    icon: 'gear',
     ariaLabel: 'App menu',
     id: 'app-menu-toggle',
     className: 'cm-document-controls__button cm-document-controls__app-menu-button',
   })
-  const unmountAppMenu = mountAppMenu(appMenuButton)
+  const unmountAppMenu = mountAppMenu(appMenuButton, ctx)
 
   let historyButtons: HistoryButtons | null = null
 
@@ -98,7 +86,7 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
 
     const end = document.createElement('div')
     end.className = 'cm-document-controls-panel__end'
-    end.append(undoBtn, redoBtn, themeButton, appMenuButton)
+    end.append(undoBtn, redoBtn, appMenuButton)
 
     dom.append(start, end)
     return { dom, top: true, destroy: unmountAppMenu }
@@ -114,6 +102,5 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
   return {
     extensions: [panelExtension, historyButtonSync],
     toggleButton,
-    themeButton,
   }
 }

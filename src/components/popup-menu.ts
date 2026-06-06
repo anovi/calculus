@@ -1,7 +1,8 @@
 import { bindFocusPreservingButton } from './focus-preserving-button'
+import { iconSvg, type IconName } from './icons'
 
 export type PopupMenuItem =
-  | { kind: 'action'; label: string; onClick: () => void; hidden?: boolean; id?: string }
+  | { kind: 'action'; label: string; onClick: () => void; hidden?: boolean; id?: string; icon?: IconName }
   | { kind: 'link'; label: string; href: string; hidden?: boolean; id?: string; external?: boolean }
   | { kind: 'separator'; hidden?: boolean }
 
@@ -28,6 +29,31 @@ export type PopupMenu = {
   destroy: () => void
 }
 
+function createMenuIcon(className: string, icon?: IconName): HTMLSpanElement {
+  const el = document.createElement('span')
+  el.className = icon ? `${className}__icon` : `${className}__icon ${className}__icon--spacer`
+  el.setAttribute('aria-hidden', 'true')
+  if (icon) {
+    const markup = iconSvg(icon)
+      .replace(/\bfill="black"/gi, 'fill="currentColor"')
+      .replace(/<svg\b/, `<svg class="${className}__icon-svg"`)
+    el.innerHTML = markup
+  }
+  return el
+}
+
+function appendMenuItemContent(
+  parent: HTMLElement,
+  className: string,
+  label: string,
+  icon?: IconName,
+): void {
+  const labelEl = document.createElement('span')
+  labelEl.className = `${className}__label`
+  labelEl.textContent = label
+  parent.append(createMenuIcon(className, icon), labelEl)
+}
+
 function createMenuItem(
   entry: PopupMenuItem,
   className: string,
@@ -47,7 +73,7 @@ function createMenuItem(
     const button = document.createElement('button')
     button.type = 'button'
     button.className = `${className}__item`
-    button.textContent = entry.label
+    appendMenuItemContent(button, className, entry.label, entry.icon)
     if (entry.id) button.dataset.popupMenuItemId = entry.id
     button.addEventListener('click', () => {
       entry.onClick()
@@ -59,7 +85,7 @@ function createMenuItem(
   const link = document.createElement('a')
   link.className = `${className}__item`
   link.href = entry.href
-  link.textContent = entry.label
+  appendMenuItemContent(link, className, entry.label)
   if (entry.id) link.dataset.popupMenuItemId = entry.id
   if (entry.external !== false) {
     link.target = '_blank'
