@@ -11,9 +11,9 @@ import { isRangesOverlap } from "./range";
  * @param range - Range to check
  * @returns True if the cursor is in the range
  */
-export function isCursorInRange(state: EditorState, range: [number, number]) {
+export function isCursorInRange(state: EditorState, from: number, to: number) {
 	return state.selection.ranges.some((selection) =>
-		isRangesOverlap(range, [selection.from, selection.to])
+		isRangesOverlap(from, to, selection.from, selection.to)
 	);
 }
 
@@ -52,8 +52,8 @@ export function didAtomicCursorEnterTheNode(node: SyntaxNode, update: ViewUpdate
 		update.startState.selection.main.from === update.startState.selection.main.to
 		&& // was not in the Node's range
 		!isRangesOverlap(
-			[update.startState.selection.main.from, update.startState.selection.main.to],
-			[node.from, node.to],
+			update.startState.selection.main.from, update.startState.selection.main.to,
+			node.from, node.to,
 		)
 		&& // cursor was moved by one char
 		Math.abs(update.startState.selection.main.from - update.state.selection.main.from) === 1

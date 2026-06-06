@@ -28,10 +28,10 @@ import { EditorState } from '@codemirror/state';
  * @returns True if the ranges overlap
  */
 export function isRangesOverlap(
-	range1: [number, number],
-	range2: [number, number]
+	fromA: number, toA: number,
+	fromB: number, toB: number
 ) {
-	return range1[0] <= range2[1] && range2[0] <= range1[1];
+	return fromA <= toB && fromB <= toA;
 }
 
 /**
@@ -77,7 +77,7 @@ export function iterateTreeVisibleRanges(
 export function editorLines(view: EditorView, from: number, to: number) {
 	let lines = view.viewportLineBlocks.filter((block) =>
 		// Keep lines that are in the range
-		isRangesOverlap([block.from, block.to], [from, to])
+		isRangesOverlap(block.from, block.to, from, to)
 	);
 
 	const folded = foldedRanges(view.state).iter();
@@ -85,8 +85,8 @@ export function editorLines(view: EditorView, from: number, to: number) {
 		lines = lines.filter(
 			(line) =>
 				!isRangesOverlap(
-					[folded.from, folded.to],
-					[line.from, line.to]
+					folded.from, folded.to,
+					line.from, line.to
 				)
 		);
 		folded.next();
@@ -108,7 +108,7 @@ export function editorLines(view: EditorView, from: number, to: number) {
 export function getVisibleEditorLines(view: EditorView, from: number, to: number) {
 	let lines = view.viewportLineBlocks.filter((block) =>
 		// Keep lines that are in the range
-		isRangesOverlap([block.from, block.to], [from, to])
+		isRangesOverlap(block.from, block.to, from, to)
 	);
 
 	const folded = foldedRanges(view.state).iter();
@@ -137,8 +137,8 @@ export function isInFoldedRange(state: EditorState, from: number, to: number): b
 	const folded = foldedRanges(state).iter();
 	while (folded.value) {
 		if (isRangesOverlap(
-			[folded.from, folded.to],
-			[from, to]
+			folded.from, folded.to,
+			from, to
 		)) return true;
 		folded.next();
 	}

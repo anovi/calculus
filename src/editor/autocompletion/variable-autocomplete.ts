@@ -9,6 +9,7 @@ import type { SyntaxNode } from '@lezer/common';
 import { terms } from '../../language';
 import { calcRangesField } from '../values-field';
 import { BUILTIN_FUNCTIONS } from '../../functions';
+import { isBindingIdentifier } from '../syntax-node';
   
 
 function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {
@@ -31,6 +32,7 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     const node = tree.resolveInner(pos, -1);
   
     if (node.type.id !== terms.Identifier) return null;
+    if (isBindingIdentifier(node)) return null;
     const identifier = context.state.sliceDoc(node.from, node.to);
     if (!identifier && !context.explicit) return null;
 

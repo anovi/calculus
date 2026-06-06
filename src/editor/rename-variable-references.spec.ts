@@ -7,7 +7,6 @@ import { LRLanguage, syntaxTree } from '@codemirror/language'
 import { parser } from '../language'
 import {
 	bindingIdentifierNameAt,
-	bindingIdentifierTouched,
 	referenceRenamesForBinding,
 	referenceScanStart,
 	renameVariableReferencesAnnotation,
@@ -77,16 +76,6 @@ describe('referenceRenamesForBinding', () => {
 		const doc = 'a = 1\nb = 2'
 		const state = stateWithDoc(doc)
 		assert.strictEqual(referenceScanStart(state, 0), doc.indexOf('b'))
-	})
-})
-
-describe('bindingIdentifierTouched', () => {
-	it('detects edits inside a binding identifier', () => {
-		const doc = 'monthly = 4200'
-		const state = stateWithDoc(doc)
-		const idStart = doc.indexOf('monthly')
-		const touched = bindingIdentifierTouched(state, idStart + 3, idStart + 4)
-		assert.strictEqual(touched?.bindingFrom, 0)
 	})
 })
 

@@ -7,10 +7,11 @@ import {
 	type Extension,
 } from '@codemirror/state'
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
-import type { SyntaxNode } from '@lezer/common'
 
 import { terms } from '../language'
-import { isVariableIdentifierUse } from './variable-tooltip'
+import { isBindingIdentifier, isVariableReference } from './syntax-node'
+import { isRangesOverlap } from '../lib/codemirror'
+
 
 /** Marks transactions produced by reference renames so the plugin does not recurse. */
 export const renameVariableReferencesAnnotation = Annotation.define<boolean>()
@@ -21,23 +22,12 @@ const LINTER_DELAY_MS = 750
 /** Debounce before applying reference renames; must stay below linter and history group delay. */
 export const RENAME_VARIABLE_REFERENCES_DELAY_MS = LINTER_DELAY_MS - 350
 
-export function isBindingIdentifier(node: SyntaxNode): boolean {
-	return node.type.id === terms.Identifier && node.parent?.type.id === terms.Binding
-}
-
-/** Identifier that refers to a variable value (not a binding name or function name). */
-export function isVariableReference(node: SyntaxNode): boolean {
-	if (node.type.id !== terms.Identifier) return false
-	const parent = node.parent
-	if (parent?.type.id === terms.Binding) {
-		const nameId = parent.firstChild
-		return nameId != null && node.from !== nameId.from
-	}
-	return isVariableIdentifierUse(node)
-}
-
-function rangesTouch(fromA: number, toA: number, fromB: number, toB: number): boolean {
-	return fromA <= toB && toA >= fromB
+/** Current binding identifier text at the binding statement starting at `bindingFrom`. */
+export function bindingIdentifierNameAt(state: EditorState, bindingFrom: number): string | null {
+	const tree = syntaxTree(state)
+	const node = tree.resolveInner(bindingFrom, 1)
+	if (!isBindingIdentifier(node)) return null
+	return state.sliceDoc(node.from, node.to)
 }
 
 /** Binding identifier whose span overlaps `[changeFrom, changeTo)` in `state`, if any. */
@@ -52,19 +42,11 @@ export function bindingIdentifierTouched(
 	for (const pos of probes) {
 		const node = tree.resolveInner(pos, -1)
 		if (!isBindingIdentifier(node)) continue
-		if (rangesTouch(changeFrom, changeTo, node.from, node.to)) {
+		if (isRangesOverlap(changeFrom, changeTo, node.from, node.to)) {
 			return { bindingFrom: node.parent!.from, idFrom: node.from, idTo: node.to }
 		}
 	}
 	return null
-}
-
-/** Current binding identifier text at the binding statement starting at `bindingFrom`. */
-export function bindingIdentifierNameAt(state: EditorState, bindingFrom: number): string | null {
-	const tree = syntaxTree(state)
-	const node = tree.resolveInner(bindingFrom, 1)
-	if (!isBindingIdentifier(node)) return null
-	return state.sliceDoc(node.from, node.to)
 }
 
 /** Document position where reference scanning begins (next line after the binding). */

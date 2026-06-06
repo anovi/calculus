@@ -1,28 +1,13 @@
 import { syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
 import { hoverTooltip, type EditorView, type Tooltip } from '@codemirror/view'
-import type { SyntaxNode } from '@lezer/common'
 
 import type { CalcValue } from '../calculator'
-import { terms, type TermValue } from '../language'
 import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
 import { getResultTooltipContent, type ResultTooltipContent } from './calc-result-format'
 import { calcValueAtAnchor, getCalcRanges } from './values-field'
+import { isVariableIdentifierUse } from './syntax-node'
 
-const identifierUseParents = new Set<TermValue>([
-  terms.ExpExpression,
-  terms.AddExpression,
-  terms.MulExpression,
-  terms.ConvertExpression,
-  terms.ArgList,
-])
-
-export function isVariableIdentifierUse(node: SyntaxNode): boolean {
-  if (node.type.id !== terms.Identifier) return false
-  const parent = node.parent
-  if (parent == null) return false
-  return identifierUseParents.has(parent.type.id as TermValue)
-}
 
 /** Binding definition for `name` that is in scope at `beforePos`. */
 export function calcValueForVariableName(
