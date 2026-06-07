@@ -47,7 +47,11 @@ export const calcRangesField: StateField<FieldValue> = StateField.define<FieldVa
   },
 
   update(value, tr) {
-    if (tr.docChanged || tr.effects.find(fx => fx.is(CurrencyRateUpdated))) {
+    if (
+      tr.docChanged ||
+      tr.effects.find(fx => fx.is(CurrencyRateUpdated)) ||
+      syntaxTree(tr.state) !== syntaxTree(tr.startState)
+    ) {
       return computeRanges(tr.state);
     }
     return value
