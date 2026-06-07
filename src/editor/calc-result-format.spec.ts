@@ -77,6 +77,12 @@ describe('getResultTooltipContent', () => {
         });
     });
 
+    it('groups integer digits with spaces', () => {
+        expect(getResultTooltipContent(calc(new Decimal('1222323.23232')))).toEqual({
+            value: '1 222 323.23232',
+        });
+    });
+
     it('returns null for errors', () => {
         const value = new CalcValue(new Decimal(0), undefined, undefined, undefined, 'bad');
         expect(getResultTooltipContent(value)).toBeNull();

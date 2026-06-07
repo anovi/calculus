@@ -47,8 +47,13 @@ function decimalPlacesForValue(value: CalcValue): number | undefined {
 
 function formatHighPrecision(n: Decimal): string {
     if (!n.isFinite()) return n.toString()
-    if (n.isInteger()) return n.toString()
-    return n.toDecimalPlaces(TOOLTIP_DECIMAL_PLACES, Decimal.ROUND_HALF_UP).toString()
+    let raw: string
+    if (n.isInteger()) {
+        raw = n.toString()
+    } else {
+        raw = n.toDecimalPlaces(TOOLTIP_DECIMAL_PLACES, Decimal.ROUND_HALF_UP).toString()
+    }
+    return addThousandsSeparators(raw)
 }
 
 function unitSpellingForDisplay(unit: string): string {
