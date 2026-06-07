@@ -57,8 +57,8 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	_parenthesized @left, // need to be deepest?
 	_pow @right,
 	_mul @left,
-	_add @left,
 	_convert @left,
+	_add @left,
 	space
 	// Results upper in AST
 }

@@ -63,6 +63,23 @@ expectedTree: `CalcDoc
       Unit`,
 },
 {
+name: 'conversion before addition',
+doc: '23 EUR in USD + 10',
+expectedTree: `CalcDoc
+  NoBinding
+    AddExpression
+      ConvertExpression
+        Literal
+          NumberWithUnit
+            Number
+            Unit
+        ConvertOp
+        Unit
+      PlusBinaryOp
+      Literal
+        Number`,
+},
+{
 name: 'standalone convert keyword in (not a Unit)',
 doc: '12 in USD',
 expectedTree: `CalcDoc

@@ -273,6 +273,18 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [9],
   },
   {
+    name: 'conversion before arithmetic',
+    doc: '23 EUR in USD + 10',
+    expected: ['35.76'],
+    expectedUnits: ['USD'],
+  },
+  {
+    name: 'conversion as part of a division and of sum',
+    doc: '5 + 5 in EUR / 2',
+    expected: ['7.5'],
+    expectedUnits: ['EUR'],
+  },
+  {
     name: 'currency convertion via expression',
     doc: '10 USD + 1 EUR',
     expected: [10],

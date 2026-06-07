@@ -266,6 +266,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 terms.ExpExpression,
                 terms.AddExpression,
                 terms.FunctionCall,
+                terms.ConvertExpression,
             ],
         }],
         process: (_ctx, props: { args: ExpressionResult[] }): ExpressionResult[] => props.args,
@@ -335,6 +336,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 terms.ExpExpression,
                 terms.Identifier,
                 terms.FunctionCall,
+                terms.ConvertExpression,
             ]
         }, {
             key: 'operator',
@@ -351,6 +353,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 terms.ExpExpression,
                 terms.Identifier,
                 terms.FunctionCall,
+                terms.ConvertExpression,
             ]
         }],
         process: (
