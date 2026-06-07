@@ -14,6 +14,7 @@ export type ExpressionResultOk = {
     /** Postfix literal such as `20%` (not a plain numeric value). */
     isPercent?: boolean;
     error?: undefined;
+    isPrimitive?: boolean;
 };
 
 export type ExpressionResultError = {

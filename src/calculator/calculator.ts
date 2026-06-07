@@ -25,6 +25,8 @@ export class CalcValue extends RangeValue {
     readonly errorFrom?: number;
     readonly errorTo?: number;
     readonly unitChoices?: readonly string[];
+    /** Means the expression is just a value assignment without calculation.  */
+    readonly primitive?: boolean;
     constructor(
         result: Decimal,
         name?: string,
@@ -34,6 +36,7 @@ export class CalcValue extends RangeValue {
         errorFrom?: number,
         errorTo?: number,
         unitChoices?: readonly string[],
+        isPrimitive?: boolean,
     ) {
         super();
         this.result = result;
@@ -44,6 +47,7 @@ export class CalcValue extends RangeValue {
         this.errorFrom = errorFrom;
         this.errorTo = errorTo;
         this.unitChoices = unitChoices;
+        this.primitive = isPrimitive;
     }
 }
 
@@ -67,6 +71,7 @@ function calcValueFromExpr(expr: ExpressionResult, name?: string): CalcValue {
         isError ? expr.from : undefined,
         isError ? expr.to : undefined,
         isError ? expr.unitChoices : undefined,
+        !isError && expr.isPrimitive
     );
 }
 
@@ -417,6 +422,9 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 if (parent === terms.NoBinding || parent === terms.Binding) {
                     return expressionError(PERCENT_ERROR, ctx.cursor);
                 }
+            }
+            if (ctx.stack.length <= 2 && !isExpressionResultError(params.value)) {
+                params.value.isPrimitive = true;
             }
             return params.value;
         },

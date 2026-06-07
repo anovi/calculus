@@ -130,7 +130,7 @@ function buildDecorations(view: EditorView): DecorationSet {
   const cursor = set.iter();
   while (cursor.value !== null) {
     const lineEnd = doc.lineAt(cursor.from).to;
-    if (!cursor.value.error)
+    if (!cursor.value.error && !cursor.value.primitive)
       widgets.push(
         Decoration.widget({
           widget: new ResultWidget(cursor.value),
