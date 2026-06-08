@@ -2,7 +2,6 @@ import { combineConfig, Facet, type Extension } from '@codemirror/state'
 import {
   closeHoverTooltips,
   hoverTooltip,
-  tooltips,
   type EditorView as EditorViewType,
   type Rect,
   type Tooltip
@@ -16,6 +15,7 @@ import { formatResult, getResultTooltipContent } from './calc-result-format'
 import { bindFocusPreservingButton } from '../components/focus-preserving-button'
 import { calcValueAtAnchor } from './values-field'
 import { resultPillAt, setResultPillActive } from './result-pill-dom'
+import { editorTooltipExtensions } from './viewport-insets'
 
 
 export type CalcResultTooltipConfig = {
@@ -125,7 +125,7 @@ export const calcResultHoverTooltip = hoverTooltip(
 export function calcResultTooltips(config: CalcResultTooltipConfig = {}): Extension {
   return [
     calcResultTooltipConfig.of(config),
-    tooltips(),
+    ...editorTooltipExtensions(),
     calcResultHoverTooltip,
   ]
 }

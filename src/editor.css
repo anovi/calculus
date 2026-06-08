@@ -216,7 +216,7 @@ body {
 #editor .cm-panels-top {
   border: 0;
   border-bottom: 1px solid var(--border-level-1);
-  background: transparent;
+  background: var(--background);
   z-index: var(--z-layer-drawer);
 }
 
