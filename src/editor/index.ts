@@ -6,5 +6,4 @@ export * from './autocompletion';
 export * from './formatting';
 export * from './basic-setup';
 export * from './base-theme';
-export * from './safari-focus-scroll-fix';
 export * from './language-tools';
