@@ -9,7 +9,9 @@ import type { SyntaxNode } from '@lezer/common';
 import { terms } from '../../language';
 import { calcRangesField } from '../values-field';
 import { BUILTIN_FUNCTIONS } from '../../calculator';
-import { isBindingIdentifier } from '../language-tools'; 
+import { isBindingIdentifier } from '../language-tools';
+import { functionCallContextAt } from '../function-args/function-args-context';
+import { completionApplyWithArgAdvance } from '../function-args/function-args-completion';
   
 
 function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {
@@ -37,14 +39,23 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     if (!identifier && !context.explicit) return null;
 
     const options: Completion[] = [];
-    const isEditingFunctionCall = node.parent?.type.id === terms.FunctionCall;
+    const isEditingFunctionName = node.parent?.type.id === terms.FunctionCall;
+    const useArgAdvance =
+      !isEditingFunctionName && functionCallContextAt(context.state, pos) != null;
 
     // Alwais add functions
     for (let index = 0; index < BUILTIN_FUNCTIONS.length; index++) {
         const fnDef = BUILTIN_FUNCTIONS[index];
 
-        if (isEditingFunctionCall)
+        if (isEditingFunctionName)
             options.push({ label: fnDef.name, detail: fnDef.doc, type: 'function' })
+        else if (useArgAdvance)
+            options.push({
+                label: fnDef.name,
+                detail: fnDef.doc,
+                type: 'function',
+                apply: completionApplyWithArgAdvance(fnDef.name),
+            })
         else
             options.push({
                 label: fnDef.name,
@@ -65,7 +76,7 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     }
 
     // Editing funciton call, so no variables
-    if (isEditingFunctionCall) {
+    if (isEditingFunctionName) {
         return {
             from: node.from,
             to: node.to,
@@ -78,7 +89,11 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
     const variableNames = getIdentifierNames(context.state);
     for (let index = 0; index < variableNames.length; index++) {
         const name = variableNames[index];
-        options.push({ label: name, type: 'variable' });
+        options.push({
+            label: name,
+            type: 'variable',
+            ...(useArgAdvance ? { apply: completionApplyWithArgAdvance(name) } : {}),
+        });
     }
 
     return {

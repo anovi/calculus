@@ -5,12 +5,17 @@ import type { SyntaxNode, NodeIterator } from '@lezer/common';
 import { BUILTIN_FUNCTION_BY_NAME, getFunctionArgLabels, type FunctionArgLabel } from '../../calculator';
 import { terms } from '../../language';
 
+export type ArgExpressionSpan = { from: number; to: number };
+
 export type FunctionCallContext = {
   fnName: string;
   fnDoc?: string;
   argIndex: number;
   anchorPos: number;
   args: FunctionArgLabel[];
+  oprFrom: number;
+  arity: number;
+  expressions: readonly SyntaxNode[];
 };
 
 const expressionTermIds = new Set<number>([
@@ -50,23 +55,23 @@ function functionCallBounds(node: SyntaxNode): { oprFrom: number; cprFrom: numbe
   return { oprFrom, cprFrom, nameNode };
 }
 
-function argIndexAt(expressions: SyntaxNode[], pos: number, doc: string): number {
-  if (expressions.length === 0) return 0;
+export function argIndexAt(spans: readonly ArgExpressionSpan[], pos: number, doc: string): number {
+  if (spans.length === 0) return 0;
 
-  for (let i = 0; i < expressions.length; i++) {
-    const expr = expressions[i];
+  for (let i = 0; i < spans.length; i++) {
+    const expr = spans[i];
     if (pos <= expr.from) return i;
     if (pos <= expr.to) return i;
-    const next = expressions[i + 1];
+    const next = spans[i + 1];
     if (next && pos > expr.to && pos < next.from) return i + 1;
   }
 
-  const last = expressions.length - 1;
-  const lastExpr = expressions[last];
+  const last = spans.length - 1;
+  const lastExpr = spans[last];
   if (pos > lastExpr.to) {
     const prevChar = doc.slice(Math.max(lastExpr.to, pos - 1), pos);
-    if (prevChar === ',' || (expressions.length === 1 && pos > expressions[0].to)) {
-      return expressions.length;
+    if (prevChar === ',' || (spans.length === 1 && pos > spans[0].to)) {
+      return spans.length;
     }
   }
   return last;
@@ -106,6 +111,9 @@ export function functionCallContextAt(state: EditorState, pos: number): Function
             argIndex: Math.min(argIndex, def.arity - 1),
             anchorPos: anchorPosFor(expressions, argIndex, pos),
             args: getFunctionArgLabels(fnName, def.arity),
+            oprFrom,
+            arity: def.arity,
+            expressions,
           };
         }
       }

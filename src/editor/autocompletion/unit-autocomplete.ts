@@ -10,6 +10,8 @@ import type { SyntaxNode } from '@lezer/common';
 import { getCurrencies, getMeasurementUnits, type MeasureEntry } from '../../units';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../editor-commands';
+import { functionCallContextAt } from '../function-args/function-args-context';
+import { completionApplyWithArgAdvance } from '../function-args/function-args-completion';
 
 function canonicalApplyText(entry: MeasureEntry): string {
   return entry.symbols?.[0] ?? entry.names[0];
@@ -147,8 +149,25 @@ function optionsForSite(site: UnitCompletionSite): readonly Completion[] {
   return site.kind === 'convert' ? unitCompletionOptionsForConvert : unitCompletionOptions;
 }
 
-function unitCompletionResult(site: UnitCompletionSite, explicit: boolean): CompletionResult | null {
-  const options = optionsForSite(site);
+function optionsWithArgAdvance(
+  state: CompletionContext['state'],
+  from: number,
+  options: readonly Completion[],
+): readonly Completion[] {
+  if (functionCallContextAt(state, from) == null) return options;
+  return options.map((option) => {
+    const insert =
+      typeof option.apply === 'string' ? option.apply : option.label;
+    return { ...option, apply: completionApplyWithArgAdvance(insert) };
+  });
+}
+
+function unitCompletionResult(
+  state: CompletionContext['state'],
+  site: UnitCompletionSite,
+  explicit: boolean,
+): CompletionResult | null {
+  const options = optionsWithArgAdvance(state, site.from, optionsForSite(site));
   if (options.length === 0 && !explicit) return null;
 
   return {
@@ -159,7 +178,7 @@ function unitCompletionResult(site: UnitCompletionSite, explicit: boolean): Comp
       if (!nextSite) return null;
       const nextPrefix = context.state.sliceDoc(nextSite.from, context.pos);
       if (!nextPrefix && !context.explicit) return null;
-      return unitCompletionResult(nextSite, context.explicit);
+      return unitCompletionResult(context.state, nextSite, context.explicit);
     },
   };
 }
@@ -171,5 +190,5 @@ export const unitCompletionSource: CompletionSource = (context): CompletionResul
   const prefix = context.state.sliceDoc(site.from, context.pos);
   if (!prefix && !context.explicit) return null;
 
-  return unitCompletionResult(site, context.explicit);
+  return unitCompletionResult(context.state, site, context.explicit);
 };

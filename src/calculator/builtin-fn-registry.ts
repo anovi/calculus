@@ -30,7 +30,7 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinFunction[] = [
     // Not sure most people know it, so I have changed it to simpler names.
     args: [
       { name: 'value', doc: 'Number whose root is computed' },
-      { name: 'degree', doc: 'Which root (2 = square, 3 = cube, etc.)' },
+      { name: 'root', doc: 'Which root to take (2 = square, 3 = cubic, etc.)' },
     ],
   },
 ];
