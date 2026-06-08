@@ -1,12 +1,12 @@
-import type { AppContext } from './app'
-import { mountPopupMenu } from './components/popup-menu'
+import type { AppContext } from '../app'
+import { mountPopupMenu } from '../components/popup-menu'
 import {
   isStandaloneApp,
   isInstallPromptAvailable,
   onInstallAvailabilityChange,
   triggerInstallPrompt,
-} from './pwa'
-import { themeToggleIcon, themeToggleLabel } from './theme'
+} from '../pwa'
+import { themeToggleIcon, themeToggleLabel } from '../theme'
 
 function isInstallMenuItemVisible(): boolean {
   return !isStandaloneApp() && isInstallPromptAvailable()

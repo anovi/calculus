@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 
-import { BUILTIN_FUNCTIONS } from '../functions';
+import { BUILTIN_FUNCTIONS } from './builtin-fn-registry';
 import type { ExpressionResult } from './types';
 
 export type BuiltinHandler = (args: ExpressionResult[]) => ExpressionResult | null;

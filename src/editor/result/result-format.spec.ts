@@ -1,9 +1,9 @@
 import Decimal from 'decimal.js';
 import { describe, expect, it } from 'vitest';
 
-import { CalcValue } from '../calculator';
-import { formatCalcSuffix, formatResult, getResultTooltipContent } from './calc-result-format';
-import { getCurrencyDecimalPlaces } from '../units';
+import { CalcValue } from '../../calculator';
+import { formatCalcSuffix, formatResult, getResultTooltipContent } from './result-format';
+import { getCurrencyDecimalPlaces } from '../../units';
 
 function calc(result: Decimal, unit?: string, name?: string): CalcValue {
     return new CalcValue(result, name, undefined, unit);

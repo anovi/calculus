@@ -12,7 +12,7 @@
     "test": "vitest run",
     "bench": "vitest bench src/benchmarks",
     "test:watch": "vitest",
-    "grammar": "lezer-generator ./src/language/baseline/calculus-language.grammar -o ./src/language/baseline/calculus-language.ts && node scripts/patch-lezer-parser.mjs",
+    "grammar": "lezer-generator ./src/language/baseline/calculus-language.grammar -o ./src/language/baseline/calculus-language-parser.ts && node scripts/patch-lezer-parser.mjs",
     "prepare": "husky"
   },
   "devDependencies": {

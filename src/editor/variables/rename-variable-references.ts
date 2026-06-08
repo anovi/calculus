@@ -8,9 +8,9 @@ import {
 } from '@codemirror/state'
 import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view'
 
-import { terms } from '../language'
-import { isBindingIdentifier, isVariableReference } from './syntax-node'
-import { isRangesOverlap } from '../lib/codemirror'
+import { terms } from '../../language'
+import { isRangesOverlap } from '../../lib/codemirror'
+import { isBindingIdentifier, isVariableReference } from '../language-tools' 
 
 
 /** Marks transactions produced by reference renames so the plugin does not recurse. */

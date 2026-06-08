@@ -2,11 +2,12 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { syntaxTree } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
 
-import { CalcValue, MathCalculator } from '../calculator'
-import { ratesStore } from '../rates-store'
-import { calcSuffixResultPart, formatCalcSuffix } from './calc-result-format'
-import { getCalcRanges } from './values-field'
-import { calcLanguage } from './calculus-language'
+import { CalcValue, MathCalculator } from '../../calculator'
+import { ratesStore } from '../../rates-store'
+import { calcLanguage } from '../../language' 
+
+import { calcSuffixResultPart, formatCalcSuffix } from '../result'
+import { getCalcRanges } from '../values-field'
 
 function calcValueForSource(source: string): CalcValue | null {
     const state = EditorState.create({

@@ -6,3 +6,8 @@ import { StateEffect } from '@codemirror/state'
  * so it re-compute values using calculator.
 */
 export const CurrencyRateUpdated = StateEffect.define();
+
+/**
+ * Show/hide editor toolbar.
+*/
+export const ToggleToolbar = StateEffect.define<boolean>();

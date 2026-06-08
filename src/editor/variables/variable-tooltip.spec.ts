@@ -2,8 +2,8 @@ import { LRLanguage } from '@codemirror/language'
 import { EditorState } from '@codemirror/state'
 import { describe, expect, it } from 'vitest'
 
-import { parser } from '../language'
-import { calcRanges } from './values-field'
+import { parser } from '../../language'
+import { calcRanges } from '../values-field'
 import { calcValueForVariableName } from './variable-tooltip'
 
 const calcLanguage = LRLanguage.define({ name: 'calculus', parser })

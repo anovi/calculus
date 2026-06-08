@@ -1,7 +1,8 @@
 import * as terms from './baseline/calculus-language.terms';
-export * from './baseline/calculus-language';
+export * from './baseline/calculus-language-parser';
 export { terms };
 export * from './api';
 
 export type { TermKey, TermValue } from './baseline/calculus-lang-highlighting';
 
+export * from './calculus-language'

@@ -8,8 +8,8 @@ import type { SyntaxNode } from '@lezer/common';
 
 import { terms } from '../../language';
 import { calcRangesField } from '../values-field';
-import { BUILTIN_FUNCTIONS } from '../../functions';
-import { isBindingIdentifier } from '../syntax-node';
+import { BUILTIN_FUNCTIONS } from '../../calculator';
+import { isBindingIdentifier } from '../language-tools'; 
   
 
 function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {

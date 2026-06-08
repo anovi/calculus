@@ -5,7 +5,7 @@ import { LRLanguage } from '@codemirror/language';
 import { CompletionContext } from '@codemirror/autocomplete';
 
 import { parser } from '../../language';
-import { BUILTIN_FUNCTIONS } from '../../functions';
+import { BUILTIN_FUNCTIONS } from '../../calculator';
 import { calcRanges } from '../values-field';
 import { variableCompletionSource } from './variable-autocomplete';
 

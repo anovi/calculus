@@ -4,7 +4,7 @@ import { history, undo } from '@codemirror/commands'
 import { EditorSelection, EditorState, Transaction } from '@codemirror/state'
 import { LRLanguage, syntaxTree } from '@codemirror/language'
 
-import { parser } from '../language'
+import { parser } from '../../language'
 import {
 	bindingIdentifierNameAt,
 	referenceRenamesForBinding,

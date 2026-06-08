@@ -1,6 +1,6 @@
 import { LRLanguage, LanguageSupport } from '@codemirror/language'
 
-import { parser } from '../language'
+import { parser } from './baseline/calculus-language-parser'
 
 export const calcLanguage = LRLanguage.define({
   name: 'calculus',

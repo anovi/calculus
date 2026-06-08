@@ -1,7 +1,7 @@
 import { EditorView } from 'codemirror'
 import type { Extension } from '@codemirror/state'
 
-import type { AppContext } from '../app'
+import type { AppContext } from '.'
 
 export function createPersistDocumentExtension(
   ctx: Pick<AppContext, 'session'>,

@@ -5,10 +5,11 @@ import { showPanel } from "@codemirror/view";
 
 import { isAtomicSelection } from '../../lib/codemirror';
 import { terms } from '../../language';
+
+import { ToggleToolbar } from '../effects';
 import { skipWhiteSpaceBackward } from '../editor-commands';
 import { OperationsDictionary, type OperationDef } from './operations-dictionary';
-import { createHelpPanel } from './panel';
-import { toggleHelp } from './effects';
+import { createHelpPanel } from './mobile-toolbar-panel';
 
 
 /*=======================================================
@@ -108,7 +109,7 @@ export const SuggestionsStateField = StateField.define<OperationDef[]>({
 export const helpPanelState = StateField.define<boolean>({
     create: () => false,
     update(value, tr) {
-        for (let e of tr.effects) if (e.is(toggleHelp)) return e.value;
+        for (let e of tr.effects) if (e.is(ToggleToolbar)) return e.value;
         return value
     },
     provide: f => showPanel.from(f, on => on ? createHelpPanel : null),

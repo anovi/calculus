@@ -2,14 +2,15 @@ import { ViewPlugin, type Panel, type ViewUpdate } from "@codemirror/view";
 import { EditorView } from "@codemirror/view";
 
 import { createIconButton } from '../../components/icon-button';
-import { OPERATION_ICON } from './operation-icons';
-import { toggleInlineFormat } from '../editor-commands';
-import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
-import { toggleHelp } from './effects';
-import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
-import { helpPanelState } from "./state";
 import { isMobileDevice } from "../../lib/mobile-device";
 import { bindFocusPreservingButton } from '../../components/focus-preserving-button';
+
+import { ToggleToolbar } from "../effects"; 
+import { toggleInlineFormat } from '../editor-commands';
+import { OPERATION_ICON } from './operation-icons';
+import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
+import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
+import { helpPanelState } from "./state";
 
 
 /*===============================================================================
@@ -140,13 +141,13 @@ export function createHelpPanel(view: EditorView): Panel {
 }
 
 /**
- * Dispatches a toggleHelp effect when the editor's focus changes.
+ * Dispatches a ToggleToolbar effect when the editor's focus changes.
  */
 const helpPanelFocusSync = EditorView.updateListener.of((update) => {
     if (!update.focusChanged) return;
     const show = update.view.hasFocus;
     if (update.state.field(helpPanelState) === show) return;
-    update.view.dispatch({ effects: toggleHelp.of(show) });
+    update.view.dispatch({ effects: ToggleToolbar.of(show) });
 });
 
 /** Extra space kept between the selection and the fixed suggestions panel. */

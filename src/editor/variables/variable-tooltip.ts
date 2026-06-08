@@ -2,11 +2,10 @@ import { syntaxTree } from '@codemirror/language'
 import type { EditorState } from '@codemirror/state'
 import { hoverTooltip, type EditorView, type Tooltip } from '@codemirror/view'
 
-import type { CalcValue } from '../calculator'
-import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
-import { getResultTooltipContent, type ResultTooltipContent } from './calc-result-format'
-import { calcValueAtAnchor, getCalcRanges } from './values-field'
-import { isVariableIdentifierUse } from './syntax-node'
+import type { CalcValue } from '../../calculator'
+import { buildCalcTooltipContentDom, getResultTooltipContent, type ResultTooltipContent } from '../result'
+import { calcValueAtAnchor, getCalcRanges } from '../values-field'
+import { isVariableIdentifierUse } from '../language-tools'
 
 
 /** Binding definition for `name` that is in scope at `beforePos`. */

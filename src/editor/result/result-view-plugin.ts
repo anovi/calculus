@@ -12,14 +12,14 @@ import {
   type EditorView,
   type ViewUpdate,
 } from '@codemirror/view'
-import { CalcValue } from '../calculator'
-import { isMobileDevice } from '../lib/mobile-device'
-import { calcResultHoverTooltip } from './calc-result-tooltip'
-import { copyTextToClipboard } from './copy-text'
-import { formatResult } from './calc-result-format'
-import { calcRangesField, getCalcRanges } from './values-field'
-import { parsePairKey, ratesStore } from '../rates-store'
-import { CurrencyRateUpdated } from './effects'
+import { CalcValue } from '../../calculator'
+import { isMobileDevice } from '../../lib/mobile-device'
+import { calcResultHoverTooltip } from './result-tooltip'
+import { copyTextToClipboard } from '../clipboard'
+import { formatResult } from './result-format'
+import { calcRangesField, getCalcRanges } from '../values-field'
+import { parsePairKey, ratesStore } from '../../rates-store'
+import { CurrencyRateUpdated } from '../effects'
 
 /**
  * Inline widget rendering a calculation result next to its source range.

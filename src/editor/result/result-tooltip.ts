@@ -7,15 +7,15 @@ import {
   type Tooltip
 } from '@codemirror/view'
 
-import type { CalcValue } from '../calculator'
-import { isMobileDevice } from '../lib/mobile-device'
-import { copyTextToClipboard } from './copy-text'
-import { buildCalcTooltipContentDom } from './calc-tooltip-dom'
-import { formatResult, getResultTooltipContent } from './calc-result-format'
-import { bindFocusPreservingButton } from '../components/focus-preserving-button'
-import { calcValueAtAnchor } from './values-field'
+import type { CalcValue } from '../../calculator'
+import { isMobileDevice } from '../../lib/mobile-device'
+import { copyTextToClipboard } from '../clipboard'
+import { buildCalcTooltipContentDom } from './result-tooltip-dom'
+import { formatResult, getResultTooltipContent } from './result-format'
+import { bindFocusPreservingButton } from '../../components/focus-preserving-button'
+import { calcValueAtAnchor } from '../values-field'
 import { resultPillAt, setResultPillActive } from './result-pill-dom'
-import { editorTooltipExtensions } from './viewport-insets'
+import { editorTooltipExtensions } from '../viewport-insets'
 
 
 export type CalcResultTooltipConfig = {

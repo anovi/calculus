@@ -1,4 +1,4 @@
-import type { ResultTooltipContent } from './calc-result-format'
+import type { ResultTooltipContent } from './result-format'
 
 /** Tooltip body: optional name, value, optional full unit label. */
 export function buildCalcTooltipContentDom(content: ResultTooltipContent): HTMLElement {

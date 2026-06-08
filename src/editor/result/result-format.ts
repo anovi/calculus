@@ -1,13 +1,13 @@
 import Decimal from 'decimal.js'
 
-import { CalcValue } from '../calculator'
+import { CalcValue } from '../../calculator'
 import {
     formatUnitFullName,
     getMeasureDisplayDecimalPlaces,
     getCurrencyDecimalPlaces,
     isCurrency,
     normalizeUnit,
-} from '../units'
+} from '../../units'
 
 /** Fractional digits for result tooltips — full underlying value, not display rounding. */
 const TOOLTIP_DECIMAL_PLACES = 15

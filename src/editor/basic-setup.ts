@@ -21,7 +21,7 @@ import {
 	closeBracketsKeymap,
 } from "@codemirror/autocomplete"
 import { lintKeymap } from "@codemirror/lint"
-import { renameVariableReferencesHistoryConfig } from "./rename-variable-references"
+import { renameVariableReferencesHistoryConfig } from "./variables/rename-variable-references"
 
 /**
  * Basic codemirror plugins.

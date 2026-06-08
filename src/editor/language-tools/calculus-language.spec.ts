@@ -2,7 +2,7 @@ import assert from 'node:assert'
 import { EditorSelection, EditorState } from '@codemirror/state'
 import { toggleComment } from '@codemirror/commands'
 
-import { calcLanguage } from './calculus-language'
+import { calcLanguage } from '../../language'
 
 function dispatchToggle(state: EditorState): EditorState {
   let next = state

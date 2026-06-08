@@ -1,6 +1,6 @@
 import type { SyntaxNode } from '@lezer/common';
 
-import { terms, type TermValue } from '../language';
+import { terms, type TermValue } from '../../language';
 
 
 const identifierUseParents = new Set<TermValue>([

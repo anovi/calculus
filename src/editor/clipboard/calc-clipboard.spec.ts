@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 import { EditorSelection, EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
-
-import { parser } from '../language'
 import { LRLanguage } from '@codemirror/language'
-import { calcRanges } from './values-field'
+
+import { parser } from '../../language'
+import { calcRanges } from '../values-field'
 import { calcClipboard } from './calc-clipboard'
 
 const calcLanguage = LRLanguage.define({ name: 'calculus', parser });

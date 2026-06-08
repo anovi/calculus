@@ -3,7 +3,7 @@ import { showPanel, ViewPlugin, type Panel, type EditorView, type ViewUpdate } f
 import type { EditorState, Extension } from '@codemirror/state'
 
 import type { AppContext } from '../app'
-import { mountAppMenu } from '../app-menu'
+import { mountAppMenu } from './app-menu'
 import { createIconButton } from '../components/icon-button'
 import { bindFocusPreservingButton } from '../components/focus-preserving-button'
 export type DocumentControlsPanel = {

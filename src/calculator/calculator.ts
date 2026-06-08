@@ -11,8 +11,8 @@ import {
 } from '../units';
 import { isCurrency } from '../units';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
-import { BUILTIN_FUNCTION_BY_NAME } from '../functions';
-import { builtinHandlers } from './builtin-handlers';
+import { BUILTIN_FUNCTION_BY_NAME } from './builtin-fn-registry';
+import { builtinHandlers } from './builtin-fn-handlers';
 import { isExpressionResultError, type ExpressionResult, type ExpressionResultError } from './types';
 
 /** Represents line's calculation result; can be binded to a name */

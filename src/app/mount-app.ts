@@ -1,6 +1,8 @@
-import { createEditor, createDocumentControlsPanel, createPersistDocumentExtension } from '../editor'
+import { createEditor } from '../editor'
+import { createDocumentControlsPanel } from '../document-controls-panel'
 import { DocumentDrawer } from '../drawer'
 import { createAppContext } from './app-context'
+import { createPersistDocumentExtension } from './persist-document'
 
 export async function mountApp(root: HTMLElement): Promise<void> {
   const { ctx, initialDocument } = await createAppContext()

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
-const parserPath = 'src/language/baseline/calculus-language.ts'
+const parserPath = 'src/language/baseline/calculus-language-parser.ts'
 const marker = '// @ts-nocheck\n'
 const source = readFileSync(parserPath, 'utf8')
 
