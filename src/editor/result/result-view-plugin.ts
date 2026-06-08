@@ -4,8 +4,6 @@ import {
   closeHoverTooltip,
   closeHoverTooltips,
   Decoration,
-  gutter,
-  GutterMarker,
   ViewPlugin,
   WidgetType,
   type DecorationSet,

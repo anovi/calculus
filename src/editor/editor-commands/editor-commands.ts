@@ -1,7 +1,8 @@
 import { type SyntaxNode, Tree } from '@lezer/common'
 import { type TransactionSpec, EditorState, Transaction, EditorSelection, ChangeSet, type ChangeSpec } from "@codemirror/state";
 
-import { isAtomicNode, terms } from '../../language';
+import { terms } from '../../language';
+import { isAtomicNode } from '../language-tools';
 
 
 
