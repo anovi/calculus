@@ -246,10 +246,13 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             if (props.args.length !== def.arity) {
                 const n = def.arity;
                 const label = n === 1 ? '1 argument' : `${n} arguments`;
-                return expressionError(
+                ctx.cursor.firstChild();
+                const ret = expressionError(
                     `${props.id}() expects ${label}, got ${props.args.length}.`,
                     ctx.cursor,
                 );
+                ctx.cursor.parent();
+                return ret
             }
             const builtinHandler = builtinHandlers.get(props.id);
             if (!builtinHandler) return null;

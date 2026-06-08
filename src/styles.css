@@ -744,6 +744,109 @@ body {
   }
 }
 
+/* ----------- Function args tooltip ---------- */
+
+#editor .cm-fn-args-tooltip {
+  max-width: 280px;
+  font-family: var(--main-font);
+  font-size: 0.9em;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+#editor .cm-fn-args-tooltip > .cm-tooltip-section {
+  padding: 0.45rem 0.55rem;
+}
+
+#editor .cm-fn-args-tooltip__sig {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-family: var(--editor-font);
+  font-weight: 500;
+}
+
+#editor .cm-fn-args-tooltip__fn-name {
+  font-weight: 600;
+  color: var(--editor-function);
+}
+.cm-fn-args-tooltip__sig-name {
+  /* margin-bottom: 0.6rem; */
+}
+
+#editor .cm-fn-args-tooltip__sig-punct {
+  color: var(--text-secondary);
+}
+
+#editor .cm-fn-args-tooltip__sig-arg {
+  border-radius: 3px;
+  padding: 0 0.1em;
+  color: var(--text-primary);
+}
+
+#editor .cm-fn-args-tooltip__sig-arg--active {
+  background: var(--accent);
+  color: var(--on-accent-primary);
+}
+
+#editor .cm-fn-args-tooltip__fn-doc {
+  color: var(--text-secondary);
+  font-family: var(--main-font);
+}
+
+#editor .cm-fn-args-tooltip__current {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+#editor .cm-fn-args-tooltip__current-name {
+  font-family: var(--main-font);
+  /* font-weight: 600; */
+  color: var(--text-primary);
+}
+
+#editor .cm-fn-args-tooltip__current-doc {
+  color: var(--text-secondary);
+}
+
+#editor .cm-fn-args-tooltip__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+#editor .cm-fn-args-tooltip__arg {
+  /* display: flex; */
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.45rem;
+  /* padding: 0.15rem 0.3rem; */
+  border-radius: 4px;
+}
+
+#editor .cm-fn-args-tooltip__arg--active {
+  /* background: color-mix(in oklch, var(--accent) 18%, transparent); */
+}
+
+#editor .cm-fn-args-tooltip__arg-name {
+  font-family: var(--editor-font);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+#editor .cm-fn-args-tooltip__arg--active .cm-fn-args-tooltip__arg-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+#editor .cm-fn-args-tooltip__arg-doc {
+  color: var(--text-secondary);
+}
+
 
 
 /*=============================================
