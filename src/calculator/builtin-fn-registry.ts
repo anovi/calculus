@@ -62,6 +62,8 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinFunction[] = [
     name: 'root',
     arity: 2,
     doc: 'n-th root',
+    // radicand + index is the most mathematically precise naming.
+    // Not sure most people know it, so I have changed it to simpler names.
     args: [
       { name: 'value', doc: 'Number whose root is computed' },
       { name: 'root', doc: 'Which root to take (2 = square, 3 = cubic, etc.)' },
