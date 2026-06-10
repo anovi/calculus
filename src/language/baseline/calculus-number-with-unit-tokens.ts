@@ -1,7 +1,8 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { longestRecognizedUnitSpelling } from '../../units';
-import { PercentSuffix, Unit } from './calculus-language.terms';
+import { isIdentifierChar } from './identifier-char';
+import { PercentSuffix, Unit } from './calculus-language-parser.terms';
 
 export type NumberWithUnitTokenizerTerms = {
   Unit: number;
@@ -10,15 +11,6 @@ export type NumberWithUnitTokenizerTerms = {
 
 function isDigit(code: number) {
   return code >= 48 && code <= 57;
-}
-
-function isIdentifierChar(code: number) {
-  return (
-    (code >= 65 && code <= 90) ||  // A-Z
-    (code >= 97 && code <= 122) || // a-z
-    (code >= 48 && code <= 57) ||  // 0-9
-    code === 95                    // _
-  );
 }
 
 /** Unit/currency tokens must not continue into an Identifier (e.g. `s` in `sqrt`). */
@@ -71,5 +63,5 @@ export function createUnitTokenizer(terms: { Unit: number }) {
   return createNumberWithUnitTokensTokenizer({ Unit: terms.Unit, PercentSuffix });
 }
 
-/** Wired into the generated parser; term ids come from `calculus-language.terms`. */
+/** Wired into the generated parser; term ids come from `calculus-language-parser.terms`. */
 export const numberWithUnitTokens = createNumberWithUnitTokensTokenizer({ Unit, PercentSuffix });

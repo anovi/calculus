@@ -14,9 +14,9 @@ pipeline {
 	lineEnd* (statementGroup (blankLine statementGroup)*) lineEnd*
 }
 
-statementGroup {
-	StatementGroup { statement (!_blankLine statement)* }
-}
+StatementGroup { statement (!_blankLine statement)* }
+
+statementGroup { StatementGroup }
 
 blankLine { !_blankLine lineEnd+ }
 
@@ -83,10 +83,6 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	PlusBinaryOp { "+" | "-" }
 	EqualSign { "=" }
 
-	// Identifier. Need to have more symbols, like cyrrilic, and allowed YAML symbols
-	IdentifierChar { @asciiLetter | @digit | "_" }
-	Identifier { IdentifierChar ( "." | IdentifierChar | @digit)* }
-	
 	// Literals
 	Float { @digit+ ((" " | "," | "_") @digit+)* "." @digit+ }
 	Integer { @digit+ ((" " | "," | "_") @digit+)* }
@@ -94,7 +90,7 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
 
-	@precedence { Date, Number, Identifier }
+	@precedence { Date, Number }
 
 	@precedence { PlusBinaryOp, Number }
 
@@ -118,5 +114,9 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 }
 
 @skip { space }
+
+@external tokens identifierTokens from "./calculus-identifier-tokens.ts" {
+	Identifier
+}
 
 @external propSource calculusLangHighlight from "./calculus-lang-highlighting"

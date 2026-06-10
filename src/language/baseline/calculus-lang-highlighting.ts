@@ -1,5 +1,5 @@
 import { styleTags, Tag, tags } from "@lezer/highlight"
-import * as terms from './calculus-language.terms'
+import * as terms from './calculus-language-parser.terms'
 
 export type TermKey = keyof typeof terms;
 export type TermValue = typeof terms[keyof typeof terms];
