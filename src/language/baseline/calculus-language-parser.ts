@@ -3,24 +3,24 @@
 import {LRParser} from "@lezer/lr"
 import {numberWithUnitTokens} from "./calculus-number-with-unit-tokens.ts"
 import {calculusLangHighlight} from "./calculus-lang-highlighting"
-const spec_Identifier = {__proto__:null,IN:72, in:72, into:72, as:72, to:72}
+const spec_Identifier = {__proto__:null,IN:82, in:82, into:82, as:82, to:82}
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "'nOtQQOOO{QQO'#CdO!aQSO'#CvO#WQSO'#DPO#sQTO'#CpOOQO'#Cp'#CpOOQO'#DP'#DPO#zQQO'#DPOOQO'#DO'#DOOOQO'#Cx'#CxO$`QQO'#C}QOQQOOO$gQSO,59OO!rQSO'#DPO{QQO,59OO{QQO,59QO{QQO,59SOOQP'#Ck'#CkO$xQRO,59UOOQO,59b,59bO$}QQO,59WO{QQO,58{OOQO,59],59]OOQO,59_,59_O%UQQO,59kO%gQQO'#DPO&OQRO'#CpOOQO-E6v-E6vO&YQSO1G.jO&kQSO1G.lO&|QSO1G.nOOQO1G.p1G.pO'_QQO'#CnOOQO1G.r1G.rO'sQQO1G.rO'xQSO1G.gO(ZQQO,59OOOQO1G/V1G/VO#zQQO'#CyO(oQQO,59YOOQO7+$^7+$^OOQO7+$R7+$RO(wQQO1G.jO)]QQO1G.lO)qQQO1G.nO*VQQO,59eOOQO-E6w-E6wO#zQQO'#CdO#zQQO,59OO#zQQO,59QO#zQQO,59S",
-  stateData: "*v~OpOSROS~OUROXPOaVOfSOhTOiTOkWOwXO~OnqP~PYOU]OXPOaVOfSOhTOiTO~OX^OZ_O]`OtaOvcO~OadOXsXZsX]sXtsXvsX~OVeO~P!rOPfOQgOXdXZdX]dXtdX~OvdX~P#_OUiOX!POaVOfjOhTOiTO~OnqX~PYOZ_O]`OtaOXWavWa~OPoO~OcqO~P#zOX!QOZ!RO]!SOcuOtaO~OadOXsXZsX]sXcsXtsXusX~OcdXudX~P#_OZ_O]`OtaOXWivWi~O]`OXYiZYitYivYi~O]`OX[iZ[it[iv[i~OX!QOZ!RO]!SOtaOuvOcbX~OcxO~OX^OZ_O]`OtaOvyO~OZ!RO]!SOtaOXWacWauWa~OuvOcba~OZ!RO]!SOtaOXWicWiuWi~O]!SOXYiZYicYitYiuYi~O]!SOX[iZ[ic[it[iu[i~OX!QOZ!RO]!SOtaOcmauma~OiXfURkwZ]p~",
-  goto: "$WtPPPPPuPPyPyPyPy!ZyP!fPy!iP!iPPuP!y#PPPP#V#Y#^TWOYmUOPVY^_`dev!P!Q!R!ScbQ[hlpstz}RrdmTOPVY^_`dev!P!Q!R!SQYORkYQwpR!OwRZOTXOYSQOYQ[PQhVQl^Qm_Qn`QpdQseQt!PQz!QQ{!RQ|!SR}v",
-  nodeNames: "⚠ Unit PercentSuffix Comment CalcDoc Binding Identifier EqualSign AddExpression PlusBinaryOp MulExpression TimesBinaryOp ExpExpression PowBinaryOp ConvertExpression ConvertOp FunctionCall Opr ArgList Cpr Literal NumberWithUnit Number PercentLiteral String Date NoBinding Heading",
-  maxTerm: 39,
+  states: "*[OVQQOOOOQO'#Cz'#CzOVQQO'#DROtQQO'#CdO!YQSO'#CwO#VQSO'#DUO#rQTO'#CpOOQO'#Cp'#CpOOQO'#DU'#DUO#|QQO'#DUO$bQSO'#CyOOQO'#DT'#DTO%RQQO'#C`QOQQOOO%]QQO'#DROOQO-E6x-E6xO%eQQO,59mO%mQSO,59OO!nQSO'#DUOtQQO,59OOtQQO,59QOtQQO,59SOOQP'#Ck'#CkO&RQRO,59UOOQO,59c,59cO&WQSO,59cO&]QQO,59WOtQQO,58{OOQO,59],59]OOQO,59_,59_O&dQQO,59pO&uQQO'#DUO'^QRO'#CpOOQO,59e,59eOOQO'#C|'#C|O'hQQO,58zO'rQQO,59mO%eQQO,59mO'yQQO1G/XO(QQQO1G/XO(YQSO1G.jO(nQSO1G.lO)SQSO1G.nOOQO1G.p1G.pOOQO1G.}1G.}O)hQQO'#CnOOQO1G.r1G.rO)|QQO1G.rO*RQSO1G.gO*gQQO,59OOOQO1G/[1G/[OOQO-E6z-E6zOOQO,59i,59iOOQO-E6{-E6{O*{QQO7+$sO#|QQO'#C{O+SQQO,59YOOQO7+$^7+$^OOQO7+$R7+$RO+[QSO7+$RO+aQQO1G.jO+uQQO1G.lO,ZQQO1G.nPVQQO'#CzO,oQQO,59gOOQO-E6y-E6yOOQO<<Gm<<GmO#|QQO'#CdO#|QQO,59OO#|QQO,59QO#|QQO,59S",
+  stateData: "-`~OtOS~OUTOXROaXOfUOhVOiVOjYOlZOvPO~OUbOXROaXOfUOhVOiVO~OXcOZdO]eOjiOyfO{hO~OajOXxXZxX]xXjxXyxX{xX~OVkO~P!nOPlOQmOXdXZdX]dXydX~OjdX{dX~P#^OUoOX!eOaXOfpOhVOiVO~O{qO~OUTOXROaXOfUOhVOiVOjYOlZO~OrSXvSX~P$gOvPOruX~OvPOrua~OZdO]eOyfOXWajWa{Wa~OP{O~O{|O~Oc!OO~P#|OX!fOZ!gO]!hOc!SOyfO~OajOXxXZxX]xXcxXyxXzxX~OcdXzdX~P#^OrSavSa~P$gOrua~PVOrui~PVOvPOrui~OZdO]eOyfOXWijWi{Wi~O]eOXYiZYijYiyYi{Yi~O]eOX[iZ[ij[iy[i{[i~OX!fOZ!gO]!hOyfOz!XOcbX~Oc!ZO~OXcOZdO]eOj!]OyfO{![O~OZ!gO]!hOyfOXWacWazWa~Oruq~PVOz!XOcba~O{!dO~OZ!gO]!hOyfOXWicWizWi~O]!hOXYiZYicYiyYizYi~O]!hOX[iZ[ic[iy[iz[i~OX!fOZ!gO]!hOyfOcoazoa~OiXfUjlvZ]t~",
+  goto: "%yyPPPPz!WPP!bP!bP!bP!b!x!bP#TP!b#WP#WPPP!WP!W#n$S$Y$`PPP$jP$m$yQ^OQ`QX!Utv!W!aaZOQ[stv!W!ayWOQRX[cdejkstv!W!X!a!e!f!g!hcgSanx}!Q!R!^!bR!PjyVOQRX[cdejkstv!W!X!a!e!f!g!hQQOY_Qtv!W!aQt^Sv`uR!WwQ!Y}R!c!YQs[R!TsQu^Qw`T!VuwR]O[[OQtv!W!aTr[s`SOQ[stv!W!aQaRQnXQxcQydQzeQ}jQ!QkQ!R!eQ!^!fQ!_!gQ!`!hR!b!X",
+  nodeNames: "⚠ Unit PercentSuffix CalcDoc StatementGroup Binding Identifier EqualSign AddExpression PlusBinaryOp MulExpression TimesBinaryOp ExpExpression PowBinaryOp ConvertExpression ConvertOp FunctionCall Opr ArgList Cpr Literal NumberWithUnit Number PercentLiteral String Date Comment NoBinding Heading CommentLine",
+  maxTerm: 43,
   nodeProps: [
     ["closedBy", 17,"Cpr"],
     ["openedBy", 19,"Opr"]
   ],
   propSources: [calculusLangHighlight],
-  skippedNodes: [0,3],
-  repeatNodeCount: 2,
-  tokenData: ",S~ReXY!dYZ!o]^!opq!drs!vst#euv#|xy$Ryz$Wz{#|{|$]|}$b}!O$]!P!Q$g!Q![%W!_!`+s!c!}'S#Q#R+x#R#S'S#T#o'S~~+}~!iQp~XY!dpq!dR!vOvQwP~!yTOr!vrs#Ys;'S!v;'S;=`#_<%lO!v~#_Oh~~#bP;=`<%l!v~#jSk~OY#eZ;'S#e;'S;=`#v<%lO#e~#yP;=`<%l#e~$ROZ~~$WOa~~$]Oc~~$bOX~~$gOu~~$lPZ~!P!Q$o~$tSR~OY$oZ;'S$o;'S;=`%Q<%lO$o~%TP;=`<%l$o~%_Vf~U~pq%t|}%t!O!P&n!Q![(O!c!}'S#R#S+_#T#o'S~%wP!Q![%z~&PTf~pq%t|}%t!O!P&`!Q![%z#R#S%t~&cP!Q![&f~&kPf~!Q![&f~&sTU~!O!P'S!Q!['h!c!}'S#R#S'S#T#o'S~'XTU~!O!P'S!Q!['S!c!}'S#R#S'S#T#o'S~'oTf~U~!O!P'S!Q!['h!c!}'S#R#S'S#T#o'S~(VWf~U~pq%t|}%t}!O(o!O!P&n!Q![)d!c!}'S#R#S+_#T#o'S~(rP!Q![(u~(xP!Q![({~)OP}!O)R~)UP!Q![)X~)[P!Q![)_~)dOi~~)kVf~U~pq%t|}%t!O!P&n!Q![*Q!c!}'S#R#S+_#T#o'S~*XWf~U~pq%t|}%t}!O(o!O!P&n!Q![*q!c!}'S#R#S+_#T#o'S~*xVf~U~pq%t|}%t!O!P&n!Q![*q!c!}'S#R#S+_#T#o'S~+dTU~!O!P'S!Q![*q!c!}'S#R#S'S#T#o'S~+xOV~~+}O]~Q,SOvQ",
+  skippedNodes: [0],
+  repeatNodeCount: 4,
+  tokenData: ",S~ReXY!dYZ!o]^!opq!drs!vst#euv#|xy$Ryz$Wz{#|{|$]|}$b}!O$]!P!Q$g!Q![%W!_!`+s!c!}'S#Q#R+x#R#S'S#T#o'S~~+}~!iQt~XY!dpq!dR!vO{QvP~!yTOr!vrs#Ys;'S!v;'S;=`#_<%lO!v~#_Oh~~#bP;=`<%l!v~#jSl~OY#eZ;'S#e;'S;=`#v<%lO#e~#yP;=`<%l#e~$ROZ~~$WOa~~$]Oc~~$bOX~~$gOz~~$lPZ~!P!Q$o~$tSj~OY$oZ;'S$o;'S;=`%Q<%lO$o~%TP;=`<%l$o~%_Vf~U~pq%t|}%t!O!P&n!Q![(O!c!}'S#R#S+_#T#o'S~%wP!Q![%z~&PTf~pq%t|}%t!O!P&`!Q![%z#R#S%t~&cP!Q![&f~&kPf~!Q![&f~&sTU~!O!P'S!Q!['h!c!}'S#R#S'S#T#o'S~'XTU~!O!P'S!Q!['S!c!}'S#R#S'S#T#o'S~'oTf~U~!O!P'S!Q!['h!c!}'S#R#S'S#T#o'S~(VWf~U~pq%t|}%t}!O(o!O!P&n!Q![)d!c!}'S#R#S+_#T#o'S~(rP!Q![(u~(xP!Q![({~)OP}!O)R~)UP!Q![)X~)[P!Q![)_~)dOi~~)kVf~U~pq%t|}%t!O!P&n!Q![*Q!c!}'S#R#S+_#T#o'S~*XWf~U~pq%t|}%t}!O(o!O!P&n!Q![*q!c!}'S#R#S+_#T#o'S~*xVf~U~pq%t|}%t!O!P&n!Q![*q!c!}'S#R#S+_#T#o'S~+dTU~!O!P'S!Q![*q!c!}'S#R#S'S#T#o'S~+xOV~~+}O]~Q,SO{Q",
   tokenizers: [numberWithUnitTokens, 0, 1],
-  topRules: {"CalcDoc":[0,4]},
+  topRules: {"CalcDoc":[0,3]},
   specialized: [{term: 6, get: (value) => spec_Identifier[value] || -1}],
-  tokenPrec: 441
+  tokenPrec: 557
 })

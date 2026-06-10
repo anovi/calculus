@@ -396,5 +396,63 @@ export const calculatorFixtures: CalculatorFixture[] = [
     doc: '2 + 2 // some',
     expected: [4],
   },
+  // Group aggregation
+  {
+    name: 'sum of preceding lines',
+    doc: '10\n20\nsum()',
+    expected: [10, 20, 30],
+  },
+  {
+    name: 'total alias with bindings',
+    doc: 'a = 5\nb = 15\ntotal()',
+    expected: [5, 15, 20],
+  },
+  {
+    name: 'sum respects group boundary',
+    doc: '10\n\n20\nsum()',
+    expected: [10, 20, 20],
+  },
+  {
+    name: 'sum in expression',
+    doc: '10\n2 + sum()',
+    expected: [10, 12],
+  },
+  {
+    name: 'avg and median',
+    doc: '10\n20\n30\navg()\nmedian()',
+    expected: [10, 20, 30, 20, 20],
+  },
+  {
+    name: 'sum on first line of group',
+    doc: 'sum()',
+    expected: [0],
+  },
+  {
+    name: 'avg on first line of group',
+    doc: 'avg()',
+    expected: [{ error: 'average() needs at least one preceding line' }],
+  },
+  {
+    name: 'median on first line of group',
+    doc: 'median()',
+    expected: [{ error: 'median() needs at least one preceding line' }],
+  },
+  {
+    name: 'sum rejects explicit arguments',
+    doc: 'sum(1)',
+    expected: [{ error: 'sum() takes no arguments.' }],
+  },
+  {
+    name: 'sum with compatible units',
+    doc: '10 USD\n20 USD\nsum()',
+    expected: [10, 20, 30],
+    expectedUnits: ['USD', 'USD', 'USD'],
+  },
+  {
+    name: 'sum with incompatible units',
+    doc: '10 USD\n20 km\nsum()',
+    expected: [10, 20, { error: 'Cannot combine km and USD.' }],
+    expectedUnits: ['USD', 'km', 'km'],
+  },
 ];
 

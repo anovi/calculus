@@ -2,8 +2,8 @@
 export const
   Unit = 1,
   PercentSuffix = 2,
-  Comment = 3,
-  CalcDoc = 4,
+  CalcDoc = 3,
+  StatementGroup = 4,
   Binding = 5,
   Identifier = 6,
   EqualSign = 7,
@@ -25,5 +25,7 @@ export const
   PercentLiteral = 23,
   String = 24,
   Date = 25,
-  NoBinding = 26,
-  Heading = 27
+  Comment = 26,
+  NoBinding = 27,
+  Heading = 28,
+  CommentLine = 29

@@ -8,6 +8,8 @@ export type BuiltinFunction = {
   arity: number;
   doc?: string;
   args?: readonly BuiltinFunctionArg[];
+  /** Zero-arg function that aggregates preceding lines in the current StatementGroup. */
+  aggregatesGroup?: boolean;
 };
 
 /*
@@ -229,7 +231,43 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinFunction[] = [
       { name: 'side b', doc: 'Second side of a right triangle' },
     ],
   },
+  {
+    name: 'sum',
+    arity: 0,
+    aggregatesGroup: true,
+    doc: 'Sum of preceding lines in this group',
+  },
+  {
+    name: 'total',
+    arity: 0,
+    aggregatesGroup: true,
+    doc: 'Sum of preceding lines in this group',
+  },
+  {
+    name: 'average',
+    arity: 0,
+    aggregatesGroup: true,
+    doc: 'Average of preceding lines in this group',
+  },
+  {
+    name: 'avg',
+    arity: 0,
+    aggregatesGroup: true,
+    doc: 'Average of preceding lines in this group',
+  },
+  {
+    name: 'median',
+    arity: 0,
+    aggregatesGroup: true,
+    doc: 'Median of preceding lines in this group',
+  },
 ];
+
+/** Canonical builtin name when `name` is an aggregation alias. */
+export const BUILTIN_FUNCTION_ALIASES: ReadonlyMap<string, string> = new Map([
+  ['total', 'sum'],
+  ['avg', 'average'],
+]);
 
 export const BUILTIN_FUNCTION_BY_NAME: ReadonlyMap<string, BuiltinFunction> =
   new Map(BUILTIN_FUNCTIONS.map((f) => [f.name, f]));

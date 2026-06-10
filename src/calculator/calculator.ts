@@ -11,8 +11,8 @@ import {
 } from '../units';
 import { isCurrency } from '../units';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
-import { BUILTIN_FUNCTION_BY_NAME } from './builtin-fn-registry';
-import { builtinHandlers } from './builtin-fn-handlers';
+import { BUILTIN_FUNCTION_ALIASES, BUILTIN_FUNCTION_BY_NAME } from './builtin-fn-registry';
+import { builtinHandlers, groupAggregationHandlers } from './builtin-fn-handlers';
 import { isExpressionResultError, type ExpressionResult, type ExpressionResultError } from './types';
 
 /** Represents line's calculation result; can be binded to a name */
@@ -86,6 +86,8 @@ type Ctx = {
     sliceDoc: (from: number, to: number) => string,
     convert(value: ExpressionResult, toUnit: string): ExpressionResult,
     performOperation(cursor: TreeCursor, operator: Operator, ...args: ExpressionResult[]): ExpressionResult,
+    normalizeOperands(cursor: TreeCursor, args: ExpressionResult[]): ExpressionResult[],
+    getGroupLineResults(): readonly ExpressionResult[],
 }
 
 // Props defaults to `any` so decision-tree processors declare narrow prop shapes.
@@ -164,6 +166,8 @@ const IdentifierEvalContext: TermValue[] = [
 */
 const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.CalcDoc]: SKIP,
+    [terms.StatementGroup]: SKIP,
+    [terms.CommentLine]: SKIP,
     [terms.Comment]: SKIP,
     [terms.Cpr]: SKIP,
     [terms.Opr]: SKIP,
@@ -236,19 +240,34 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.FunctionCall]: {
         props: [
             { key: 'id', expect: [terms.Identifier] },
-            { key: 'args', expect: [ terms.ArgList ] }
+            { key: 'args', expect: [ terms.ArgList ], optional: true }
         ],
-        process: (ctx, props: { id: string, args: ExpressionResult[] }): ExpressionResult|null => {
-            const argError = findFirstOperandError(...props.args);
+        process: (ctx, props: { id: string, args?: ExpressionResult[] }): ExpressionResult|null => {
+            const args = props.args ?? [];
+            const argError = findFirstOperandError(...args);
             if (argError) return argError;
             const def = BUILTIN_FUNCTION_BY_NAME.get(props.id);
             if (!def) return expressionError(`Unknown function "${props.id}".`, ctx.cursor);
-            if (props.args.length !== def.arity) {
+            const canonicalName = BUILTIN_FUNCTION_ALIASES.get(props.id) ?? props.id;
+            if (def.aggregatesGroup) {
+                if (args.length > 0) {
+                    return expressionError(`${props.id}() takes no arguments.`, ctx.cursor);
+                }
+                const handler = groupAggregationHandlers.get(canonicalName);
+                if (!handler) return null;
+                return handler([...ctx.getGroupLineResults()], {
+                    cursor: ctx.cursor,
+                    combineAdd: (...operands) => ctx.performOperation(ctx.cursor, '+', ...operands),
+                    normalizeArgs: (operands) => ctx.normalizeOperands(ctx.cursor, operands),
+                    expressionError: (message) => expressionError(message, ctx.cursor),
+                });
+            }
+            if (args.length !== def.arity) {
                 const n = def.arity;
                 const label = n === 1 ? '1 argument' : `${n} arguments`;
                 ctx.cursor.firstChild();
                 const ret = expressionError(
-                    `${props.id}() expects ${label}, got ${props.args.length}.`,
+                    `${props.id}() expects ${label}, got ${args.length}.`,
                     ctx.cursor,
                 );
                 ctx.cursor.parent();
@@ -256,7 +275,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             }
             const builtinHandler = builtinHandlers.get(props.id);
             if (!builtinHandler) return null;
-            return builtinHandler(props.args);
+            return builtinHandler(args);
         }
     },
     [terms.ArgList]: {
@@ -429,7 +448,8 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                     return expressionError(PERCENT_ERROR, ctx.cursor);
                 }
             }
-            if (ctx.stack.length <= 2 && !isExpressionResultError(params.value)) {
+            if (ctx.stack.length <= 3 && !isExpressionResultError(params.value)) {
+                // Is primitive: StatementGroup > Binding | NoBinding > expression
                 params.value.isPrimitive = true;
             }
             return params.value;
@@ -515,13 +535,18 @@ export class MathCalculator implements Ctx {
     private lineIndexes: number[];
     private currentLineIndex: number = 0;
     private currentLine: [number, number] = [-1, -1];
+    private groupLineResults: ExpressionResult[] = [];
+
+    getGroupLineResults(): readonly ExpressionResult[] {
+        return this.groupLineResults;
+    }
 
     assemble(cursor: TreeCursor): Range<CalcValue>[]|null {
         this.cursor = cursor;
         if (cursor.type.id !== terms.CalcDoc) {
             return null;
         }
-        return this.processLines(cursor);
+        return this.processTopLevelStatements(cursor);
 	}
 
     convert(value: ExpressionResult, toUnit: string): ExpressionResult {
@@ -554,6 +579,31 @@ export class MathCalculator implements Ctx {
         return expressionError(`Cannot convert "${unitA}" to "${unitB}".`, this.cursor, unitA);
     }
 
+    private getExpressionsBaseUnit(args: ExpressionResult[]): string | undefined {
+        let baseUnit: string | undefined;
+        for (let i = args.length - 1; i >= 0; i--) {
+            if (args[i].unit) {
+                baseUnit = args[i].unit;
+                break;
+            }
+        }
+        return baseUnit;
+    }
+
+    private normalizeArg(cursor: TreeCursor, arg: ExpressionResult, baseUnit?: string ): ExpressionResult {
+        if (baseUnit && arg.unit && arg.unit !== baseUnit) {
+            if (!areUnitsCompatible(baseUnit, arg.unit)) {
+                return expressionError(
+                    `Cannot combine ${baseUnit} and ${arg.unit}.`,
+                    cursor,
+                    baseUnit,
+                );
+            }
+            return this.convert(arg, baseUnit);
+        }
+        return arg;
+    }
+
     performOperation(cursor: TreeCursor, operator: Operator, ...args: ExpressionResult[]): ExpressionResult {
         const operandError = findFirstOperandError(...args);
         if (operandError) return operandError;
@@ -572,33 +622,13 @@ export class MathCalculator implements Ctx {
             }
         }
 
-        let baseUnit: string | undefined;
-        for (let i = args.length - 1; i >= 0; i--) {
-            if (args[i].unit) {
-                baseUnit = args[i].unit;
-                break;
-            }
-        }
+        const baseUnit = this.getExpressionsBaseUnit(args);
 
-        const normalizeArg = (arg: ExpressionResult): ExpressionResult => {
-            if (baseUnit && arg.unit && arg.unit !== baseUnit) {
-                if (!areUnitsCompatible(baseUnit, arg.unit)) {
-                    return expressionError(
-                        `Cannot combine ${baseUnit} and ${arg.unit}.`,
-                        cursor,
-                        baseUnit,
-                    );
-                }
-                return this.convert(arg, baseUnit);
-            }
-            return arg;
-        };
-
-        const first = normalizeArg(args[0]);
+        const first = this.normalizeArg(cursor, args[0], baseUnit)
         if (isExpressionResultError(first)) return first;
         let result = first.n;
         for (let index = 1; index < args.length; index++) {
-            const exp = normalizeArg(args[index]);
+            const exp = this.normalizeArg(cursor, args[index], baseUnit);
             if (isExpressionResultError(exp)) return exp;
             switch (operator) {
                 case '-':
@@ -626,6 +656,20 @@ export class MathCalculator implements Ctx {
         return { n: result, unit: baseUnit };
     }
 
+    normalizeOperands(cursor: TreeCursor, args: ExpressionResult[]): ExpressionResult[] {
+        const operandError = findFirstOperandError(...args);
+        if (operandError) return [operandError];
+
+        const baseUnit = this.getExpressionsBaseUnit(args);
+        return args.map((arg) => this.normalizeArg(cursor, arg, baseUnit));
+    }
+
+    private pushGroupLineResult(result: ExpressionResult) {
+        if (!isExpressionResultError(result)) {
+            this.groupLineResults.push(result);
+        }
+    }
+
     private setLine(cursor: TreeCursor) {
         for (let i = this.currentLineIndex; i < this.lineIndexes.length; i = i + 2) {
             const from = this.lineIndexes[i];
@@ -639,39 +683,56 @@ export class MathCalculator implements Ctx {
         }
     }
 
-	private processLines(cursor: TreeCursor): Range<CalcValue>[] {
+	private processTopLevelStatements(cursor: TreeCursor): Range<CalcValue>[] {
 		const pipeline: Range<CalcValue>[] = [];
-        let skipLineFrom: number = -1;
 		if (this.moveToFirstChild(cursor)) {
-			do {
-                this.setLine(cursor);
-                if (this.currentLine[0] === skipLineFrom) continue;
-                skipLineFrom = -1;
-                const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
-                const range = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
-                if (range === null) {
-                    skipLineFrom = this.currentLine[0];
-                    continue;
-                }
-                if ('value' in range && range.value instanceof CalcValue) {
-                    pipeline.push(range);
-                    if (range.value.error) {
-                        skipLineFrom = this.currentLine[0];
-                        continue;
-                    }
-                }
-                else if (typeof range === 'object' && 'n' in range) {
-                    const expr = range as ExpressionResult;
-                    pipeline.push(calcValueFromExpr(expr).range(cursor.from, cursor.to));
-                    if (expr.error) {
-                        skipLineFrom = this.currentLine[0];
-                        continue;
-                    }
-                }
-			} while (this.moveToNextSibling(cursor));
+			this.processLineNodes(cursor, pipeline);
 			this.moveToParent(cursor);
 		}
 		return pipeline;
+	}
+
+	private processLineNodes(cursor: TreeCursor, pipeline: Range<CalcValue>[]) {
+		let skipLineFrom: number = -1;
+		do {
+			if (cursor.type.id === terms.StatementGroup) {
+				this.groupLineResults = [];
+				if (this.moveToFirstChild(cursor)) {
+					this.processLineNodes(cursor, pipeline);
+					this.moveToParent(cursor);
+				}
+				continue;
+			}
+			this.setLine(cursor);
+			if (this.currentLine[0] === skipLineFrom) continue;
+			skipLineFrom = -1;
+			const node: CalcDecisionPoint = decisionTree[cursor.type.id as TermValue];
+			const range = this.handle(cursor, node) as Range<CalcValue> | ExpressionResult | null;
+			if (range === null) {
+				skipLineFrom = this.currentLine[0];
+				continue;
+			}
+			if ('value' in range && range.value instanceof CalcValue) {
+				pipeline.push(range);
+				if (range.value.error) {
+					skipLineFrom = this.currentLine[0];
+					continue;
+				}
+				this.pushGroupLineResult({
+					n: range.value.result,
+					unit: range.value.unit,
+				});
+			}
+			else if (typeof range === 'object' && 'n' in range) {
+				const expr = range as ExpressionResult;
+				pipeline.push(calcValueFromExpr(expr).range(cursor.from, cursor.to));
+				if (expr.error) {
+					skipLineFrom = this.currentLine[0];
+					continue;
+				}
+				this.pushGroupLineResult(expr);
+			}
+		} while (this.moveToNextSibling(cursor));
 	}
 
     private handle(cursor: TreeCursor, point: CalcDecisionPoint): unknown | null {

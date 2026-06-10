@@ -1,9 +1,22 @@
 import Decimal from 'decimal.js';
+import type { TreeCursor } from '@lezer/common';
 
 import { BUILTIN_FUNCTIONS } from './builtin-fn-registry';
-import type { ExpressionResult } from './types';
+import type { ExpressionResult, ExpressionResultError } from './types';
 
 export type BuiltinHandler = (args: ExpressionResult[]) => ExpressionResult | null;
+
+export type GroupAggregationDeps = {
+  cursor: TreeCursor;
+  combineAdd: (...args: ExpressionResult[]) => ExpressionResult;
+  normalizeArgs: (args: ExpressionResult[]) => ExpressionResult[];
+  expressionError: (message: string) => ExpressionResultError;
+};
+
+export type GroupAggregationHandler = (
+  args: ExpressionResult[],
+  deps: GroupAggregationDeps,
+) => ExpressionResult;
 
 function unary(method: (n: Decimal) => Decimal): BuiltinHandler {
   return (args) => {
@@ -40,6 +53,43 @@ function nthRoot(x: Decimal, n: Decimal): Decimal {
   return x.pow(inv);
 }
 
+function groupSum(args: ExpressionResult[], deps: GroupAggregationDeps): ExpressionResult {
+  if (args.length === 0) return { n: new Decimal(0) };
+  return deps.combineAdd(...args);
+}
+
+function groupAverage(args: ExpressionResult[], deps: GroupAggregationDeps): ExpressionResult {
+  if (args.length === 0) {
+    return deps.expressionError('average() needs at least one preceding line');
+  }
+  const summed = deps.combineAdd(...args);
+  if ('error' in summed && summed.error != null) return summed;
+  return { n: summed.n.div(args.length), unit: summed.unit };
+}
+
+function groupMedian(args: ExpressionResult[], deps: GroupAggregationDeps): ExpressionResult {
+  if (args.length === 0) {
+    return deps.expressionError('median() needs at least one preceding line');
+  }
+  const normalized = deps.normalizeArgs(args);
+  const operandError = normalized.find((a) => 'error' in a && a.error != null);
+  if (operandError) return operandError;
+  const unit = normalized.find((a) => a.unit)?.unit;
+  const sorted = normalized.map((a) => a.n).sort((a, b) => a.cmp(b));
+  const mid = Math.floor(sorted.length / 2);
+  const median =
+    sorted.length % 2 === 1
+      ? sorted[mid]
+      : sorted[mid - 1].plus(sorted[mid]).div(2);
+  return { n: median, unit };
+}
+
+export const groupAggregationHandlers = new Map<string, GroupAggregationHandler>([
+  ['sum', groupSum],
+  ['average', groupAverage],
+  ['median', groupMedian],
+]);
+
 export const builtinHandlers = new Map<string, BuiltinHandler>([
   ['abs', unary((n) => n.abs())],
   ['ceil', unary((n) => n.ceil())],
@@ -72,10 +122,21 @@ export const builtinHandlers = new Map<string, BuiltinHandler>([
   ['atan2', binary((y, x) => Decimal.atan2(y, x))],
   ['hypot', binary((x, y) => Decimal.hypot(x, y))],
   ['clamp', ternary((value, min, max) => value.clamp(min, max))],
+  ['sum', () => null],
+  ['total', () => null],
+  ['average', () => null],
+  ['avg', () => null],
+  ['median', () => null],
 ]);
 
 for (const def of BUILTIN_FUNCTIONS) {
   if (!builtinHandlers.has(def.name)) {
     throw new Error(`Missing builtin handler for ${def.name}`);
+  }
+  if (def.aggregatesGroup) {
+    const canonical = def.name === 'total' ? 'sum' : def.name === 'avg' ? 'average' : def.name;
+    if (!groupAggregationHandlers.has(canonical)) {
+      throw new Error(`Missing group aggregation handler for ${def.name}`);
+    }
   }
 }

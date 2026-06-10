@@ -101,7 +101,7 @@ export function functionCallContextAt(state: EditorState, pos: number): Function
           if (!def) break;
           const argList = node.getChild(terms.ArgList);
           const expressions = argList ? collectArgExpressions(argList) : [];
-          if (expressions.length >= def.arity) break;
+          if (def.arity > 0 && expressions.length >= def.arity) break;
           const doc = state.doc.toString();
           const argIndex = argIndexAt(expressions, pos, doc);
 
