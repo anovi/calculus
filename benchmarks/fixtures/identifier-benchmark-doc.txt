@@ -1,0 +1,74 @@
+# Identifier tokenizer benchmark document
+// Bindings, references, and expressions — no units/currencies (identifier-focused).
+
+pi_approx = 3.141592653589793
+golden_ratio = (1 + sqrt(5)) / 2
+euler_approx = 2.718281828459045
+
+monthly_income = 4200
+rent = 1450
+utilities = 185
+internet = 39.99
+groceries = 520
+transport = 89
+subscriptions = 47.50
+
+fixed_costs = rent + utilities + internet + groceries + transport + subscriptions
+discretionary = monthly_income - fixed_costs
+savings_rate = 0.15
+monthly_savings = monthly_income * savings_rate
+left_over = discretionary - monthly_savings
+
+annual_income = monthly_income * 12
+annual_fixed = fixed_costs * 12
+annual_savings = monthly_savings * 12
+annual_left = left_over * 12
+
+tax_rate = 0.22
+after_tax_monthly = monthly_income * (1 - tax_rate)
+after_tax_annual = after_tax_monthly * 12
+
+item_a = 10
+item_b = 20
+item_c = 30
+item_d = 15
+item_e = 25
+bundle_total = item_a + item_b + item_c + item_d + item_e
+weighted_avg = (item_a + item_b * 2 + item_c * 3 + item_d * 4 + item_e * 5) / 15
+
+circle_radius = 5
+circle_area = pi_approx * circle_radius ^ 2
+circle_circumference = 2 * pi_approx * circle_radius
+
+loan_principal = 250_000
+loan_years = 30
+loan_months = loan_years * 12
+annual_rate = 0.065
+monthly_rate = annual_rate / 12
+
+sqrt_area = sqrt(144)
+max_expense = max(rent, utilities, internet, groceries, transport, subscriptions)
+min_expense = min(rent, utilities, internet, groceries, transport, subscriptions)
+expense_spread = max_expense - min_expense
+
+effective_rent_share = rent / monthly_income
+cost_per_day = fixed_costs / 30
+projected_year_end = annual_income - annual_savings - annual_fixed
+
+nested_expr = ((item_a + item_b) * (item_c + item_d)) / (item_e + 1)
+scaled_income = (monthly_income - rent) * (1 - tax_rate) + monthly_savings
+compound_check = (1 + monthly_rate) ^ loan_months
+
+// Function calls and multi-arg expressions
+hypot_check = sqrt(circle_radius ^ 2 + item_a ^ 2)
+range_sum = item_a + item_b + item_c + item_d + item_e + monthly_savings
+ratio_a = item_a / bundle_total
+ratio_b = item_b / bundle_total
+ratio_c = item_c / bundle_total
+
+counter_1 = 1
+counter_2 = counter_1 + 1
+counter_3 = counter_2 + 1
+counter_4 = counter_3 + 1
+counter_5 = counter_4 + 1
+running_total = counter_1 + counter_2 + counter_3 + counter_4 + counter_5

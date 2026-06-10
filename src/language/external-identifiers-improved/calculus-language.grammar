@@ -1,0 +1,122 @@
+// NAMING RULES
+// - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
+
+// Unit suffixes are matched in TypeScript (see calculus-number-with-unit-tokens.ts) so ISO lists
+// stay in `src/units/currencies-list.ts` instead of being pasted into this grammar.
+@external tokens numberWithUnitTokens from "./calculus-number-with-unit-tokens.ts" {
+	Unit
+	PercentSuffix
+}
+
+@top CalcDoc { pipeline }
+
+pipeline {
+	lineEnd* (statementGroup (blankLine statementGroup)*) lineEnd*
+}
+
+StatementGroup { statement (!_blankLine statement)* }
+
+statementGroup { StatementGroup }
+
+blankLine { !_blankLine lineEnd+ }
+
+statement {
+	Binding
+	| NoBinding
+	| Heading
+	| CommentLine
+}
+
+lineComment { Comment }
+
+CommentLine { Comment end }
+
+Binding { Identifier EqualSign expression lineComment? end }
+NoBinding { expression lineComment? end }
+
+expression {
+  AddExpression
+  | MulExpression
+  | ExpExpression
+  | ConvertExpression
+  | FunctionCall
+  | Literal
+  | Identifier
+  | !_parenthesized Opr expression Cpr
+}
+
+AddExpression { expression? !_add PlusBinaryOp expression }
+MulExpression{ expression !_mul TimesBinaryOp expression }
+ExpExpression { expression !_pow PowBinaryOp expression }
+ConvertExpression { expression !_convert ConvertOp Unit }
+
+FunctionCall { Identifier Opr ArgList? Cpr }
+ArgList { expression ("," expression)* }
+
+Literal { NumberWithUnit | PercentLiteral | Number | String | Date }
+
+NumberWithUnit { Number Unit }
+PercentLiteral { Number PercentSuffix }
+
+ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
+
+@precedence {
+	// Results deeper in AST
+	lineEnd,
+	Identifier,
+	FunctionCall,
+	_parenthesized @left, // need to be deepest?
+	_pow @right,
+	_mul @left,
+	_convert @left,
+	_add @left,
+	_blankLine,
+	space
+	// Results upper in AST
+}
+
+@tokens {
+
+	// Arithmetic
+	TimesBinaryOp { "/" | "*" | "%" }
+	PowBinaryOp { "^" }
+	PlusBinaryOp { "+" | "-" }
+	EqualSign { "=" }
+
+	// Literals
+	Float { @digit+ ((" " | "," | "_") @digit+)* "." @digit+ }
+	Integer { @digit+ ((" " | "," | "_") @digit+)* }
+	Number { Integer | Float }
+	String { "\""![\"]*"\"" }
+	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
+
+	@precedence { Date, Number }
+
+	@precedence { PlusBinaryOp, Number }
+
+	Opr[closedBy=Cpr] { "(" }
+	Cpr[openedBy=Opr] { ")" }
+
+	Comment { "//" ![\n]* }
+
+	Heading { "#" ![\n]* }
+
+	@precedence { lineEnd, space }
+
+	@precedence { Comment, Heading, TimesBinaryOp, PowBinaryOp }
+
+	// Whitespace
+	space { $[ \t]+ }
+	lineEnd { "\n" | "\r" }
+
+	end { lineEnd | @eof }
+
+}
+
+@skip { space }
+
+@external tokens identifierTokens from "./calculus-identifier-tokens.ts" {
+	Identifier
+}
+
+@external propSource calculusLangHighlight from "./calculus-lang-highlighting"
