@@ -85,7 +85,7 @@ export function referenceRenamesForBinding(
 
 			if (node.type.id === terms.Binding && node.from >= scanFrom) {
 				const idNode = node.node.firstChild
-				if (idNode?.type.id === terms.Identifier) {
+				if (idNode != null && idNode.type.id === terms.Identifier) {
 					const bindingName = doc.sliceString(idNode.from, idNode.to)
 					if (bindingName === oldName) {
 						stopped = true

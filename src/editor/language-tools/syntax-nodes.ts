@@ -15,7 +15,7 @@ const identifierUseParents = new Set<TermValue>([
 export function isVariableReference(node: SyntaxNode): boolean {
 	if (node.type.id !== terms.Identifier) return false
 	const parent = node.parent
-	if (parent?.type.id === terms.Binding) {
+	if (parent != null && parent.type.id === terms.Binding) {
 		const nameId = parent.firstChild
 		return nameId != null && node.from !== nameId.from
 	}

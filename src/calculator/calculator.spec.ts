@@ -5,6 +5,7 @@ import { Range } from "@codemirror/state";
 import Decimal from 'decimal.js';
 
 import grammarSource from '../language/baseline/calculus-language.grammar?raw';
+import { createIdentifierTokensTokenizer } from '../language/baseline/calculus-identifier-tokens';
 import { createNumberWithUnitTokensTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
 import { CalcValue, MathCalculator } from './calculator';
 import {
@@ -19,13 +20,18 @@ const parser = buildParser(grammarSource, {
 	moduleStyle: 'es',
 	fileName: 'calculus.build',
 	externalTokenizer(name, terms) {
-		if (name !== 'numberWithUnitTokens') {
-			throw new Error(`Unexpected external tokenizer: ${name}`);
+		if (name === 'numberWithUnitTokens') {
+			return createNumberWithUnitTokensTokenizer({
+				Unit: terms.Unit,
+				PercentSuffix: terms.PercentSuffix,
+			});
 		}
-		return createNumberWithUnitTokensTokenizer({
-			Unit: terms.Unit,
-			PercentSuffix: terms.PercentSuffix,
-		});
+		if (name === 'identifierTokens') {
+			return createIdentifierTokensTokenizer({
+				Identifier: terms.Identifier,
+			});
+		}
+		throw new Error(`Unexpected external tokenizer: ${name}`);
 	},
 })
 

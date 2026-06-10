@@ -1,4 +1,4 @@
-import * as terms from './baseline/calculus-language.terms';
+import * as terms from './baseline/calculus-language-parser.terms';
 export * from './baseline/calculus-language-parser';
 export { terms };
 
