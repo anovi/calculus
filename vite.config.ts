@@ -49,11 +49,11 @@ export default defineConfig({
       name: 'versioned-icon-assets',
       transformIndexHtml(html) {
         return html
-          .replaceAll('/favicon.ico', `/${faviconIco}`)
-          .replaceAll('/favicon.svg', `/${faviconSvg}`)
+          .replaceAll('./favicon.ico', `./${faviconIco}`)
+          .replaceAll('./favicon.svg', `./${faviconSvg}`)
           .replaceAll(
-            '/apple-touch-icon-180x180.png',
-            `/${appleTouchIcon}`,
+            './apple-touch-icon-180x180.png',
+            `./${appleTouchIcon}`,
           )
       },
     },
