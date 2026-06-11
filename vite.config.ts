@@ -5,8 +5,17 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import { versionedIconAsset } from './icon-assets-version'
 import { parseCurrenciesCsv } from './src/units/parse-currencies-csv'
 import { DARK_MODE_BG } from './src/theme/colors'
+
+const faviconIco = versionedIconAsset('favicon.ico')
+const faviconSvg = versionedIconAsset('favicon.svg')
+const appleTouchIcon = versionedIconAsset('apple-touch-icon-180x180.png')
+const pwa64 = versionedIconAsset('pwa-64x64.png')
+const pwa192 = versionedIconAsset('pwa-192x192.png')
+const pwa512 = versionedIconAsset('pwa-512x512.png')
+const maskableIcon = versionedIconAsset('maskable-icon-512x512.png')
 
 const projectRoot = dirname(fileURLToPath(import.meta.url))
 const currenciesCsv = fs.readFileSync(
@@ -36,17 +45,28 @@ export default defineConfig({
     }
   },
   plugins: [
+    {
+      name: 'versioned-icon-assets',
+      transformIndexHtml(html) {
+        return html
+          .replaceAll('/favicon.ico', `/${faviconIco}`)
+          .replaceAll('/favicon.svg', `/${faviconSvg}`)
+          .replaceAll(
+            '/apple-touch-icon-180x180.png',
+            `/${appleTouchIcon}`,
+          )
+      },
+    },
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
-        'favicon.ico',
-        'favicon.svg',
-        'icons.svg',
-        'pwa-64x64.png',
-        'pwa-192x192.png',
-        'pwa-512x512.png',
-        'maskable-icon-512x512.png',
-        'apple-touch-icon-180x180.png',
+        faviconIco,
+        faviconSvg,
+        pwa64,
+        pwa192,
+        pwa512,
+        maskableIcon,
+        appleTouchIcon,
       ],
       manifest: {
         name: 'Calculus',
@@ -60,23 +80,23 @@ export default defineConfig({
         scope: './',
         icons: [
           {
-            src: 'pwa-64x64.png',
+            src: pwa64,
             sizes: '64x64',
             type: 'image/png',
           },
           {
-            src: 'pwa-192x192.png',
+            src: pwa192,
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: pwa512,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: 'maskable-icon-512x512.png',
+            src: maskableIcon,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
