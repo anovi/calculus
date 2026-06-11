@@ -251,6 +251,11 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [-2],
   },
   {
+    name: 'unary plus',
+    doc: '+2',
+    expected: [2],
+  },
+  {
     name: 'negative in division',
     doc: '-40 / 2',
     expected: [-20],

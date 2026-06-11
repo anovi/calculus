@@ -390,7 +390,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             let operator: Operator = params.operator || '+';
             let convertToUnit: string|undefined = undefined;
 
-            if (params.operatorBefore) {
+            if (params.operatorBefore && params.operatorBefore === '-') {
                 params.operand1 = { ...params.operand1, n: params.operand1.n.negated() }
             }
 
