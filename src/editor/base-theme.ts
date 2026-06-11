@@ -18,11 +18,12 @@ const autocompleteTheme = EditorView.baseTheme({
         position: "relative",
         paddingTop: "2px!important",
         paddingBottom: "2px!important",
+        paddingLeft: "8px!important",
     },
     "& .cm-tooltip-autocomplete > ul > li[aria-selected]": {
         background: "transparent!important",
-        color: "var(--autocomplete-selected-fg)!important",
         position: "relative",
+        color: "var(--text-primary)!important",
     },
     "& .cm-tooltip-autocomplete > ul > li[aria-selected]::after": {
         content: "''",
@@ -45,22 +46,15 @@ const autocompleteTheme = EditorView.baseTheme({
         color: "var(--autocomplete-matched-fg)",
         textDecorationColor: "var(--autocomplete-matched-fg)",
     },
-    "& li[aria-selected] .cm-completionMatchedText": {
-        color: "var(--autocomplete-selected-matched-fg)",
-        textDecorationColor: "var(--autocomplete-selected-matched-fg)",
-    },
     "& .cm-completionDetail": {
         color: "var(--text-secondary)",
     },
-    "& [aria-selected] > .cm-completionDetail": {
-        color: "var(--autocomplete-selected-detail-fg)",
-    },
-    "& .cm-completionIcon": {
+    "& .cm-tooltip-autocomplete .cm-completionIcon": {
         color: "var(--icon-color)",
-        opacity: 0.7,
+        opacity: 1,
     },
-    "& li[aria-selected] .cm-completionIcon": {
-        color: "var(--autocomplete-selected-detail-fg)",
+    "& li:has(.cm-completionIcon-function) .cm-completionIcon": {
+        color: "var(--editor-function)",
         opacity: 1,
     },
     "& .cm-completionListIncompleteTop:before, & .cm-completionListIncompleteBottom:after": {

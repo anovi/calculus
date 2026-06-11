@@ -1047,6 +1047,9 @@ body {
   --border-level-2: rgb(255 255 255 / 12%);
   --border-level-3: rgb(255 255 255 / 18%);
 
+  /* Overlays (space-separated channels for rgb(var(--transparent-base) / α)) */
+  --transparent-base: 255 255 255;
+
   /* Surfaces */
   --surface-level-1: #262626;
   --surface-level-2: #313030;
@@ -1096,12 +1099,9 @@ body {
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --autocomplete-bg: color-mix(in oklch, var(--background) 97%, white);
-  --autocomplete-selected-bg: var(--accent);
-  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-bg: var(--surface-level-1);
+  --autocomplete-selected-bg: rgb(var(--transparent-base) / 8%);
   --autocomplete-matched-fg: var(--accent-text);
-  --autocomplete-selected-matched-fg: var(--on-accent-primary);
-  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
   --tooltip-bg: color-mix(in oklch, var(--accent) 10%, var(--surface-level-1));
   --tooltip-fg: var(--text-primary);
@@ -1159,6 +1159,8 @@ body {
   --border-level-2: rgb(0 0 0 / 12%);
   --border-level-3: rgb(0 0 0 / 18%);
 
+  --transparent-base: 32 32 0;
+
   --surface-level-1: #f3f3f1;
   --surface-level-2: #efefeb;
   --surface-level-3: #e6e6e0;
@@ -1206,12 +1208,9 @@ body {
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --autocomplete-bg: var(--background);
-  --autocomplete-selected-bg: var(--accent);
-  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-bg: var(--surface-level-1);
+  --autocomplete-selected-bg: rgb(var(--transparent-base) / 8%);
   --autocomplete-matched-fg: var(--accent-text);
-  --autocomplete-selected-matched-fg: var(--on-accent-primary);
-  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
   --tooltip-bg: var(--surface-level-2);
   --tooltip-fg: var(--text-primary);

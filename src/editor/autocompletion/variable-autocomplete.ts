@@ -62,7 +62,7 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
         else
             options.push({
                 label: fnDef.name,
-                detail: fnDef.doc,
+                // detail: fnDef.doc,
                 info: fnDef.doc,
                 type: 'function',
                 apply: (view, _completion, from, to) => {
