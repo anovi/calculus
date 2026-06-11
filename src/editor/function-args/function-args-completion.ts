@@ -4,6 +4,15 @@ import type { EditorView } from '@codemirror/view';
 
 import { planFunctionArgAdvance } from './function-args-advance';
 
+/** Caret position after autocompleting `name()` at `from`. */
+export function selectionAfterFunctionInsert(
+  from: number,
+  insertLength: number,
+  arity: number,
+): number {
+  return arity === 0 ? from + insertLength : from + insertLength - 1;
+}
+
 /** Completion apply that advances to the next unfilled function argument when applicable. */
 export function completionApplyWithArgAdvance(
   insert: string,

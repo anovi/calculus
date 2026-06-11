@@ -11,7 +11,10 @@ import { calcRangesField } from '../values-field';
 import { BUILTIN_FUNCTIONS } from '../../calculator';
 import { isBindingIdentifier } from '../language-tools';
 import { functionCallContextAt } from '../function-args/function-args-context';
-import { completionApplyWithArgAdvance } from '../function-args/function-args-completion';
+import {
+  completionApplyWithArgAdvance,
+  selectionAfterFunctionInsert,
+} from '../function-args/function-args-completion';
   
 
 function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {
@@ -64,12 +67,13 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
                 type: 'function',
                 apply: (view, _completion, from, to) => {
                     const insert = `${fnDef.name}()`;
-                    const length = to - from;
                     view.dispatch({
                         changes: {
                             insert, from, to,
                         },
-                        selection: EditorSelection.cursor(to + insert.length - length - 1),
+                        selection: EditorSelection.cursor(
+                            selectionAfterFunctionInsert(from, insert.length, fnDef.arity),
+                        ),
                     })
                 },
             })
