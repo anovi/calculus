@@ -7,3 +7,4 @@ export * from './formatting';
 export * from './basic-setup';
 export * from './base-theme';
 export * from './language-tools';
+export * from './function-inserter/insert-builtin-function'

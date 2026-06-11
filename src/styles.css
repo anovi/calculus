@@ -587,6 +587,156 @@ body {
   border-top: 1px solid var(--tooltip-section-border-color);
 }
 
+/* ----------- Functions menu ---------- */
+
+#editor .cm-document-controls__functions-button {
+  font-family: var(--editor-font);
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.functions-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-layer-backdrop);
+  background: color-mix(in srgb, var(--background) 55%, transparent);
+  backdrop-filter: blur(4px);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.functions-menu-backdrop[hidden] {
+  display: none;
+}
+
+.functions-menu {
+  position: fixed;
+  z-index: var(--z-layer-floating);
+  font-family: var(--main-font);
+  background: var(--tooltip-bg);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  box-shadow: var(--tooltip-shadow);
+}
+
+.functions-menu[hidden] {
+  display: none;
+}
+
+.functions-menu--desktop {
+  width: min(320px, calc(100vw - 16px));
+  max-height: 80vh;
+  padding: 4px;
+}
+
+.functions-menu--mobile {
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 12px 12px 0 0;
+  max-height: none;
+  padding: 0;
+}
+
+.functions-menu__scroll {
+  overflow-y: auto;
+  max-height: inherit;
+  padding: 8px 4px 12px;
+}
+
+.functions-menu--mobile .functions-menu__scroll {
+  max-height: none;
+  height: 100%;
+  padding: 12px 12px 24px;
+}
+
+.functions-menu__section:not(:first-child) {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--tooltip-section-border-color);
+}
+
+.functions-menu__heading {
+  margin: 0 8px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.functions-menu__intro {
+  margin: 0 8px 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.functions-menu__example {
+  margin: 0 8px 10px;
+  padding: 8px 10px;
+  font-family: var(--editor-font);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  background: var(--surface-level-1);
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.functions-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.functions-menu__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.functions-menu__item:is(:hover, :focus-visible, :active) {
+  background: var(--accent);
+  color: var(--on-accent-primary);
+  outline: none;
+}
+
+.functions-menu__name {
+  font-family: var(--editor-font);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.functions-menu__doc {
+  display: none;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.functions-menu__item:is(:hover, :focus-visible, :active) .functions-menu__doc {
+  display: block;
+  color: color-mix(in oklch, var(--on-accent-primary) 82%, transparent);
+}
+
 /* ----------- Autocompletion ---------- */
 
 /* it's all in base theme */

@@ -6,7 +6,7 @@ export const OPERATION_ICON: Record<Operation, IconName> = {
   minus: 'minus',
   multiplication: 'times',
   division: 'div',
-  exponent: 'root',
+  exponent: 'exponent',
   euqal: 'equl',
   parentheses: 'parenthesis',
 }
