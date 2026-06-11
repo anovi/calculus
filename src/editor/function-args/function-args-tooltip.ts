@@ -13,7 +13,6 @@ function tooltipsAt(state: EditorState): readonly Tooltip[] {
     tooltips.push({
       pos: ctx.anchorPos,
       above: true,
-      strictSide: true,
       arrow: true,
       create: () => ({ dom: buildFunctionArgsTooltipDom(ctx) }),
     });
