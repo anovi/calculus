@@ -4,6 +4,7 @@ import { bindFocusPreservingButton } from '../components/focus-preserving-button
 import { isMobileDevice } from '../lib/mobile-device';
 import type { BuiltinFunction } from '../calculator';
 import { FUNCTION_MENU_SECTIONS } from './function-menu-sections';
+import { SetFunctionsMenuOpen } from './functions-menu-state';
 import { insertBuiltinFunction } from '../editor';
 
 export type FunctionsMenu = {
@@ -13,6 +14,21 @@ export type FunctionsMenu = {
   isOpen: () => boolean;
   destroy: () => void;
 };
+
+export type MountFunctionsMenuOptions = {
+  /** Horizontal scroll row containing the trigger (mobile toolbar). */
+  scrollContainer?: HTMLElement;
+  /** Dismiss the editor keyboard when opening (mobile toolbar). */
+  blurEditorOnOpen?: boolean;
+};
+
+function blurEditor(view: EditorView): void {
+  view.contentDOM.blur();
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && view.dom.contains(active)) {
+    active.blur();
+  }
+}
 
 function createFunctionItem(
   fnDef: BuiltinFunction,
@@ -57,13 +73,6 @@ function renderMenuContent(
       sectionEl.append(intro);
     }
 
-    if (section.id === 'aggregation') {
-      // const example = document.createElement('pre');
-      // example.className = 'functions-menu__example';
-      // example.textContent = '10\n20\nsum()  →  30';
-      // sectionEl.append(example);
-    }
-
     const list = document.createElement('div');
     list.className = 'functions-menu__list';
     for (const fnDef of section.functions) {
@@ -85,11 +94,20 @@ function positionDropdown(
   menu.style.left = 'auto';
 }
 
+function positionMobileMenu(menu: HTMLElement): void {
+  const topPanel = document.querySelector('#editor .cm-panels-top');
+  menu.style.top = topPanel
+    ? `${topPanel.getBoundingClientRect().bottom}px`
+    : '';
+}
+
 export function mountFunctionsMenu(
   trigger: HTMLButtonElement,
   view: EditorView,
+  options: MountFunctionsMenuOptions = {},
 ): FunctionsMenu {
   const mobile = isMobileDevice();
+  const blurEditorOnOpen = options.blurEditorOnOpen ?? mobile;
   const margin = 6;
   let isOpen = false;
 
@@ -112,6 +130,10 @@ export function mountFunctionsMenu(
   scroll.className = 'functions-menu__scroll';
   menu.append(scroll);
 
+  const setMenuOpenState = (open: boolean) => {
+    view.dispatch({ effects: SetFunctionsMenuOpen.of(open) });
+  };
+
   const close = () => {
     if (!isOpen) return;
     menu.hidden = true;
@@ -119,6 +141,7 @@ export function mountFunctionsMenu(
     backdrop.setAttribute('aria-hidden', 'true');
     trigger.setAttribute('aria-expanded', 'false');
     isOpen = false;
+    setMenuOpenState(false);
     document.removeEventListener('pointerdown', onPointerDown, true);
     document.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('resize', onLayoutChange);
@@ -132,13 +155,16 @@ export function mountFunctionsMenu(
 
   const open = () => {
     if (isOpen) return;
+    setMenuOpenState(true);
     renderMenuContent(scroll, onSelect);
-    if (!mobile) positionDropdown(menu, trigger, margin);
+    if (mobile) positionMobileMenu(menu);
+    else positionDropdown(menu, trigger, margin);
     menu.hidden = false;
     backdrop.hidden = false;
     backdrop.setAttribute('aria-hidden', 'false');
     trigger.setAttribute('aria-expanded', 'true');
     isOpen = true;
+    if (blurEditorOnOpen) blurEditor(view);
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', onLayoutChange);
@@ -161,7 +187,9 @@ export function mountFunctionsMenu(
   };
 
   const onLayoutChange = () => {
-    if (isOpen && !mobile) positionDropdown(menu, trigger, margin);
+    if (!isOpen) return;
+    if (mobile) positionMobileMenu(menu);
+    else positionDropdown(menu, trigger, margin);
   };
 
   backdrop.addEventListener('click', close);
