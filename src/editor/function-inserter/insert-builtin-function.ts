@@ -5,7 +5,6 @@ import type { BuiltinFunction } from '../../calculator';
 import { functionCallContextAt } from '../function-args/function-args-context';
 import { planFunctionArgAdvance } from '../function-args/function-args-advance';
 import { selectionAfterFunctionInsert } from '../function-args/function-args-completion';
-import { buildAggregationInsert } from './statement-group-end';
 
 /** Insert a builtin function at the selection, matching autocompletion behavior. */
 export function dispatchBuiltinFunctionInsert(
@@ -14,16 +13,6 @@ export function dispatchBuiltinFunctionInsert(
   from: number,
   to: number,
 ): void {
-  if (fnDef.aggregatesGroup) {
-    const plan = buildAggregationInsert(view.state, fnDef.name, from);
-    view.dispatch({
-      changes: { from: plan.from, to: plan.to, insert: plan.insert },
-      selection: EditorSelection.cursor(plan.selection),
-    });
-    view.focus();
-    return;
-  }
-
   if (functionCallContextAt(view.state, from) != null) {
     const plan = planFunctionArgAdvance(view.state, from, to, fnDef.name);
     if (plan != null) {
