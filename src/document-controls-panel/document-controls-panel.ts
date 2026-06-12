@@ -6,6 +6,7 @@ import type { AppContext } from '../app'
 import { mountAppMenu } from './app-menu'
 import { createIconButton } from '../components/icon-button'
 import { bindFocusPreservingButton } from '../components/focus-preserving-button'
+import { mountFunctionsMenu } from '../functions-menu'
 export type DocumentControlsPanel = {
   extensions: Extension[]
   toggleButton: HTMLButtonElement
@@ -69,7 +70,22 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
   })
   const unmountAppMenu = mountAppMenu(appMenuButton, ctx)
 
+  const functionsButton = document.createElement('button')
+  functionsButton.type = 'button'
+  functionsButton.id = 'functions-menu-toggle'
+  functionsButton.className =
+    'cm-document-controls__button cm-document-controls__functions-button'
+  functionsButton.setAttribute('aria-label', 'Functions')
+  functionsButton.textContent = 'ƒ'
+  // const functionsButton = createIconButton({
+  //   icon: 'sum',
+  //   ariaLabel: 'Functions',
+  //   id: 'functions-menu-toggle',
+  //   className: 'cm-document-controls__button cm-document-controls__functions-button',
+  // })
+
   let historyButtons: HistoryButtons | null = null
+  let unmountFunctionsMenu: (() => void) | null = null
 
   const panelExtension = showPanel.of((view: EditorView): Panel => {
     const dom = document.createElement('div')
@@ -86,10 +102,21 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
 
     const end = document.createElement('div')
     end.className = 'cm-document-controls-panel__end'
-    end.append(undoBtn, redoBtn, appMenuButton)
+    end.append(functionsButton, undoBtn, redoBtn, appMenuButton)
+
+    unmountFunctionsMenu?.()
+    unmountFunctionsMenu = mountFunctionsMenu(functionsButton, view).destroy
 
     dom.append(start, end)
-    return { dom, top: true, destroy: unmountAppMenu }
+    return {
+      dom,
+      top: true,
+      destroy: () => {
+        unmountFunctionsMenu?.()
+        unmountFunctionsMenu = null
+        unmountAppMenu()
+      },
+    }
   })
 
   const historyButtonSync = ViewPlugin.fromClass(class {

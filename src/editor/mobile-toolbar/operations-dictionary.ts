@@ -7,6 +7,8 @@ export type OperationDef = {
     sign: string,
     operation: Operation,
     insert?: Format,
+    /** Text shown on the mobile toolbar instead of an icon. */
+    toolbarLabel?: string,
 }
 
 const singleOperatorSelection: Format['selection'] = function(_text, from, to) {
@@ -35,6 +37,11 @@ export const OperationsDictionary: Record<Operation, OperationDef> = {
         insert:  { open: '/', block: false, selection: singleOperatorSelection },
         operation: 'division',
     },
+    euqal: {
+        sign: '=',
+        insert: { open: '=', block: false, selection: singleOperatorSelection },
+        operation: 'euqal',
+    },
     exponent: {
         sign: 'x\u207F',
         insert: {
@@ -47,11 +54,6 @@ export const OperationsDictionary: Record<Operation, OperationDef> = {
             },
         },
         operation: 'exponent',
-    },
-    euqal: {
-        sign: '=',
-        insert: { open: '=', block: false, selection: singleOperatorSelection },
-        operation: 'euqal',
     },
     parentheses: {
         sign: '( )',
@@ -66,4 +68,10 @@ export const OperationsDictionary: Record<Operation, OperationDef> = {
         },
         operation: 'parentheses',
     },
+    // modulo: {
+    //     sign: '%',
+    //     toolbarLabel: 'mod',
+    //     insert: { open: '%', block: false, selection: singleOperatorSelection },
+    //     operation: 'modulo',
+    // },
 }

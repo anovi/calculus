@@ -587,6 +587,154 @@ body {
   border-top: 1px solid var(--tooltip-section-border-color);
 }
 
+/* ----------- Functions menu ---------- */
+
+#editor .cm-document-controls__functions-button {
+  font-family: var(--editor-font);
+  font-size: 1.35rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.functions-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-layer-backdrop);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.functions-menu-backdrop[hidden] {
+  display: none;
+}
+
+.functions-menu {
+  position: fixed;
+  z-index: var(--z-layer-floating);
+  font-family: var(--main-font);
+  background: var(--tooltip-bg);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  box-shadow: var(--tooltip-shadow);
+}
+
+.functions-menu[hidden] {
+  display: none;
+}
+
+.functions-menu--desktop {
+  width: min(320px, calc(100vw - 16px));
+  max-height: 80vh;
+  padding: 4px;
+}
+
+.functions-menu--mobile {
+  top: 48px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 0;
+  max-height: none;
+  padding: 0;
+}
+
+.functions-menu__scroll {
+  overflow-y: auto;
+  max-height: inherit;
+  padding: 8px 4px 12px;
+}
+
+.functions-menu--mobile .functions-menu__scroll {
+  max-height: none;
+  height: 100%;
+  padding: 12px 12px 24px;
+}
+
+.functions-menu__section:not(:first-child) {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--tooltip-section-border-color);
+}
+
+.functions-menu__heading {
+  margin: 0 8px 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.functions-menu__intro {
+  margin: 0 8px 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.functions-menu__example {
+  margin: 0 8px 10px;
+  padding: 8px 10px;
+  font-family: var(--editor-font);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  background: var(--surface-level-1);
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.functions-menu__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.functions-menu__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.functions-menu__item:is(:hover, :focus-visible, :active) {
+  background: var(--accent);
+  color: var(--on-accent-primary);
+  outline: none;
+}
+
+.functions-menu__name {
+  font-family: var(--editor-font);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.functions-menu__doc {
+  display: none;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.functions-menu__item:is(:hover, :focus-visible, :active) .functions-menu__doc {
+  display: block;
+  color: var(--on-accent-secondary)
+}
+
 /* ----------- Autocompletion ---------- */
 
 /* it's all in base theme */
@@ -935,6 +1083,16 @@ body {
     }
   }
 
+  button.cm-suggestions-label-button {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 48px;
+    padding: 0 10px;
+    font-family: var(--editor-font);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
   button.cm-suggestions-main-button {
     display: none;
     background: var(--main-button-bg);
@@ -1047,6 +1205,9 @@ body {
   --border-level-2: rgb(255 255 255 / 12%);
   --border-level-3: rgb(255 255 255 / 18%);
 
+  /* Overlays (space-separated channels for rgb(var(--transparent-base) / α)) */
+  --transparent-base: 255 255 255;
+
   /* Surfaces */
   --surface-level-1: #262626;
   --surface-level-2: #313030;
@@ -1096,12 +1257,9 @@ body {
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --autocomplete-bg: color-mix(in oklch, var(--background) 97%, white);
-  --autocomplete-selected-bg: var(--accent);
-  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-bg: var(--surface-level-1);
+  --autocomplete-selected-bg: rgb(var(--transparent-base) / 8%);
   --autocomplete-matched-fg: var(--accent-text);
-  --autocomplete-selected-matched-fg: var(--on-accent-primary);
-  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
   --tooltip-bg: color-mix(in oklch, var(--accent) 10%, var(--surface-level-1));
   --tooltip-fg: var(--text-primary);
@@ -1159,6 +1317,8 @@ body {
   --border-level-2: rgb(0 0 0 / 12%);
   --border-level-3: rgb(0 0 0 / 18%);
 
+  --transparent-base: 32 32 0;
+
   --surface-level-1: #f3f3f1;
   --surface-level-2: #efefeb;
   --surface-level-3: #e6e6e0;
@@ -1206,12 +1366,9 @@ body {
   --warning-subtle-bg: color-mix(in oklch, var(--warning) 12%, transparent);
   --warning-subtle-border: color-mix(in oklch, var(--warning) 35%, transparent);
 
-  --autocomplete-bg: var(--background);
-  --autocomplete-selected-bg: var(--accent);
-  --autocomplete-selected-fg: var(--on-accent-primary);
+  --autocomplete-bg: var(--surface-level-1);
+  --autocomplete-selected-bg: rgb(var(--transparent-base) / 8%);
   --autocomplete-matched-fg: var(--accent-text);
-  --autocomplete-selected-matched-fg: var(--on-accent-primary);
-  --autocomplete-selected-detail-fg: var(--on-accent-secondary);
 
   --tooltip-bg: var(--surface-level-2);
   --tooltip-fg: var(--text-primary);

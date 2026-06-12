@@ -11,6 +11,8 @@ import rootIcon from '../assets/icons/root.svg?raw'
 import sunIcon from '../assets/icons/sun.svg?raw'
 import timesIcon from '../assets/icons/times.svg?raw'
 import undoIcon from '../assets/icons/undo.svg?raw'
+import exponentIcon from '../assets/icons/exponent.svg?raw'
+import sumIcon from '../assets/icons/sum.svg?raw'
 
 export type IconName =
   | 'plus'
@@ -20,17 +22,21 @@ export type IconName =
   | 'root'
   | 'equl'
   | 'parenthesis'
+  | 'exponent'
   | 'undo'
   | 'redo'
   | 'menu'
   | 'gear'
   | 'sun'
+  | 'sum'
   | 'moon'
 
 const ICONS: Record<IconName, string> = {
   plus: plusIcon,
+  sum: sumIcon,
   minus: minusIcon,
   times: timesIcon,
+  exponent: exponentIcon,
   div: divIcon,
   root: rootIcon,
   equl: equlIcon,

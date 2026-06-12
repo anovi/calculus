@@ -3,18 +3,16 @@ import {
     type CompletionSource
 } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
-import { EditorSelection, type EditorState } from '@codemirror/state';
+import type { EditorState } from '@codemirror/state';
 import type { SyntaxNode } from '@lezer/common';
 
 import { terms } from '../../language';
 import { calcRangesField } from '../values-field';
 import { BUILTIN_FUNCTIONS } from '../../calculator';
+import { dispatchBuiltinFunctionInsert } from '../function-inserter/insert-builtin-function';
 import { isBindingIdentifier } from '../language-tools';
 import { functionCallContextAt } from '../function-args/function-args-context';
-import {
-  completionApplyWithArgAdvance,
-  selectionAfterFunctionInsert,
-} from '../function-args/function-args-completion';
+import { completionApplyWithArgAdvance } from '../function-args/function-args-completion';
   
 
 function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] {
@@ -62,19 +60,11 @@ export const variableCompletionSource: CompletionSource = (context): CompletionR
         else
             options.push({
                 label: fnDef.name,
-                detail: fnDef.doc,
+                // detail: fnDef.doc,
                 info: fnDef.doc,
                 type: 'function',
                 apply: (view, _completion, from, to) => {
-                    const insert = `${fnDef.name}()`;
-                    view.dispatch({
-                        changes: {
-                            insert, from, to,
-                        },
-                        selection: EditorSelection.cursor(
-                            selectionAfterFunctionInsert(from, insert.length, fnDef.arity),
-                        ),
-                    })
+                    dispatchBuiltinFunctionInsert(view, fnDef, from, to);
                 },
             })
     }
