@@ -4,7 +4,6 @@ import { bindFocusPreservingButton } from '../components/focus-preserving-button
 import { isMobileDevice } from '../lib/mobile-device';
 import type { BuiltinFunction } from '../calculator';
 import { FUNCTION_MENU_SECTIONS } from './function-menu-sections';
-import { SetFunctionsMenuOpen } from './functions-menu-state';
 import { insertBuiltinFunction } from '../editor';
 
 export type FunctionsMenu = {
@@ -130,10 +129,6 @@ export function mountFunctionsMenu(
   scroll.className = 'functions-menu__scroll';
   menu.append(scroll);
 
-  const setMenuOpenState = (open: boolean) => {
-    view.dispatch({ effects: SetFunctionsMenuOpen.of(open) });
-  };
-
   const close = () => {
     if (!isOpen) return;
     menu.hidden = true;
@@ -141,7 +136,6 @@ export function mountFunctionsMenu(
     backdrop.setAttribute('aria-hidden', 'true');
     trigger.setAttribute('aria-expanded', 'false');
     isOpen = false;
-    setMenuOpenState(false);
     document.removeEventListener('pointerdown', onPointerDown, true);
     document.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('resize', onLayoutChange);
@@ -155,7 +149,6 @@ export function mountFunctionsMenu(
 
   const open = () => {
     if (isOpen) return;
-    setMenuOpenState(true);
     renderMenuContent(scroll, onSelect);
     if (mobile) positionMobileMenu(menu);
     else positionDropdown(menu, trigger, margin);
