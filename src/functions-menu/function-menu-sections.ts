@@ -31,7 +31,7 @@ const MENU_SECTION_DEFS: readonly {
   {
     id: 'everyday',
     label: 'Everyday',
-    names: ['sqrt', 'abs', 'floor', 'round', 'ceil', 'trunc', 'pow'],
+    names: ['sqrt', 'abs', 'floor', 'round', 'ceil', 'trunc', 'num', 'pow'],
   },
   {
     id: 'totals',

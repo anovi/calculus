@@ -187,6 +187,24 @@ export const calculatorFixtures: CalculatorFixture[] = [
   { name: 'sqrt', doc: 'sqrt(16)', expected: [4] },
   { name: 'sqrt in expression', doc: '2 + sqrt(16)', expected: [6] },
   {
+    name: 'num strips unit',
+    doc: 'width = 12 EUR\nnum(width)',
+    expected: [12, 12],
+    expectedUnits: ['EUR', undefined],
+  },
+  {
+    name: 'num strips unit in expression',
+    doc: 'length = 10 km\nnum(length) * 2',
+    expected: [10, 20],
+    expectedUnits: ['km', undefined],
+  },
+  {
+    name: 'num on plain number',
+    doc: 'num(42)',
+    expected: [42],
+    expectedUnits: [undefined],
+  },
+  {
     name: 'sqrt with binding',
     doc: 'x = 9\nsqrt(x)',
     expected: [9, 3],

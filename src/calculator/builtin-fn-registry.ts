@@ -49,6 +49,12 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinFunction[] = [
     args: [{ name: 'value', doc: 'Number' }],
   },
   {
+    name: 'num',
+    arity: 1,
+    doc: 'Drop the unit from a value',
+    args: [{ name: 'value', doc: 'Number or quantity' }],
+  },
+  {
     name: 'sqrt',
     arity: 1,
     doc: 'Square root',

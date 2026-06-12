@@ -39,6 +39,12 @@ function ternary(method: (a: Decimal, b: Decimal, c: Decimal) => Decimal): Built
   };
 }
 
+// Not wrapped
+function stripUnit(args: ExpressionResult[]): ExpressionResult | null {
+  if (args.length !== 1) return null;
+  return { n: args[0].n };
+}
+
 /**
  * n-th root of x (degree n in `root(x, n)`). Differs from `^`: odd integer roots
  * of negative bases are real; `(-8)^(1/3)` still uses Decimal.pow and yields NaN.
@@ -96,6 +102,7 @@ export const builtinHandlers = new Map<string, BuiltinHandler>([
   ['floor', unary((n) => n.floor())],
   ['round', unary((n) => n.round())],
   ['trunc', unary((n) => n.trunc())],
+  ['num', stripUnit],
   ['sqrt', unary((n) => n.sqrt())],
   ['cbrt', unary((n) => n.cbrt())],
   ['root', binary(nthRoot)],

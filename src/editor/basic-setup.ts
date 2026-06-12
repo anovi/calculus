@@ -14,7 +14,7 @@ import {
 	bracketMatching
 } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
-import { searchKeymap } from "@codemirror/search"
+import { highlightSelectionMatches, searchKeymap } from "@codemirror/search"
 import {
 	completionKeymap,
 	closeBrackets,
@@ -81,7 +81,7 @@ export const basicSetup: () => Extension = () => [
 	highlightActiveLineGutter(),
 
 	// https://codemirror.net/docs/ref/#search.highlightSelectionMatches
-	// highlightSelectionMatches(),
+	highlightSelectionMatches(),
 
 	EditorView.lineWrapping,
 
