@@ -183,6 +183,44 @@ expectedTree: `CalcDoc
         Number`,
 },
 {
+name: 'scientific notation integer',
+doc: '1.23e-7',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        Number`,
+},
+{
+name: 'scientific notation uppercase E',
+doc: '1E+10',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        Number`,
+},
+{
+name: 'scientific notation without fractional part',
+doc: '2e10',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        Number`,
+},
+{
+name: 'scientific notation with unit',
+doc: '1.5e3 km',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        NumberWithUnit
+          Number
+          Unit`,
+},
+{
 name: 'float with underscore in fractional part is invalid',
 doc: '1_233_232.232_333',
 expectedTree: `CalcDoc

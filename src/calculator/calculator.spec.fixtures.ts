@@ -244,6 +244,27 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [0.123],
   },
   {
+    name: 'scientific notation',
+    doc: '1.23e-7',
+    expected: ['0.000000123'],
+  },
+  {
+    name: 'scientific notation uppercase E',
+    doc: '1E+10',
+    expected: ['10000000000'],
+  },
+  {
+    name: 'scientific notation integer mantissa',
+    doc: '2e10',
+    expected: ['20000000000'],
+  },
+  {
+    name: 'scientific notation with unit',
+    doc: '1.5e3 km',
+    expected: [1500],
+    expectedUnits: ['km'],
+  },
+  {
     name: 'integer with comma separators',
     doc: '1,233,232',
     expected: [1233232],

@@ -84,8 +84,9 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	EqualSign { "=" }
 
 	// Literals
-	Float { @digit+ ((" " | "," | "_") @digit+)* "." @digit+ }
-	Integer { @digit+ ((" " | "," | "_") @digit+)* }
+	exponentPart { ("e" | "E") ("+" | "-")? @digit+ }
+	Float { @digit+ ((" " | "," | "_") @digit+)* "." @digit+ exponentPart? }
+	Integer { @digit+ ((" " | "," | "_") @digit+)* exponentPart? }
 	Number { Integer | Float }
 	String { "\""![\"]*"\"" }
 	Date   { (@digit @digit | @digit @digit @digit @digit) "-" @digit @digit "-" @digit @digit }
