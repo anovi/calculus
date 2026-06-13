@@ -3,7 +3,7 @@
 // Calculus: one expression or binding per line; results appear at line ends.
 // =============================================================================
 
-// --- Chapter 1: Constants & reference values ---------------------------------
+# Chapter 1: Constants & reference values
 
 pi_approx = 3.141592653589793
 golden_ratio = (1 + sqrt(5)) / 2
@@ -13,22 +13,24 @@ seconds_per_year = seconds_per_day * 365.25
 c_light_m_s = 299_792_458
 avogadro = 6.02214076e23
 
-// Spaced thousands (formatting fixture style)
+// Spaced thousands
 population_earth_2024 = 8 100 000 000
 national_debt_usd_trillions = 34.5
 debt_per_capita_usd = national_debt_usd_trillions * 1_000_000_000_000 / population_earth_2024
 
-// --- Chapter 2: Monthly budget (EUR home base) --------------------------------
+# Chapter 2: Monthly budget (EUR home base)
 
 monthly_net_eur = 4_200 EUR
+savings_rate = 0.15
+
 rent_eur = 1_450 EUR
 utilities_eur = 185 EUR
 internet_eur = 39.99 EUR
 groceries_eur = 520 EUR
 transport_eur = 89 EUR
 subscriptions_eur = 47.50 EUR
-savings_rate = 0.15
-discretionary_before_savings = monthly_net_eur - rent_eur - utilities_eur - internet_eur - groceries_eur - transport_eur - subscriptions_eur
+discretionary_before_savings = monthly_net_eur - sum()
+
 monthly_savings_target = monthly_net_eur * savings_rate
 left_after_fixed_and_savings = discretionary_before_savings - monthly_savings_target
 
@@ -43,31 +45,22 @@ annual_freelance_eur = freelance_eur * 6
 
 total_annual_income_eur = annual_net_eur + annual_freelance_eur
 
-// --- Chapter 3: Trip planning (mixed currencies & units) ----------------------
+# Chapter 3: Trip planning (mixed currencies & units)
 
 trip_days = 14
-flight_usd = 642 USD
-flight_eur = flight_usd in EUR
-hotel_per_night_eur = 118 EUR
-hotel_total_eur = hotel_per_night_eur * trip_days
-daily_food_eur = 55 EUR
-food_total_eur = daily_food_eur * trip_days
-museum_pass_eur = 89 EUR
-local_transit_eur = 6.50 EUR * trip_days * 2
-souvenir_budget_usd = 120 USD
-souvenir_budget_eur = souvenir_budget_usd in EUR
+hotel_per_night = 118 EUR
+daily_food = 55 EUR
 
-trip_subtotal_eur = flight_eur + hotel_total_eur + food_total_eur + museum_pass_eur + local_transit_eur + souvenir_budget_eur
+flight = 642 USD in EUR
+hotel_total = hotel_per_night * trip_days
+food_total = daily_food * trip_days
+museum_pass = 89 EUR
+local_transit = 6.50 EUR * trip_days * 2
+souvenir_budget = 120 USD in EUR
+trip_subtotal = sum()
+
 trip_buffer_rate = 0.12
-trip_with_buffer_eur = trip_subtotal_eur * (1 + trip_buffer_rate)
-
-// Distances: metric plan, imperial for US friends
-route_km = 1_240 km
-route_mi = route_km in mi
-walking_per_day_km = 8.5 km
-walking_per_day_mi = walking_per_day_km in mi
-walking_total_km = walking_per_day_km * trip_days
-walking_total_mi = walking_total_km in mi
+trip_with_buffer = trip_subtotal * (1 + trip_buffer_rate)
 
 // Packing weight
 carry_on_kg = 8 kg
@@ -78,74 +71,72 @@ total_luggage_kg = carry_on_kg + checked_bag_kg
 total_luggage_lb = total_luggage_kg in lb
 
 // Temperature sanity (if you use supported temp units in your build)
-summer_high_c = 31
-// summer_high_f = summer_high_c in f   // uncomment if °F is in vocabulary
+summer_high_c = 31 C
+summer_high_f = summer_high_c in f
 
-// --- Chapter 4: Apartment renovation -----------------------------------------
+# Chapter 4: Apartment renovation
 
-room_length_m = 4.2 m
-room_width_m = 3.6 m
-room_area_m2 = room_length_m * room_width_m
+// length × width should be without units, because multiplying numbers with (m)
+// does not produces (m²), it's current limitation
+room_length_m = 4.2
+room_width_m = 3.6
+room_area_m2 = room_length_m * room_width_m in m²
 room_area_ft2 = room_area_m2 in ft2
 
-floor_price_per_m2_eur = 42 EUR
-floor_cost_eur = room_area_m2 * floor_price_per_m2_eur
+room_area_sqm = num(room_area_m2)
+floor_price_per_sqm = 42
+floor_cost_eur = room_area_sqm * floor_price_per_sqm in EUR
 
-paint_coverage_m2_per_l = 12 m2
+paint_coverage_sqm_per_l = 12
 coats = 2
-liters_needed = room_area_m2 * coats / paint_coverage_m2_per_l
+liters_needed = room_area_sqm * coats / paint_coverage_sqm_per_l
 paint_tin_l = 2.5
 tins_to_buy = liters_needed / paint_tin_l
-// round up mentally; calculator gives raw ratio
-tins_rounded_up = sqrt(tins_to_buy * tins_to_buy) + (tins_to_buy - tins_to_buy)
-// simpler: just use the raw liters_needed line above for ordering
+tins_rounded_up = ceil(tins_to_buy)
 
 labor_hours = 24
 hourly_rate_eur = 35 EUR
 labor_eur = labor_hours * hourly_rate_eur
 materials_misc_eur = 180 EUR
-vat_rate = 0.21
 renovation_net_eur = floor_cost_eur + labor_eur + materials_misc_eur
-renovation_gross_eur = renovation_net_eur + renovation_net_eur * vat_rate
+renovation_gross_eur = renovation_net_eur + 21% //VAT
 
-// --- Chapter 5: Recipe scaling (mass & volume) -------------------------------
+# Chapter 5: Recipe scaling (mass & volume)
 
 base_servings = 4
 target_servings = 18
 scale = target_servings / base_servings
 
 flour_g = 250 g
-flour_scaled_g = flour_g * scale
-flour_scaled_kg = flour_scaled_g in kg
+flour_scaled = flour_g * scale in kg
 
 milk_ml = 180 ml
-milk_scaled_ml = milk_ml * scale
-milk_scaled_l = milk_scaled_ml in l
+milk_scaled = milk_ml * scale in l
 
 butter_g = 85 g
-butter_scaled_g = butter_g * scale
-butter_sticks_us = butter_scaled_g in oz
+butter_scaled = butter_g * scale in oz
 
 sugar_g = 60 g
 sugar_scaled_g = sugar_g * scale
+
 eggs = 2
 eggs_scaled = eggs * scale
 
-water_cups = 0.75
+water_cups = 0.75 c
 water_scaled_cups = water_cups * scale
-// water_scaled_ml = water_scaled_cups in ml   // if cup is defined
+water_scaled_ml = water_scaled_cups in ml
 
-baking_temp_c = 180
-// baking_temp_f = baking_temp_c in f
+baking_temp_c = 180 C
+baking_temp_f = baking_temp_c in f
 
-// --- Chapter 6: Running & fitness --------------------------------------------
+# Chapter 6: Running & fitness
 
 weekly_km = 42 km
 weekly_mi = weekly_km in mi
 pace_min_per_km = 5.25
 race_distance_km = 21.0975 km
 race_distance_mi = race_distance_km in mi
-estimated_race_minutes = pace_min_per_km * race_distance_km
+estimated_race_minutes = pace_min_per_km * num(race_distance_km)
 estimated_race_hours = estimated_race_minutes / 60
 
 long_run_km = 16 km
@@ -156,11 +147,12 @@ laps_for_10k = 10_000 / 400
 
 body_mass_kg = 72.5 kg
 body_mass_lb = body_mass_kg in lb
-height_cm = 178 cm
-height_m = height_cm in m
-bmi = body_mass_kg / (height_m * height_m)
+height_m = 1.78 m
+// BMI needs length²; multiplying lengths does not yield m2 yet — use plain numbers
+bmi = num(body_mass_kg) / num(height_m * height_m)
 
-// --- Chapter 7: Freelance invoice (USD client, EUR books) --------------------
+
+# Chapter 7: Freelance invoice (USD client, EUR books)
 
 hours_billed = 37.5
 rate_usd = 95 USD
@@ -172,8 +164,6 @@ sales_tax_rate = 0
 net_usd = taxable_usd + taxable_usd * sales_tax_rate
 
 net_eur = net_usd in EUR
-net_gbp = net_usd in GBP
-net_jpy = net_usd in JPY
 
 // Expenses in mixed units
 software_usd = 29 USD
@@ -182,22 +172,20 @@ coworking_in_usd = coworking_eur in USD
 profit_usd = net_usd - software_usd - coworking_in_usd
 profit_eur = profit_usd in EUR
 
-// --- Chapter 8: Investment snapshot (illustrative) ---------------------------
+# Chapter 8: Investment snapshot (compound interest)
 
-principal_usd = 25_000 USD
-monthly_contribution_usd = 500 USD
-years = 10
-months = years * 12
-total_contributions_usd = principal_usd + monthly_contribution_usd * months
-// Simple growth sketch (not compound interest built-in — manual rate)
-annual_return = 0.07
-monthly_return = annual_return / 12
-// rough linear blend for a scratchpad (real CI would need a loop)
-estimated_gain_usd = total_contributions_usd * annual_return * (years / 2)
-estimated_portfolio_usd = total_contributions_usd + estimated_gain_usd
-estimated_portfolio_eur = estimated_portfolio_usd in EUR
+principal = 1_000 USD
+monthly_contribution = 100 USD
+years = 5
+annual_rate = 0.06
+compounds_per_year = 12
 
-// --- Chapter 9: Physics & hobby (units + sqrt) -----------------------------
+period_rate = annual_rate / compounds_per_year
+periods = compounds_per_year * years
+growth_factor = (1 + period_rate)^periods
+future_value = principal * growth_factor + monthly_contribution * (growth_factor - 1) / period_rate
+
+# Chapter 9: Physics & hobby (units + sqrt)
 
 earth_radius_m = 6_371_000 m
 earth_radius_km = earth_radius_m in km
@@ -206,34 +194,33 @@ orbit_radius_km = earth_radius_km + low_earth_orbit_alt_km
 orbit_circumference_km = 2 * pi_approx * orbit_radius_km
 orbit_circumference_mi = orbit_circumference_km in mi
 
-projectile_v0 = 24 m/s
+projectile_v0 = 24 // m/s
 projectile_angle_deg = 42
-// use radians manually if needed: angle_rad = projectile_angle_deg * pi_approx / 180
+// m/s compound units not supported — v0 is m/s as a plain number
 range_factor = 2
-max_height_m = (projectile_v0 * projectile_v0) / (2 * 9.80665)
+max_height_val = (projectile_v0 * projectile_v0) / (2 * 9.80665)
+max_height_m = max_height_val in m
 max_height_ft = max_height_m in ft
 
-wire_gauge_mm2 = 2.5
-resistivity_ohm_m = 1.68e-8
+wire_gauge_sqmm = 2.5
+wire_resistivity = 0.0000000168
 length_m = 12 m
-resistance_ohm = resistivity_ohm_m * length_m / wire_gauge_mm2
+resistance_ohm = wire_resistivity * length_m / wire_gauge_sqmm
 
-// --- Chapter 10: Data & storage back-of-envelope ------------------------------
+# Chapter 10: Data & storage back-of-envelope
 
-photo_avg_mb = 4.5
+photo_avg_mb = 4.5 MB
 photos_per_day = 35
 days_stored = 365
-storage_gb = photo_avg_mb * photos_per_day * days_stored / 1024
-storage_tb = storage_gb / 1024
+storage_gb = photo_avg_mb * photos_per_day * days_stored in GB
 
 bitrate_mbps = 12.5
 duration_hours = 2.5
 duration_seconds = duration_hours * 3600
-size_megabits = bitrate_mbps * duration_seconds
-size_mb = size_megabits / 8
-size_gb = size_mb / 1024
+size_megabits = bitrate_mbps * duration_seconds in Mb
+size_gigabytes = size_megabits in GB
 
-// --- Chapter 11: Nested expressions & precedence torture ---------------------
+# Chapter 11: Nested expressions & precedence torture
 
 a = 2
 b = 3
@@ -253,24 +240,24 @@ y = 16
 hypot_leg = sqrt(x + y)
 combo = sqrt(25) + sqrt(9) * 2
 
-// --- Chapter 12: Currency mixing (like fixture 10 USD + 1 EUR) ---------------
+# Chapter 12: Currency mixing
 
 wallet_usd = 250 USD
 wallet_eur = 80 EUR
 wallet_gbp = 40 GBP
-wallet_total_eur = wallet_usd in EUR + wallet_eur + wallet_gbp in EUR
+wallet_total_eur = wallet_usd in EUR + wallet_eur
 wallet_total_usd = wallet_total_eur in USD
 
 payment_a_usd = 10 USD
 payment_b_eur = 1 EUR
 payment_combined_eur = payment_a_usd in EUR + payment_b_eur
 
-// Chained conversion (grammar fixture: EUR in USD in …)
+// Chained conversion
 sample_eur = 100 EUR
 sample_usd = sample_eur in USD
-// sample_rsd = sample_usd in RSD   // if RSD rates exist in store
+sample_rsd = sample_usd in RSD
 
-// --- Chapter 13: Long binding chain (dependency depth) ----------------------
+# Chapter 13: Long binding chain (dependency depth)
 
 level_0 = 1
 level_1 = level_0 + 1
@@ -293,7 +280,7 @@ shipping_eur = 6.50 EUR
 order_eur = cart_eur + shipping_eur
 order_usd = order_eur in USD
 
-// --- Chapter 14: “Spreadsheet row” blocks (repeated pattern) ----------------
+# Chapter 14: “Spreadsheet row” blocks (repeated pattern)
 
 // Q1
 q1_rev = 12_400 EUR
@@ -324,7 +311,7 @@ year_cost = q1_cost + q2_cost + q3_cost + q4_cost
 year_margin = year_rev - year_cost
 year_margin_pct = year_margin / year_rev
 
-// --- Chapter 15: More unit conversions (bulk) --------------------------------
+# Chapter 15: More unit conversions (bulk)
 
 distances_km_1 = 5 km
 distances_km_2 = 12.5 km
@@ -342,14 +329,14 @@ vol_1_l = 3.5 l
 vol_1_gal = vol_1_l in gal
 vol_1_ml = vol_1_l in ml
 
-speed_kmh = 90 km/h
-// speed_mph = speed_kmh in mph   // if supported in vocabulary
+speed_km = 90 km
+// km/h compound units not supported — use plain km for distance-style speed notes
 
 area_ha = 2.5 ha
 area_m2 = area_ha in m2
 area_acre = area_m2 in acre
 
-// --- Chapter 16: Edge-ish but valid lines (from grammar learnings) ----------
+# Chapter 16: Edge-ish but valid lines (from grammar learnings)
 
 bare_convert = 12 in USD
 tab_before_in = 12	in USD
@@ -363,7 +350,7 @@ paren_negative = (-3 + 2) * 10
 // Incomplete on purpose elsewhere in tests — avoid blank RHS in production:
 // broken =
 
-// --- Chapter 17: Commentary block (no math, breaks up scrolling) --------------
+# Chapter 17: Commentary block (no math, breaks up scrolling)
 
 // This section exists only to pad vertical scroll in the editor.
 // Duplicate blocks below simulate “pages” of notes in a real notebook.
@@ -373,7 +360,7 @@ paren_negative = (-3 + 2) * 10
 // Page break metaphor — warranty serial numbers
 // Page break metaphor — contractor quotes archive
 
-// --- Chapter 18: Repeated micro-calcs (volume for scroll stress) -------------
+# Chapter 18: Repeated micro-calcs (volume for scroll stress)
 
 item_01 = 1 * 1.01
 item_02 = 2 * 1.02
@@ -395,20 +382,19 @@ item_17 = 17 * 1.17
 item_18 = 18 * 1.18
 item_19 = 19 * 1.19
 item_20 = 20 * 1.20
+sum()
 
-subtotal_items = item_01 + item_02 + item_03 + item_04 + item_05 + item_06 + item_07 + item_08 + item_09 + item_10 + item_11 + item_12 + item_13 + item_14 + item_15 + item_16 + item_17 + item_18 + item_19 + item_20
+# Chapter 19: Carbon / energy rough estimate
 
-// --- Chapter 19: Carbon / energy rough estimate ------------------------------
-
-kwh_per_day = 14.2 kWh
+kwh_per_day = 14.2
 days_per_month = 30.44
 kwh_per_month = kwh_per_day * days_per_month
-cost_per_kwh_eur = 0.28 EUR
-electricity_eur = kwh_per_month * cost_per_kwh_eur
+cost_per_kwh = 0.28
+electricity_eur = kwh_per_month * cost_per_kwh in EUR
 solar_offset_pct = 0.35
 bill_after_solar_eur = electricity_eur * (1 - solar_offset_pct)
 
-// --- Chapter 20: Final summary lines -----------------------------------------
+# Chapter 20: Final summary lines
 
 notebook_lines_estimate = 320
 sqrt_lines = sqrt(notebook_lines_estimate)
@@ -419,4 +405,3 @@ closing_message = closing_eur + 0 EUR
 
 // END OF BIG CALC NOTEBOOK
 // Paste into calculus editor; trim chapters you do not need.
-// For a test fixture, swap live-dependent currency lines for pairs in MOCK_RATES.
