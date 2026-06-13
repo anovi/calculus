@@ -1,17 +1,6 @@
 const noop = () => {};
 
-/** Copy plain text within a user gesture (click/touchend). Sync — required on iOS Safari. */
-export function copyTextToClipboard(text: string): { ok: boolean, clear: () => void} {
-
-  try {
-    if (navigator.clipboard?.writeText) {
-      void navigator.clipboard.writeText(text);
-      return { ok: true, clear: noop};
-    }
-  } catch (error) {
-    // do nothing, continue
-  }
-
+function copyWithTextarea(text: string): { ok: boolean; clear: () => void } {
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.setAttribute('readonly', '');
@@ -37,4 +26,18 @@ export function copyTextToClipboard(text: string): { ok: boolean, clear: () => v
   }
 
   return { ok, clear: () => document.body.removeChild(textarea) };
+}
+
+/** Copy plain text within a user gesture (click/touchend). Sync — required on iOS Safari. */
+export function copyTextToClipboard(text: string): { ok: boolean; clear: () => void } {
+  if (navigator.clipboard?.writeText && document.hasFocus()) {
+    try {
+      void navigator.clipboard.writeText(text).catch(() => {});
+      return { ok: true, clear: noop };
+    } catch {
+      // fall through to textarea
+    }
+  }
+
+  return copyWithTextarea(text);
 }

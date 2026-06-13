@@ -2,6 +2,7 @@ import { createEditor } from '../editor'
 import { createDocumentControlsPanel } from '../document-controls-panel'
 import { DocumentDrawer } from '../drawer'
 import { createAppContext } from './app-context'
+import { exposeConsoleApi } from './console-api'
 import { createPersistDocumentExtension } from './persist-document'
 
 export async function mountApp(root: HTMLElement): Promise<void> {
@@ -20,6 +21,7 @@ export async function mountApp(root: HTMLElement): Promise<void> {
   })
 
   ctx.ui.editor = editor
+  exposeConsoleApi(() => editor.view)
   ctx.theme.bind({ editor })
 
   ctx.ui.drawer = new DocumentDrawer(ctx, {
