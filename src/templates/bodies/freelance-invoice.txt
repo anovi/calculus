@@ -1,0 +1,9 @@
+hours_billed = 37.5
+rate_usd = 95 USD
+subtotal_usd = hours_billed * rate_usd
+
+discount_rate = 0.05
+discount_usd = subtotal_usd * discount_rate
+net_usd = subtotal_usd - discount_usd
+
+net_eur = net_usd in EUR

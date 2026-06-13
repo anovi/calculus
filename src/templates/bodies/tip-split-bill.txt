@@ -1,0 +1,7 @@
+bill = 86.50 EUR
+tip_rate = 0.15
+people = 4
+
+tip = bill * tip_rate
+total = bill + tip
+per_person = total / people

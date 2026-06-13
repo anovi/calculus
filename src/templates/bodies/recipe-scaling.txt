@@ -1,0 +1,12 @@
+base_servings = 4
+target_servings = 18
+scale = target_servings / base_servings
+
+flour = 250 g
+flour_scaled = flour * scale in kg
+
+milk = 180 ml
+milk_scaled = milk * scale in l
+
+eggs = 2
+eggs_scaled = eggs * scale

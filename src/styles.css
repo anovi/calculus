@@ -345,7 +345,28 @@ body {
 
 #editor .cm-placeholder {
   color: var(--text-secondary);
-  font-style: italic;
+  /* font-style: italic; */
+}
+
+#editor .cm-empty-editor-placeholder__template-btn {
+  display: inline;
+  margin: 0;
+  padding: 0 0.5em;
+  border: 1px solid var(--border-level-3);
+  border-radius: 2em;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-style: normal;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#editor .cm-empty-editor-placeholder__template-btn:is(:hover, :focus-visible) {
+  color: var(--accent);
+  font-style: normal;
+  outline: none;
 }
 
 /* ---------------------------- Result widget --------------------------- */
@@ -587,7 +608,7 @@ body {
   border-top: 1px solid var(--tooltip-section-border-color);
 }
 
-/* ----------- Functions menu ---------- */
+/* ----------- Dropdown menu ---------- */
 
 #editor .cm-document-controls__functions-button {
   font-family: var(--editor-font);
@@ -596,7 +617,7 @@ body {
   line-height: 1;
 }
 
-.functions-menu-backdrop {
+.dropdown-menu-backdrop {
   position: fixed;
   inset: 0;
   z-index: var(--z-layer-backdrop);
@@ -604,11 +625,11 @@ body {
   pointer-events: auto;
 }
 
-.functions-menu-backdrop[hidden] {
+.dropdown-menu-backdrop[hidden] {
   display: none;
 }
 
-.functions-menu {
+.dropdown-menu {
   position: fixed;
   z-index: var(--z-layer-floating);
   font-family: var(--main-font);
@@ -619,17 +640,17 @@ body {
   box-shadow: var(--tooltip-shadow);
 }
 
-.functions-menu[hidden] {
+.dropdown-menu[hidden] {
   display: none;
 }
 
-.functions-menu--desktop {
+.dropdown-menu--desktop {
   width: min(320px, calc(100vw - 16px));
   max-height: 80vh;
   padding: 4px;
 }
 
-.functions-menu--mobile {
+.dropdown-menu--mobile {
   top: 48px;
   right: 0;
   bottom: 0;
@@ -639,25 +660,25 @@ body {
   padding: 0;
 }
 
-.functions-menu__scroll {
+.dropdown-menu__scroll {
   overflow-y: auto;
   max-height: inherit;
   padding: 8px 4px 12px;
 }
 
-.functions-menu--mobile .functions-menu__scroll {
+.dropdown-menu--mobile .dropdown-menu__scroll {
   max-height: none;
   height: 100%;
   padding: 12px 12px 24px;
 }
 
-.functions-menu__section:not(:first-child) {
+.dropdown-menu__section:not(:first-child) {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--tooltip-section-border-color);
 }
 
-.functions-menu__heading {
+.dropdown-menu__heading {
   margin: 0 8px 6px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -666,14 +687,14 @@ body {
   color: var(--text-secondary);
 }
 
-.functions-menu__intro {
+.dropdown-menu__intro {
   margin: 0 8px 8px;
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--text-secondary);
 }
 
-.functions-menu__example {
+.dropdown-menu__example {
   margin: 0 8px 10px;
   padding: 8px 10px;
   font-family: var(--editor-font);
@@ -685,13 +706,13 @@ body {
   white-space: pre-wrap;
 }
 
-.functions-menu__list {
+.dropdown-menu__list {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.functions-menu__item {
+.dropdown-menu__item {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -710,27 +731,27 @@ body {
   touch-action: manipulation;
 }
 
-.functions-menu__item:is(:hover, :focus-visible, :active) {
+.dropdown-menu__item:is(:hover, :focus-visible, :active) {
   background: var(--accent);
   color: var(--on-accent-primary);
   outline: none;
 }
 
-.functions-menu__name {
+.dropdown-menu__name {
   font-family: var(--editor-font);
   font-size: 0.95rem;
   font-weight: 500;
   line-height: 1.35;
 }
 
-.functions-menu__doc {
+.dropdown-menu__doc {
   display: none;
   font-size: 0.85rem;
   line-height: 1.35;
   color: var(--text-secondary);
 }
 
-.functions-menu__item:is(:hover, :focus-visible, :active) .functions-menu__doc {
+.dropdown-menu__item:is(:hover, :focus-visible, :active) .dropdown-menu__doc {
   display: block;
   color: var(--on-accent-secondary)
 }

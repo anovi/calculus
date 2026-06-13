@@ -1,0 +1,10 @@
+principal = 1000 EUR
+monthly_contribution = 100 EUR
+years = 5
+annual_rate = 0.06
+compounds_per_year = 12
+
+period_rate = annual_rate / compounds_per_year
+periods = compounds_per_year * years
+growth_factor = (1 + period_rate)^periods
+future_value = principal * growth_factor + monthly_contribution * (growth_factor - 1) / period_rate

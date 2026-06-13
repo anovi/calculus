@@ -1,0 +1,8 @@
+distance_km = 10 km
+distance_mi = distance_km in mi
+
+weight_kg = 72.5 kg
+weight_lb = weight_kg in lb
+
+temp_c = 20 C
+temp_f = temp_c in f

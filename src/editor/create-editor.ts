@@ -1,7 +1,6 @@
 import { EditorView } from 'codemirror'
 import { EditorState, type Extension } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
-import { placeholder } from '@codemirror/view'
 import { autocompletion } from '@codemirror/autocomplete'
 
 import { calculus } from '../language' 
@@ -20,6 +19,7 @@ import { calcSyntaxLinter } from './linter'
 import { renameVariableReferences } from './variables/rename-variable-references'
 import { calculusHighlightStyle } from './language-tools/calculus-syntax-highlight-tags'
 import { hackSafariTouchSelection } from './safari-selection-hack'
+import { emptyEditorPlaceholder } from './empty-editor-placeholder'
 
 export type CreateEditorOptions = {
   parent: HTMLElement
@@ -61,7 +61,7 @@ export function createEditor({
     variableHoverTooltip,
     syntaxHighlighting(calculusHighlightStyle),
     helpPanel(),
-    placeholder('Start with a formula or variable…'),
+    emptyEditorPlaceholder(),
     createEditorTheme(dark),
     calcSyntaxLinter,
     // safariFocusScrollFix(),

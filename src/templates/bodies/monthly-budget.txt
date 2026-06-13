@@ -1,0 +1,15 @@
+monthly_net = 4200 EUR
+savings_rate = 0.15
+
+rent = 1450 EUR
+utilities = 185 EUR
+groceries = 520 EUR
+transport = 89 EUR
+subscriptions = 47.50 EUR
+discretionary = monthly_net - sum()
+
+monthly_savings = monthly_net * savings_rate
+left_after_savings = discretionary - monthly_savings
+
+annual_income = monthly_net * 12
+annual_savings = monthly_savings * 12
