@@ -40,13 +40,13 @@ export const TEMPLATES: Template[] = [
     content: vatTax,
   },
   {
-    name: 'Tip & split bill',
+    name: 'Split the check',
     description: 'Split a restaurant bill with tip.',
     content: tipSplitBill,
   },
   {
-    name: 'Savings growth',
-    description: 'Project savings with monthly contributions and interest.',
+    name: 'Compound savings growth',
+    description: 'Project savings with recurring contributions and compound interest.',
     content: savingsGrowth,
   },
   {

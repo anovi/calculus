@@ -1,3 +1,4 @@
+# Trip planning
 trip_days = 14
 hotel_per_night = 118 EUR
 daily_food = 55 EUR
@@ -8,5 +9,5 @@ food_total = daily_food * trip_days
 local_transit = 6.50 EUR * trip_days * 2
 trip_subtotal = sum()
 
-buffer_rate = 0.12
-trip_with_buffer = trip_subtotal * (1 + buffer_rate)
+buffer_rate = 0.12 // extra costs you didn’t list explicitly
+total = trip_subtotal * (1 + buffer_rate)

@@ -1,3 +1,4 @@
+# Calculate gross from net and a tax rate
 net = 100
 tax_rate = 0.21
 tax = net * tax_rate

@@ -1,7 +1,8 @@
+# Split a restaurant bill with tip
 bill = 86.50 EUR
-tip_rate = 0.15
+tip rate = 0.15
 people = 4
 
-tip = bill * tip_rate
+tip = bill * tip rate
 total = bill + tip
-per_person = total / people
+per person = total / people
