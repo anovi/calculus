@@ -7,7 +7,13 @@ import {
 import { syntaxTree } from '@codemirror/language';
 import type { SyntaxNode } from '@lezer/common';
 
-import { getCurrencies, getMeasurementUnits, type MeasureEntry } from '../../units';
+import {
+  areUnitsCompatible,
+  getCurrencies,
+  getMeasurementUnits,
+  normalizeUnit,
+  type MeasureEntry,
+} from '../../units';
 import { terms } from '../../language';
 import { skipWhiteSpaceBackward } from '../editor-commands';
 import { functionCallContextAt } from '../function-args/function-args-context';
@@ -84,6 +90,105 @@ const unitCompletionOptionsForConvert: readonly Completion[] = unitCompletionOpt
 /** Number + space + partial unit (e.g. `100 us`); suffix without space uses the Unit node. */
 const SUFFIX_UNIT_INPUT = /(\d+(?:\.\d+)?)\s+([A-Za-z]+)$/;
 
+function normalizedUnitFromNode(
+  state: CompletionContext['state'],
+  unitNode: SyntaxNode,
+): string | null {
+  const raw = state.sliceDoc(unitNode.from, unitNode.to);
+  const normalized = normalizeUnit(raw);
+  if (normalized == null || Array.isArray(normalized)) return null;
+  return normalized;
+}
+
+function unitFromExpression(
+  state: CompletionContext['state'],
+  node: SyntaxNode,
+): string | null {
+  switch (node.type.id) {
+    case terms.NumberWithUnit: {
+      for (let child = node.firstChild; child; child = child.nextSibling) {
+        if (child.type.id === terms.Unit) {
+          return normalizedUnitFromNode(state, child);
+        }
+      }
+      return null;
+    }
+    case terms.Literal: {
+      const child = node.firstChild;
+      return child ? unitFromExpression(state, child) : null;
+    }
+    case terms.ConvertExpression: {
+      for (let child = node.lastChild; child; child = child.prevSibling) {
+        if (child.type.id === terms.Unit) {
+          return normalizedUnitFromNode(state, child);
+        }
+      }
+      return null;
+    }
+    case terms.AddExpression:
+    case terms.MulExpression:
+    case terms.ExpExpression: {
+      for (let child = node.lastChild; child; child = child.prevSibling) {
+        if (
+          child.type.id === terms.PlusBinaryOp ||
+          child.type.id === terms.TimesBinaryOp ||
+          child.type.id === terms.PowBinaryOp
+        ) {
+          continue;
+        }
+        const unit = unitFromExpression(state, child);
+        if (unit) return unit;
+      }
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+function convertExpressionAtTarget(
+  state: CompletionContext['state'],
+  pos: number,
+): SyntaxNode | null {
+  const tree = syntaxTree(state);
+
+  const unit = unitNodeAt(state, pos);
+  if (unit?.parent?.type.id === terms.ConvertExpression) {
+    return unit.parent;
+  }
+
+  for (const at of [pos, pos - 1]) {
+    if (at < 0) continue;
+    const node = tree.resolveInner(at, -1);
+    if (node.type.id === terms.Unit && node.parent?.type.id === terms.ConvertExpression) {
+      return node.parent;
+    }
+    if (node.type.id === terms.Identifier) {
+      const prev = tree.resolveInner(skipWhiteSpaceBackward(state, node.from), -1);
+      if (prev?.type.id === terms.ConvertOp) {
+        const convertExpr = prev.parent;
+        if (convertExpr?.type.id === terms.ConvertExpression) {
+          return convertExpr;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/** Canonical source unit for a convert-target position, or null when unknown / absent. */
+export function sourceUnitForConvertTarget(
+  state: CompletionContext['state'],
+  pos: number,
+): string | null {
+  const convertExpr = convertExpressionAtTarget(state, pos);
+  if (!convertExpr) return null;
+  const valueExpr = convertExpr.firstChild;
+  if (!valueExpr || valueExpr.type.id === terms.ConvertOp) return null;
+  return unitFromExpression(state, valueExpr);
+}
+
 function unitNodeAt(state: CompletionContext['state'], pos: number): SyntaxNode | null {
   const tree = syntaxTree(state);
   for (const at of [pos, pos - 1]) {
@@ -105,7 +210,6 @@ function suffixSiteFromText(state: CompletionContext['state'], pos: number): Uni
   const match = before.match(SUFFIX_UNIT_INPUT);
   if (!match) return null;
   const unitText = match[2] ?? '';
-  console.log('suffixSiteFromText')
   return { kind: 'suffix', from: pos - unitText.length };
 }
 
@@ -127,26 +231,38 @@ export function unitCompletionSite(
     }
   }
 
-  // Icomplete unit after a conversion expression
+  // Incomplete unit after a conversion expression
   if (prevNode && (prevNode.type.id === terms.ConvertOp)) {
-    console.log('convert in prevNode')
     return { kind: 'convert', from: node.from };
   }
 
-  // Unit: exact match!
   const unit = unitNodeAt(state, pos);
   if (unit) {
     const kind =
       unit.parent?.type.id === terms.NumberWithUnit ? 'suffix' : 'convert';
-    console.log('Kind', kind)
     return { kind, from: unit.from };
   }
 
   return suffixSiteFromText(state, pos);
 }
 
-function optionsForSite(site: UnitCompletionSite): readonly Completion[] {
-  return site.kind === 'convert' ? unitCompletionOptionsForConvert : unitCompletionOptions;
+function optionsForSite(
+  state: CompletionContext['state'],
+  site: UnitCompletionSite,
+  pos: number,
+): readonly Completion[] {
+  const base =
+    site.kind === 'convert' ? unitCompletionOptionsForConvert : unitCompletionOptions;
+
+  if (site.kind !== 'convert') return base;
+
+  const sourceUnit = sourceUnitForConvertTarget(state, pos);
+  if (!sourceUnit) return base;
+
+  return base.filter((option) => {
+    const candidate = typeof option.apply === 'string' ? option.apply : option.label;
+    return areUnitsCompatible(sourceUnit, candidate);
+  });
 }
 
 function optionsWithArgAdvance(
@@ -165,9 +281,10 @@ function optionsWithArgAdvance(
 function unitCompletionResult(
   state: CompletionContext['state'],
   site: UnitCompletionSite,
+  pos: number,
   explicit: boolean,
 ): CompletionResult | null {
-  const options = optionsWithArgAdvance(state, site.from, optionsForSite(site));
+  const options = optionsWithArgAdvance(state, site.from, optionsForSite(state, site, pos));
   if (options.length === 0 && !explicit) return null;
 
   return {
@@ -178,7 +295,7 @@ function unitCompletionResult(
       if (!nextSite) return null;
       const nextPrefix = context.state.sliceDoc(nextSite.from, context.pos);
       if (!nextPrefix && !context.explicit) return null;
-      return unitCompletionResult(context.state, nextSite, context.explicit);
+      return unitCompletionResult(context.state, nextSite, context.pos, context.explicit);
     },
   };
 }
@@ -190,5 +307,5 @@ export const unitCompletionSource: CompletionSource = (context): CompletionResul
   const prefix = context.state.sliceDoc(site.from, context.pos);
   if (!prefix && !context.explicit) return null;
 
-  return unitCompletionResult(context.state, site, context.explicit);
+  return unitCompletionResult(context.state, site, context.pos, context.explicit);
 };

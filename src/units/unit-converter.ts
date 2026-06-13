@@ -7,7 +7,6 @@ export function canConvert(unitA: string, unitB: string): boolean {
     return convertPackageUnitsConverter.canConvert(unitA, unitB);
 }
 
-// FIXME: it dublicates compatible-units?
 /** Returns `true` for same unit, same physical measure kind, or both are currencies. */
 export function areUnitsCompatible(unitA: string, unitB: string): boolean {
     if (unitA === unitB) return true;

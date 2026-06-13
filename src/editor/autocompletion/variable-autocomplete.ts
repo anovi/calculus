@@ -29,7 +29,11 @@ function getIdentifierNames(state: EditorState, exclude?: SyntaxNode): string[] 
     return res;
 }
 
+import { unitCompletionSite } from './unit-autocomplete';
+
 export const variableCompletionSource: CompletionSource = (context): CompletionResult | null => {
+    if (unitCompletionSite(context.state, context.pos)?.kind === 'convert') return null;
+
     const tree = syntaxTree(context.state);
     const pos = context.pos;
     const node = tree.resolveInner(pos, -1);

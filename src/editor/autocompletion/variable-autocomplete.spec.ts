@@ -63,6 +63,13 @@ describe('variableCompletionSource', () => {
     }
   });
 
+  it('returns null when typing a convert target unit after `in`', async () => {
+    const eur = '12 EUR in U';
+    const length = '100 m in k';
+    assert.strictEqual(await completionAt(eur, eur.length), null);
+    assert.strictEqual(await completionAt(length, length.length), null);
+  });
+
   it('returns function-only options when editing a function name in a call', async () => {
     const doc = 'sqrt(2)';
     const pos = doc.indexOf('sqrt') + 2;
