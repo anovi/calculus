@@ -24,6 +24,9 @@ const currenciesCsv = fs.readFileSync(
 )
 const currencies = parseCurrenciesCsv(currenciesCsv)
 
+/** Production URL for canonical and Open Graph absolute links. */
+const SITE_URL = 'https://anovi.github.io/calculus'
+
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
   define: {
@@ -49,6 +52,7 @@ export default defineConfig({
       name: 'versioned-icon-assets',
       transformIndexHtml(html) {
         return html
+          .replaceAll('__CALCULUS_SITE_URL__', SITE_URL)
           .replaceAll('./favicon.ico', `./${faviconIco}`)
           .replaceAll('./favicon.svg', `./${faviconSvg}`)
           .replaceAll(
@@ -67,6 +71,7 @@ export default defineConfig({
         pwa512,
         maskableIcon,
         appleTouchIcon,
+        'og-image.png',
       ],
       manifest: {
         name: 'Calculus',
