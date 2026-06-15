@@ -19,7 +19,7 @@ export const parser = LRParser.deserialize({
   propSources: [calculusLangHighlight],
   skippedNodes: [0],
   repeatNodeCount: 4,
-  tokenData: "*V~RbXY!ZYZ!f]^!fpq!Zrs!mst#[uv#sxy#xyz#}z{#s{|$S|}$X}!O$S!P!Q$^!Q![$}!_!`)v#Q#R){~~*Q~!`Qt~XY!Zpq!ZR!mO{QvP~!pTOr!mrs#Ps;'S!m;'S;=`#U<%lO!m~#UOh~~#XP;=`<%l!m~#aSl~OY#[Z;'S#[;'S;=`#m<%lO#[~#pP;=`<%l#[~#xOZ~~#}Oa~~$SOc~~$XOX~~$^Oz~~$cPZ~!P!Q$f~$kSj~OY$fZ;'S$f;'S;=`$w<%lO$f~$zP;=`<%l$f~%SVf~pq%i|}%i!O!P&Z!Q!['Z!g!h&o#R#S%i#X#Y&o~%lP!Q![%o~%tVf~pq%i|}%i!O!P&Z!Q![%o!g!h&o#R#S%i#X#Y&o~&^P!Q![&a~&fRf~!Q![&a!g!h&o#X#Y&o~&rR{|&{}!O&{!Q!['R~'OP!Q!['R~'WPf~!Q!['R~'`Wf~pq%i|}%i}!O'x!O!P&Z!Q![(m!g!h&o#R#S%i#X#Y&o~'{P!Q![(O~(RP!Q![(U~(XP}!O([~(_P!Q![(b~(eP!Q![(h~(mOi~~(rVf~pq%i|}%i!O!P&Z!Q![)X!g!h&o#R#S%i#X#Y&o~)^Wf~pq%i|}%i}!O'x!O!P&Z!Q![%o!g!h&o#R#S%i#X#Y&o~){OV~~*QO]~Q*VO{Q",
+  tokenData: "*Y~RcXY!^YZ!i]^!ipq!^rs!pst#_uv#vxy#{yz$Qz{#v{|$V|}$[}!O$V!P!Q$a!Q![%Q![!])y!_!`)y#Q#R*O~~*T~!cQt~XY!^pq!^R!pO{QvP~!sTOr!prs#Ss;'S!p;'S;=`#X<%lO!p~#XOh~~#[P;=`<%l!p~#dSl~OY#_Z;'S#_;'S;=`#p<%lO#_~#sP;=`<%l#_~#{OZ~~$QOa~~$VOc~~$[OX~~$aOz~~$fPZ~!P!Q$i~$nSj~OY$iZ;'S$i;'S;=`$z<%lO$i~$}P;=`<%l$i~%VVf~pq%l|}%l!O!P&^!Q!['^!g!h&r#R#S%l#X#Y&r~%oP!Q![%r~%wVf~pq%l|}%l!O!P&^!Q![%r!g!h&r#R#S%l#X#Y&r~&aP!Q![&d~&iRf~!Q![&d!g!h&r#X#Y&r~&uR{|'O}!O'O!Q!['U~'RP!Q!['U~'ZPf~!Q!['U~'cWf~pq%l|}%l}!O'{!O!P&^!Q![(p!g!h&r#R#S%l#X#Y&r~(OP!Q![(R~(UP!Q![(X~([P}!O(_~(bP!Q![(e~(hP!Q![(k~(pOi~~(uVf~pq%l|}%l!O!P&^!Q![)[!g!h&r#R#S%l#X#Y&r~)aWf~pq%l|}%l}!O'{!O!P&^!Q![%r!g!h&r#R#S%l#X#Y&r~*OOV~~*TO]~Q*YO{Q",
   tokenizers: [numberWithUnitTokens, 0, 1, identifierTokens],
   topRules: {"CalcDoc":[0,4]},
   specialized: [{term: 3, get: (value) => spec_Identifier[value] || -1}],

@@ -214,6 +214,11 @@ export const calculatorFixtures: CalculatorFixture[] = [
     name: 'Expression with binded value',
     doc: 'some = 10\nother = some + 2',
     expected: [10, 12]
+  },
+  {
+    name: 'binding with colon',
+    doc: 'some: 10\nother: some + 2',
+    expected: [10, 12]
   },   {
     name: 'Multiple operations with binded value',
     doc: `tax_rate = 0.21\nnet = 100\ngross = net + net * tax_rate`,

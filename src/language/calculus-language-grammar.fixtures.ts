@@ -19,6 +19,17 @@ expectedTree: `CalcDoc
         Number`,
 },
 {
+name: 'simple binding with colon',
+doc: 'some: 123',
+expectedTree: `CalcDoc
+  StatementGroup
+    Binding
+      Identifier
+      EqualSign
+      Literal
+        Number`,
+},
+{
 name: 'value with unit',
 doc: '100USD',
 expectedTree: `CalcDoc

@@ -81,7 +81,7 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	TimesBinaryOp { "/" | "*" | "%" }
 	PowBinaryOp { "^" }
 	PlusBinaryOp { "+" | "-" }
-	EqualSign { "=" }
+	EqualSign { "=" | ":" }
 
 	// Literals
 	exponentPart { ("e" | "E") ("+" | "-")? @digit+ }
