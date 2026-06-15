@@ -54,14 +54,22 @@ function positionMobileMenu(menu: HTMLElement): void {
     : '';
 }
 
+export type CreateDropdownItemOptions = {
+  /** Show description without hover/focus (e.g. templates menu). */
+  alwaysShowDescription?: boolean;
+};
+
 export function createDropdownItem(
   name: string,
   description: string,
   onClick: () => void,
+  options?: CreateDropdownItemOptions,
 ): HTMLButtonElement {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'dropdown-menu__item';
+  button.className = options?.alwaysShowDescription
+    ? 'dropdown-menu__item dropdown-menu__item--show-doc'
+    : 'dropdown-menu__item';
 
   const nameEl = document.createElement('span');
   nameEl.className = 'dropdown-menu__name';

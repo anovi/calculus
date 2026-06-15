@@ -15,43 +15,43 @@ export type Template = {
 
 export const TEMPLATES: Template[] = [
   {
-    name: 'Monthly budget',
-    description: 'Track income, fixed costs, and savings.',
-    content: monthlyBudget,
-  },
-  {
-    name: 'Trip planning',
-    description: 'Estimate travel costs in mixed currencies.',
-    content: tripPlanning,
-  },
-  {
-    name: 'Recipe scaling',
-    description: 'Scale ingredient amounts for a different serving count.',
-    content: recipeScaling,
-  },
-  {
-    name: 'Unit conversion',
-    description: 'Convert between common units.',
-    content: unitConversion,
-  },
-  {
-    name: 'VAT / tax',
-    description: 'Calculate gross from net and a tax rate.',
-    content: vatTax,
-  },
-  {
-    name: 'Split the check',
-    description: 'Split a restaurant bill with tip.',
+    name: '🍕 Split the check',
+    description: 'Split a restaurant bill with tip',
     content: tipSplitBill,
   },
   {
-    name: 'Compound savings growth',
-    description: 'Project savings with recurring contributions and compound interest.',
+    name: '📊 Monthly budget',
+    description: 'Track income, fixed costs, and savings',
+    content: monthlyBudget,
+  },
+  {
+    name: '✈️ Trip planning',
+    description: 'Estimate travel costs in mixed currencies',
+    content: tripPlanning,
+  },
+  {
+    name: '🍳 Recipe scaling',
+    description: 'Scale ingredient amounts for a different serving count',
+    content: recipeScaling,
+  },
+  {
+    name: '📏 Unit conversion',
+    description: 'Convert between common units',
+    content: unitConversion,
+  },
+  {
+    name: '🧾 VAT / tax',
+    description: 'Calculate gross from net and a tax rate',
+    content: vatTax,
+  },
+  {
+    name: '📈 Compound savings growth',
+    description: 'Project savings with recurring contributions and compound interest',
     content: savingsGrowth,
   },
   {
-    name: 'Freelance invoice',
-    description: 'Bill hours, apply discount, convert to home currency.',
+    name: '💼 Freelance invoice',
+    description: 'Bill hours, apply discount, convert to home currency',
     content: freelanceInvoice,
   },
 ];

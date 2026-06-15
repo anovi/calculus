@@ -751,6 +751,10 @@ body {
   color: var(--text-secondary);
 }
 
+.dropdown-menu__item--show-doc .dropdown-menu__doc {
+  display: block;
+}
+
 .dropdown-menu__item:is(:hover, :focus-visible, :active) .dropdown-menu__doc {
   display: block;
   color: var(--on-accent-secondary)

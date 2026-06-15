@@ -22,10 +22,15 @@ export function mountTemplatesMenu(
       scroll.replaceChildren(
         createDropdownList(
           TEMPLATES.map((template) =>
-            createDropdownItem(template.name, template.description, () => {
-              insertTemplate(view, template.content);
-              close();
-            }),
+            createDropdownItem(
+              template.name,
+              template.description,
+              () => {
+                insertTemplate(view, template.content);
+                close();
+              },
+              { alwaysShowDescription: false },
+            ),
           ),
         ),
       );
