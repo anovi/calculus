@@ -23,7 +23,7 @@ Calculus is a notebook-style editor for everyday math. Each line is either a cal
 
 - **One expression per line.** Each line is evaluated independently.
 - **Results on the right.** A line like `2 + 2` shows `= 4` at the end.
-- **Variables.** Use `name = expression` to store a result and reuse it on later lines.
+- **Variables.** Use `name = expression` (or `name: expression`) to store a result and reuse it on later lines.
 - **Order matters.** Variables are available only on lines *below* the line where they are defined.
 
 ```text
@@ -32,7 +32,7 @@ rent = 1450 EUR
 left = monthly - rent
 ```
 
-Lines without `=` are plain expressions — they calculate but do not create a variable:
+Lines without `=` or `:` are plain expressions — they calculate but do not create a variable:
 
 ```text
 2 + 2          → 4
@@ -155,11 +155,11 @@ Unary minus works on numbers and expressions:
 
 ## Variables
 
-Assign a name with `=`:
+Assign a name with `=` or `:`:
 
 ```text
 tax_rate = 0.21
-net = 100
+net: 100
 gross = net + net * tax_rate
 ```
 
