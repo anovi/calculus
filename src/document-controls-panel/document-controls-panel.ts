@@ -68,7 +68,6 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
     id: 'app-menu-toggle',
     className: 'cm-document-controls__button cm-document-controls__app-menu-button',
   })
-  const unmountAppMenu = mountAppMenu(appMenuButton, ctx)
 
   const functionsButton = document.createElement('button')
   functionsButton.type = 'button'
@@ -86,6 +85,7 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
 
   let historyButtons: HistoryButtons | null = null
   let unmountFunctionsMenu: (() => void) | null = null
+  let unmountAppMenu: (() => void) | null = null
 
   const panelExtension = showPanel.of((view: EditorView): Panel => {
     const dom = document.createElement('div')
@@ -107,6 +107,9 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
     unmountFunctionsMenu?.()
     unmountFunctionsMenu = mountFunctionsMenu(functionsButton, view).destroy
 
+    unmountAppMenu?.()
+    unmountAppMenu = mountAppMenu(appMenuButton, ctx)
+
     dom.append(start, end)
     return {
       dom,
@@ -114,7 +117,8 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
       destroy: () => {
         unmountFunctionsMenu?.()
         unmountFunctionsMenu = null
-        unmountAppMenu()
+        unmountAppMenu?.()
+        unmountAppMenu = null
       },
     }
   })
