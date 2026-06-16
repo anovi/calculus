@@ -27,6 +27,7 @@ export function createDocumentActions(ctx: AppContext): DocumentActions {
       const doc = await ctx.session.createAndOpenDocument()
       ctx.ui.editor?.setDocument(doc.content)
       ctx.ui.drawer?.close()
+      if (!isMobileDevice()) ctx.ui.editor?.view.focus()
     },
 
     setupHashNavigation() {
