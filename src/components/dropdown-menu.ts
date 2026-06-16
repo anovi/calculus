@@ -42,9 +42,24 @@ function positionDropdown(
   margin: number,
 ): void {
   const rect = trigger.getBoundingClientRect();
-  menu.style.top = `${rect.bottom + margin}px`;
-  menu.style.right = `${Math.max(margin, window.innerWidth - rect.right)}px`;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const maxPreferredHeight = viewportHeight * 0.8;
+  const spaceBelow = viewportHeight - rect.bottom - margin;
+  const spaceAbove = rect.top - margin;
+
+  menu.style.right = `${Math.max(margin, viewportWidth - rect.right)}px`;
   menu.style.left = 'auto';
+
+  if (spaceBelow >= spaceAbove) {
+    menu.style.top = `${rect.bottom + margin}px`;
+    menu.style.bottom = 'auto';
+    menu.style.maxHeight = `${Math.max(0, Math.min(maxPreferredHeight, spaceBelow))}px`;
+  } else {
+    menu.style.top = 'auto';
+    menu.style.bottom = `${viewportHeight - rect.top + margin}px`;
+    menu.style.maxHeight = `${Math.max(0, Math.min(maxPreferredHeight, spaceAbove))}px`;
+  }
 }
 
 function positionMobileMenu(menu: HTMLElement): void {

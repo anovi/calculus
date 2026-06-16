@@ -10,6 +10,11 @@ body {
   font-weight: 450;  
 }
 
+:root {
+  --side-padding-size: 12px;
+  --line-padding: 0 2px 0 6px;
+}
+
 *,
 *::before,
 *::after {
@@ -290,6 +295,7 @@ body {
 }
 
 #editor .cm-editor {
+  position: relative;
   flex: 1 1 auto;
   background: var(--background);
   color: var(--editor-base);
@@ -348,24 +354,39 @@ body {
   /* font-style: italic; */
 }
 
-#editor .cm-empty-editor-placeholder__template-btn {
-  display: inline;
-  margin: 0;
-  padding: 0 0.5em;
-  border: 1px solid var(--border-level-3);
-  border-radius: 2em;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-style: normal;
-  text-decoration: none;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+#editor .cm-empty-editor-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
 }
 
-#editor .cm-empty-editor-placeholder__template-btn:is(:hover, :focus-visible) {
-  color: var(--accent);
-  font-style: normal;
+#editor .cm-empty-editor-overlay[hidden] {
+  display: none;
+}
+
+#editor .cm-empty-editor-overlay__template-btn {
+  pointer-events: auto;
+  margin: 0;
+  padding: 0.4em 1em;
+  border: 1px solid var(--border-level-2);
+  border-radius: 2em;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--main-font);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+#editor .cm-empty-editor-overlay__template-btn:is(:hover, :focus-visible) {
+  /* color: var(--accent); */
+  background: var(--surface-level-1);
+  border: 1px solid var(--border-level-3);
   outline: none;
 }
 
@@ -645,6 +666,9 @@ body {
 }
 
 .dropdown-menu--desktop {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   width: min(320px, calc(100vw - 16px));
   max-height: 80vh;
   padding: 4px;
@@ -664,6 +688,12 @@ body {
   overflow-y: auto;
   max-height: inherit;
   padding: 8px 4px 12px;
+}
+
+.dropdown-menu--desktop .dropdown-menu__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
 }
 
 .dropdown-menu--mobile .dropdown-menu__scroll {

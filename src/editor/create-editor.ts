@@ -61,7 +61,7 @@ export function createEditor({
     variableHoverTooltip,
     syntaxHighlighting(calculusHighlightStyle),
     helpPanel(),
-    emptyEditorPlaceholder(),
+    ...emptyEditorPlaceholder(),
     createEditorTheme(dark),
     calcSyntaxLinter,
     // safariFocusScrollFix(),
