@@ -26,12 +26,17 @@ export const TEMPLATES: Template[] = [
   },
   {
     name: '✈️ Trip planning',
-    description: 'Estimate travel costs in mixed currencies',
+    description: 'Travel costs in mixed currencies',
     content: tripPlanning,
   },
   {
+    name: '💼 Freelance invoice',
+    description: 'Rate, discount, currency convertion',
+    content: freelanceInvoice,
+  },
+  {
     name: '🍳 Recipe scaling',
-    description: 'Scale ingredient amounts for a different serving count',
+    description: 'Scale ingredients to a serving count',
     content: recipeScaling,
   },
   {
@@ -46,12 +51,7 @@ export const TEMPLATES: Template[] = [
   },
   {
     name: '📈 Compound savings growth',
-    description: 'Project savings with recurring contributions and compound interest',
+    description: 'With recurring contributions',
     content: savingsGrowth,
-  },
-  {
-    name: '💼 Freelance invoice',
-    description: 'Bill hours, apply discount, convert to home currency',
-    content: freelanceInvoice,
   },
 ];

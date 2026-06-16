@@ -1,29 +1,29 @@
 // kilometer to mile
-10 km in mi = 6.2137 mi
+10 km in mi
 
 // kilogram to pound
-72.5 kg in lb = 159.835 lb
+72.5 kg in lb
 
 // Celsius to Fahrenheit
-20 C in f = 68 F
+20 C in f
 
 // meter to foot
-1.8 m in ft = 5.9055 ft
+1.8 m in ft
 
 // centimeter to inch
-30 cm in inches = 11.811 inches
+30 cm in inches
 
 // liter to gallon
-2.5 l in gal = 0.66043 gal
+2.5 l in gal
 
 // milliliter to liter
-500 ml in l = 0.5 l
+500 ml in l
 
 // gram to ounce
-250 g in oz = 8.8185 oz
+250 g in oz
 
 // minute to hour
-90 min in h = 1.5 h
+90 min in h
 
 // US dollar to euro
-100 USD in EUR = 86.46 EUR
+100 USD in EUR

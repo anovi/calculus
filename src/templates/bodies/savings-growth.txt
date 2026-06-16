@@ -1,16 +1,16 @@
 # Compound savings growth with recurring contributions
 // End-of-period deposits: each contribution earns interest at compounding_period_rate between deposit dates.
 
-// Set your params
+## 1️⃣ Set your params
 initial_sum = 1000 EUR
 contribution = 100 EUR // amount per deposit
 contributions_per_year = 12
 years = 5
 annual_rate = 0.06
-
 // How often interest is compounded (12 = monthly, 4 = quarterly, 1 = yearly)
 compounding_frequency = 12
 
+// Calculation, that you can skip
 compounding_period_rate = annual_rate / compounding_frequency
 compounding_periods = compounding_frequency * years
 principal_growth = (1 + compounding_period_rate)^compounding_periods
@@ -19,5 +19,5 @@ contribution_intervals = compounding_frequency / contributions_per_year
 contribution_growth_per_interval = (1 + compounding_period_rate)^contribution_intervals
 contributions_future = contribution * (principal_growth - 1) / (contribution_growth_per_interval - 1)
 
-// Result
+## 2️⃣ See the result
 future_value = initial_sum * principal_growth + contributions_future

@@ -29,7 +29,7 @@ export function mountTemplatesMenu(
                 insertTemplate(view, template.content);
                 close();
               },
-              { alwaysShowDescription: false },
+              { alwaysShowDescription: true },
             ),
           ),
         ),

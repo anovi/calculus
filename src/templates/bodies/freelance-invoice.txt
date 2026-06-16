@@ -1,10 +1,10 @@
 # Freelance invoice
 hours_billed = 37.5
 rate = 95 USD
-subtotal = hours_billed * rate = 3 562.5 USD
+subtotal = hours_billed * rate
 
 discount_rate = 0.05
-discount = subtotal * discount_rate = 178.13 USD
+discount = subtotal * discount_rate
 
-net = subtotal - discount = 3 384.38 USD
-net in EUR = 2 926.16 EUR
+net = subtotal - discount
+net in EUR
