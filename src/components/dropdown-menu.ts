@@ -14,6 +14,8 @@ export type DropdownMenu = {
 export type MountDropdownMenuOptions = {
   /** Prefix for backdrop element id, e.g. 'functions-menu'. */
   id?: string;
+  /** Extra class on the menu root (e.g. variant-specific styling). */
+  menuClassName?: string;
   renderContent: (scroll: HTMLElement, close: () => void) => void;
   /** Horizontal scroll row containing the trigger (mobile toolbar). */
   scrollContainer?: HTMLElement;
@@ -106,6 +108,15 @@ export function createDropdownList(items: HTMLElement[]): HTMLDivElement {
   return list;
 }
 
+export function createDropdownCloseButton(onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'dropdown-menu__close';
+  button.textContent = 'Close';
+  button.addEventListener('click', onClick);
+  return button;
+}
+
 export function createDropdownSection({
   heading,
   intro,
@@ -151,6 +162,9 @@ export function mountDropdownMenu(
   menu.className = mobile
     ? 'dropdown-menu dropdown-menu--mobile cm-tooltip'
     : 'dropdown-menu dropdown-menu--desktop cm-tooltip';
+  if (options.menuClassName) {
+    menu.classList.add(options.menuClassName);
+  }
   menu.setAttribute('role', 'menu');
   menu.hidden = true;
   document.body.append(menu);

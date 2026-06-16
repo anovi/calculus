@@ -1,11 +1,13 @@
 import type { EditorView } from '@codemirror/view';
 
 import {
+  createDropdownCloseButton,
   createDropdownItem,
   createDropdownList,
   mountDropdownMenu,
   type DropdownMenu,
 } from '../components/dropdown-menu';
+import { isMobileDevice } from '../lib/mobile-device';
 import { TEMPLATES } from './templates-data';
 import { insertTemplate } from './insert-template';
 
@@ -17,22 +19,25 @@ export function mountTemplatesMenu(
 ): TemplatesMenu {
   return mountDropdownMenu(trigger, {
     id: 'templates-menu',
+    menuClassName: 'dropdown-menu--templates',
     view,
     renderContent: (scroll, close) => {
-      scroll.replaceChildren(
-        createDropdownList(
-          TEMPLATES.map((template) =>
-            createDropdownItem(
-              template.name,
-              template.description,
-              () => {
-                insertTemplate(view, template.content);
-                close();
-              },
-              { alwaysShowDescription: true },
-            ),
+      const list = createDropdownList(
+        TEMPLATES.map((template) =>
+          createDropdownItem(
+            template.name,
+            template.description,
+            () => {
+              insertTemplate(view, template.content);
+              close();
+            },
+            { alwaysShowDescription: true },
           ),
         ),
+      );
+      scroll.replaceChildren(
+        ...(isMobileDevice() ? [createDropdownCloseButton(close)] : []),
+        list,
       );
     },
   });
