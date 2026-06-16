@@ -631,6 +631,26 @@ body {
 
 /* ----------- Dropdown menu ---------- */
 
+@keyframes dropdown-menu-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dropdown-menu-desktop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes dropdown-menu-mobile-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
 #editor .cm-document-controls__functions-button {
   font-family: var(--editor-font);
   font-size: 1.35rem;
@@ -644,6 +664,10 @@ body {
   z-index: var(--z-layer-backdrop);
   opacity: 1;
   pointer-events: auto;
+}
+
+.dropdown-menu-backdrop:not([hidden]) {
+  animation: dropdown-menu-backdrop-in 150ms ease-out;
 }
 
 .dropdown-menu-backdrop[hidden] {
@@ -672,6 +696,11 @@ body {
   width: min(320px, calc(100vw - 16px));
   max-height: 80vh;
   padding: 4px;
+  transform-origin: top right;
+}
+
+.dropdown-menu--desktop:not([hidden]) {
+  animation: dropdown-menu-desktop-in 160ms ease-out;
 }
 
 .dropdown-menu--mobile {
@@ -682,6 +711,11 @@ body {
   border-radius: 0;
   max-height: none;
   padding: 0;
+  transform-origin: top center;
+}
+
+.dropdown-menu--mobile:not([hidden]) {
+  animation: dropdown-menu-mobile-in 180ms ease-out;
 }
 
 .dropdown-menu__scroll {
