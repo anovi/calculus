@@ -42,6 +42,16 @@ describe('variableCompletionSource', () => {
     assert.strictEqual(await completionAt(doc, doc.length, false), null);
   });
 
+  it('returns options for a variable reference in a binding rhs', async () => {
+    const doc = 'a = 1\nb = a';
+    const pos = doc.length;
+    const result = await completionAt(doc, pos);
+    assert.ok(result);
+    assert.strictEqual(result.from, doc.lastIndexOf('a'));
+    assert.strictEqual(result.to, pos);
+    assert.ok(result.options.some((option) => option.label === 'a' && option.type === 'variable'));
+  });
+
   it('returns options for a variable reference', async () => {
     const doc = 'a = 1\na';
     const pos = doc.length;

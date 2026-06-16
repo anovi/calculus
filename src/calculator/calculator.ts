@@ -153,7 +153,26 @@ const IdentifierEvalContext: TermValue[] = [
     terms.MulExpression,
     terms.ConvertExpression,
     terms.ArgList,
+    terms.NoBinding,
 ]
+
+/**
+ * NOTE: The method is needed, because we simply can't add Binding to IdentifierEvalContext.
+ * In case of a statement `some = other`, both identifiers direct parents of Binding.
+ */
+function shouldResolveVariable(ctx: Ctx): boolean {
+    const parent = ctx.parentNodeType();
+    if (IdentifierEvalContext.includes(parent)) return true;
+    if (parent !== terms.Binding) return false;
+    const cursor = ctx.cursor;
+    const idFrom = cursor.from;
+    if (!cursor.parent() || !cursor.firstChild()) return false;
+    const nameFrom = cursor.from;
+    const isVariableReference = nameFrom !== idFrom;
+    cursor.parent();
+    cursor.childAfter(idFrom - 1);
+    return isVariableReference;
+}
 
 /**
  * This config defines how to process node values.
@@ -225,7 +244,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.Identifier]: {
         process: (ctx): undefined|string|ExpressionResult => {
             const name = ctx.sliceDoc(ctx.cursor.from, ctx.cursor.to);
-            if (IdentifierEvalContext.includes(ctx.parentNodeType())) {
+            if (shouldResolveVariable(ctx)) {
                 const val = ctx.bindings.get(name);
                 if (!val) {
                     return expressionError(`Variable "${name}" is not defined.`, ctx.cursor);
@@ -301,6 +320,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             key: 'result',
             expect: [
                 terms.Literal,
+                terms.Identifier,
                 terms.MulExpression,
                 terms.ExpExpression,
                 terms.AddExpression,
@@ -326,6 +346,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
             key: 'result',
             expect: [
                 terms.Literal,
+                terms.Identifier,
                 terms.MulExpression,
                 terms.ExpExpression,
                 terms.AddExpression,

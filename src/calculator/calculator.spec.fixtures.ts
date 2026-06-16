@@ -216,6 +216,11 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [10, 12]
   },
   {
+    name: 'assign variable to another variable',
+    doc: 'some = 2\nother = some',
+    expected: [2, 2],
+  },
+  {
     name: 'binding with colon',
     doc: 'some: 10\nother: some + 2',
     expected: [10, 12]

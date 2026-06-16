@@ -9,6 +9,7 @@ const identifierUseParents = new Set<TermValue>([
 	terms.MulExpression,
 	terms.ConvertExpression,
 	terms.ArgList,
+	terms.NoBinding,
 ])
 
 /** Identifier that refers to a variable value (not a binding name or function name). */
@@ -30,7 +31,11 @@ export function isVariableIdentifierUse(node: SyntaxNode): boolean {
 }
 
 export function isBindingIdentifier(node: SyntaxNode): boolean {
-	return node.type.id === terms.Identifier && node.parent?.type.id === terms.Binding
+	if (node.type.id !== terms.Identifier) return false
+	const parent = node.parent
+	if (parent?.type.id !== terms.Binding) return false
+	const nameId = parent.firstChild
+	return nameId != null && node.from === nameId.from
 }
 
 /**

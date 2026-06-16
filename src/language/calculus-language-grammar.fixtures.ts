@@ -536,4 +536,19 @@ expectedTree: `CalcDoc
       Literal
         Number`,
 },
+{
+name: 'assign a variable result to new varialbe',
+doc: 'some = 2\nother = some',
+expectedTree: `CalcDoc
+  StatementGroup
+    Binding
+      Identifier
+      EqualSign
+      Literal
+        Number
+    Binding
+      Identifier
+      EqualSign
+      Identifier`,
+},
 ];
