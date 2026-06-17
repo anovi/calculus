@@ -9,6 +9,8 @@ import { versionedIconAsset } from './icon-assets-version'
 import { parseCurrenciesCsv } from './src/units/parse-currencies-csv'
 import { DARK_MODE_BG } from './src/theme/colors'
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 const faviconIco = versionedIconAsset('favicon.ico')
 const faviconSvg = versionedIconAsset('favicon.svg')
 const appleTouchIcon = versionedIconAsset('apple-touch-icon-180x180.png')
@@ -44,88 +46,85 @@ export default defineConfig({
       scopeBehaviour: 'local',
     }
   },
-  plugins: [
-    {
-      name: 'versioned-icon-assets',
-      transformIndexHtml(html) {
-        return html
-          .replaceAll('./favicon.ico', `./${faviconIco}`)
-          .replaceAll('./favicon.svg', `./${faviconSvg}`)
-          .replaceAll(
-            './apple-touch-icon-180x180.png',
-            `./${appleTouchIcon}`,
-          )
-      },
+  plugins: [{
+    name: 'versioned-icon-assets',
+    transformIndexHtml(html) {
+      return html
+        .replaceAll('./favicon.ico', `./${faviconIco}`)
+        .replaceAll('./favicon.svg', `./${faviconSvg}`)
+        .replaceAll(
+          './apple-touch-icon-180x180.png',
+          `./${appleTouchIcon}`,
+        )
     },
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: [
-        faviconIco,
-        faviconSvg,
-        pwa64,
-        pwa192,
-        pwa512,
-        maskableIcon,
-        appleTouchIcon,
+  }, VitePWA({
+    registerType: 'autoUpdate',
+    includeAssets: [
+      faviconIco,
+      faviconSvg,
+      pwa64,
+      pwa192,
+      pwa512,
+      maskableIcon,
+      appleTouchIcon,
+    ],
+    manifest: {
+      name: 'Calculus',
+      short_name: 'Calculus',
+      description: 'A tiny notebook editor for everyday math.',
+      theme_color: DARK_MODE_BG,
+      background_color: DARK_MODE_BG,
+      display: 'standalone',
+      orientation: 'portrait-primary',
+      start_url: './',
+      scope: './',
+      icons: [
+        {
+          src: pwa64,
+          sizes: '64x64',
+          type: 'image/png',
+        },
+        {
+          src: pwa192,
+          sizes: '192x192',
+          type: 'image/png',
+        },
+        {
+          src: pwa512,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any',
+        },
+        {
+          src: maskableIcon,
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable',
+        },
       ],
-      manifest: {
-        name: 'Calculus',
-        short_name: 'Calculus',
-        description: 'A tiny notebook editor for everyday math.',
-        theme_color: DARK_MODE_BG,
-        background_color: DARK_MODE_BG,
-        display: 'standalone',
-        orientation: 'portrait-primary',
-        start_url: './',
-        scope: './',
-        icons: [
-          {
-            src: pwa64,
-            sizes: '64x64',
-            type: 'image/png',
-          },
-          {
-            src: pwa192,
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: pwa512,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: maskableIcon,
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
-        cleanupOutdatedCaches: true,
-        runtimeCaching: [
-          {
-            urlPattern: ({ url }) =>
-              url.origin === 'https://api.frankfurter.dev' &&
-              url.pathname.startsWith('/v2/rates'),
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'frankfurter-rates-v2',
-              expiration: {
-                maxEntries: 40,
-                maxAgeSeconds: 60 * 60 * 24 * 30,
-              },
-              networkTimeoutSeconds: 10,
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
+      cleanupOutdatedCaches: true,
+      runtimeCaching: [
+        {
+          urlPattern: ({ url }) =>
+            url.origin === 'https://api.frankfurter.dev' &&
+            url.pathname.startsWith('/v2/rates'),
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'frankfurter-rates-v2',
+            expiration: {
+              maxEntries: 40,
+              maxAgeSeconds: 60 * 60 * 24 * 30,
+            },
+            networkTimeoutSeconds: 10,
+            cacheableResponse: {
+              statuses: [0, 200],
             },
           },
-        ],
-      },
-    }),
-  ],
+        },
+      ],
+    },
+  }), cloudflare()],
 })
