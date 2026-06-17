@@ -20,6 +20,7 @@ import { renameVariableReferences } from './variables/rename-variable-references
 import { calculusHighlightStyle } from './language-tools/calculus-syntax-highlight-tags'
 import { hackSafariTouchSelection } from './safari-selection-hack'
 import { emptyEditorPlaceholder } from './empty-editor-placeholder'
+import { calcBindingFold } from './folding/line-fold'
 
 export type CreateEditorOptions = {
   parent: HTMLElement
@@ -56,6 +57,7 @@ export function createEditor({
     calcRanges(),
     calcClipboard(),
     calcResultsPlugin,
+    calcBindingFold(),
     calcResultTooltips(),
     functionArgsTooltip(),
     variableHoverTooltip,

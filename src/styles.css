@@ -331,6 +331,29 @@ body {
   background: var(--surface-level-1);
 }
 
+#editor .cm-foldGutter {
+  width: 1.2em;
+  min-width: 1.2em;
+}
+
+#editor .cm-foldGutter span {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  line-height: inherit;
+}
+
+#editor .cm-foldGutter span:hover {
+  color: var(--text-primary);
+}
+
+#editor .cm-binding-fold-placeholder {
+  cursor: pointer;
+}
+
+#editor .cm-binding-fold-placeholder .cm-calc-result::before {
+  content: none;
+}
+
 #editor .cm-cursor {
   border-left-color: var(--text-primary);
 }
