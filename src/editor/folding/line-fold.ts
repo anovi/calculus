@@ -24,9 +24,8 @@ export function isBindingExpressionFolded(
 
 /** Fold range for a binding expression: from after `=` / `:` through the expression. */
 export function bindingExpressionFoldRange(node: SyntaxNode): { from: number; to: number } | null {
-  if (node.type.id !== terms.Binding) return null
-  const equalSign = node.getChild('EqualSign')
-  if (!equalSign) return null
+  const equalSign = node.getChild('EqualSign') || node.getChild('ColonSign')
+  if (!equalSign) return { from: node.from, to: node.to }
   let expr = equalSign.nextSibling
   while (expr && expr.type.id === terms.Comment) expr = expr.nextSibling
   if (!expr) return null
@@ -44,7 +43,7 @@ function bindingFoldOnLine(state: EditorState, lineStart: number, lineEnd: numbe
     from: result.from,
     to: result.to,
     enter(node) {
-      if (node.type.id !== terms.Binding) return
+      if (node.type.id !== terms.Binding && node.type.id !== terms.NoBinding) return
       const range = bindingExpressionFoldRange(node.node)
       if (!range || range.from < lineStart || range.to > lineEnd) return
       found = range
