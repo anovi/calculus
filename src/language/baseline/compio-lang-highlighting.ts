@@ -9,6 +9,7 @@ export const compioLangHighlight = styleTags({
 	'FunctionCall/Identifier': tags.function(tags.name),
 	'Heading': tags.heading,
 	'Identifier': tags.variableName,
+	'Binding/Identifier': tags.labelName,
 	'TimesBinaryOp': tags.operator,
 	'PowBinaryOp': tags.operator,
 	'PlusBinaryOp': tags.operator,
