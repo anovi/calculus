@@ -193,6 +193,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     [terms.Date]: SKIP,
     [terms.String]: SKIP,
     [terms.EqualSign]: SKIP,
+    [terms.ColonSign]: SKIP,
     [terms.Heading]: SKIP,
     [terms.PercentSuffix]: SKIP,
     

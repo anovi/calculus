@@ -83,6 +83,16 @@ describe('formatOnType', () => {
 		assert.strictEqual(next.doc.toString(), '2^2');
 	});
 
+	it('does not add space before colon', () => {
+		const state = EditorState.create({
+			doc: 'some:',
+			selection: EditorSelection.cursor(5),
+			extensions: [calcLanguage, formatOnType()],
+		});
+		const next = typeAt(state, 5, '2');
+		assert.strictEqual(next.doc.toString(), 'some: 2');
+	});
+
 	it('spaces multiply but not exponent in mixed expression', () => {
 		const state = EditorState.create({
 			doc: '2*2^',

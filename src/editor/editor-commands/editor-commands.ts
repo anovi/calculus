@@ -178,5 +178,6 @@ function shouldInsertSpace(prevId: number, currentId: number): boolean {
 	if (prevId === terms.Opr) return false;
 	if (currentId === terms.Cpr) return false;
 	if (prevId === terms.PowBinaryOp || currentId === terms.PowBinaryOp) return false;
+	if (currentId === terms.ColonSign) return false;
 	return true;
 }

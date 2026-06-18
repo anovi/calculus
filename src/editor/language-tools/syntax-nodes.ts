@@ -47,6 +47,7 @@ export function isAtomicNode(id: number): boolean {
 		case terms.Number:
 		case terms.Unit:
 		case terms.EqualSign:
+		case terms.ColonSign:
 		case terms.PlusBinaryOp:
 		case terms.TimesBinaryOp:
 		case terms.PowBinaryOp:

@@ -31,7 +31,7 @@ lineComment { Comment }
 
 CommentLine { Comment end }
 
-Binding { Identifier EqualSign expression lineComment? end }
+Binding { Identifier (EqualSign|ColonSign) expression lineComment? end }
 NoBinding { expression lineComment? end }
 
 expression {
@@ -81,7 +81,8 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 	TimesBinaryOp { "/" | "*" | "%" }
 	PowBinaryOp { "^" }
 	PlusBinaryOp { "+" | "-" }
-	EqualSign { "=" | ":" }
+	EqualSign { "=" }
+	ColonSign { ":" }
 
 	// Literals
 	exponentPart { ("e" | "E") ("+" | "-")? @digit+ }

@@ -25,7 +25,7 @@ expectedTree: `CalcDoc
   StatementGroup
     Binding
       Identifier
-      EqualSign
+      ColonSign
       Literal
         Number`,
 },
