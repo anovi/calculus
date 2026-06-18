@@ -1,7 +1,7 @@
 import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { isIdentifierChar } from './identifier-char';
-import { Identifier } from './calculus-language-parser.terms';
+import { Identifier } from './compio-language-parser.terms';
 
 const SPACE = 32, ZERO = 48, NINE = 57;
 
@@ -110,5 +110,5 @@ export function createIdentifierTokensTokenizer(terms: { Identifier: number }) {
   });
 }
 
-/** Wired into the generated parser; term ids come from `calculus-language-parser.terms`. */
+/** Wired into the generated parser; term ids come from `compio-language-parser.terms`. */
 export const identifierTokens = createIdentifierTokensTokenizer({ Identifier });

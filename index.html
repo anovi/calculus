@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <script>
       (function () {
-        var key = 'calculus-theme';
+        var key = 'compio-theme';
         var theme = null;
         try {
           theme = localStorage.getItem(key);
@@ -16,13 +16,13 @@
       })();
     </script>
     <script>
-      window.__calculusDeferredInstallPrompt = null;
+      window.__compioDeferredInstallPrompt = null;
       window.addEventListener('beforeinstallprompt', function (event) {
         event.preventDefault();
-        window.__calculusDeferredInstallPrompt = event;
+        window.__compioDeferredInstallPrompt = event;
       });
       window.addEventListener('appinstalled', function () {
-        window.__calculusDeferredInstallPrompt = null;
+        window.__compioDeferredInstallPrompt = null;
       });
     </script>
     <link rel="icon" href="./favicon.ico" sizes="48x48" />
@@ -31,25 +31,25 @@
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, interactive-widget=resizes-content, user-scalable=no">
     <meta name="theme-color" content="#151C20" />
-    <meta name="description" content="Calculus is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
+    <meta name="description" content="Compio is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
     <link rel="canonical" href="__CALCULUS_SITE_URL__/" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Calculus" />
-    <meta property="og:title" content="Calculus — A Notebook Calculator for Everyday Math" />
-    <meta property="og:description" content="Calculus is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
+    <meta property="og:site_name" content="Compio" />
+    <meta property="og:title" content="Compio — A Notebook Calculator for Everyday Math" />
+    <meta property="og:description" content="Compio is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
     <meta property="og:url" content="__CALCULUS_SITE_URL__/" />
     <meta property="og:image" content="__CALCULUS_SITE_URL__/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Calculus notebook calculator showing live math with units and named variables" />
+    <meta property="og:image:alt" content="Compio notebook calculator showing live math with units and named variables" />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Calculus — A Notebook Calculator for Everyday Math" />
-    <meta name="twitter:description" content="Calculus is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
+    <meta name="twitter:title" content="Compio — A Notebook Calculator for Everyday Math" />
+    <meta name="twitter:description" content="Compio is a notebook-style calculator for everyday math. Name results, convert units and currencies, and see live answers line by line. Install as a PWA in your browser." />
     <meta name="twitter:image" content="__CALCULUS_SITE_URL__/og-image.png" />
-    <meta name="twitter:image:alt" content="Calculus notebook calculator showing live math with units and named variables" />
+    <meta name="twitter:image:alt" content="Compio notebook calculator showing live math with units and named variables" />
     <link rel="apple-touch-icon" href="./apple-touch-icon-180x180.png" />
-    <title>Calculus — A Notebook Calculator for Everyday Math</title>
+    <title>Compio — A Notebook Calculator for Everyday Math</title>
   </head>
   <body>
     <div id="app-shell">

@@ -15,7 +15,7 @@ export interface DocumentStorage {
   setMeta(key: string, value: string): Promise<void>
 }
 
-const DB_NAME = 'calculus-documents'
+const DB_NAME = 'compio-documents'
 const DB_VERSION = 1
 const DOCUMENTS_STORE = 'documents'
 const META_STORE = 'meta'

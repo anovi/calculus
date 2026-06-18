@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { parser } from '../../language';
 import { planFunctionArgAdvance } from './function-args-advance';
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser });
+const calcLanguage = LRLanguage.define({ name: 'compio', parser });
 
 function planAt(doc: string, from: number, to: number, insert: string) {
   const state = EditorState.create({ doc, extensions: [calcLanguage] });

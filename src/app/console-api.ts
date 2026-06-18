@@ -3,8 +3,8 @@ import type { EditorView } from '@codemirror/view'
 declare global {
   interface Window {
     /** Hidden: copy document source (no calculated results) to the clipboard. Returns the text. */
-    calculusCopySource?: () => string
-    /** @deprecated Hidden alias — use calculusCopySource() */
+    compioCopySource?: () => string
+    /** @deprecated Hidden alias — use compioCopySource() */
     copyTextToClipboard?: (text?: string) => string
   }
 }
@@ -30,7 +30,7 @@ function copyWithTextarea(text: string): boolean {
 function getSource(getView: () => EditorView | null): string {
   const view = getView()
   if (!view) {
-    console.warn('calculusCopySource: editor not ready')
+    console.warn('compioCopySource: editor not ready')
     return ''
   }
   return view.state.doc.toString()
@@ -43,12 +43,12 @@ function copySource(getView: () => EditorView | null, text?: string): string {
   const view = getView()
   view?.focus()
   if (!copyWithTextarea(source)) {
-    console.info('calculusCopySource: clipboard write failed — in DevTools run copy(calculusCopySource())')
+    console.info('compioCopySource: clipboard write failed — in DevTools run copy(compioCopySource())')
   }
   return source
 }
 
 export function exposeConsoleApi(getView: () => EditorView | null): void {
-  window.calculusCopySource = () => copySource(getView)
+  window.compioCopySource = () => copySource(getView)
   window.copyTextToClipboard = (text?: string) => copySource(getView, text)
 }

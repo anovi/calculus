@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { parser } from '../../language';
 import { functionCallContextAt } from './function-args-context';
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser });
+const calcLanguage = LRLanguage.define({ name: 'compio', parser });
 
 function contextAt(doc: string, pos: number) {
   const state = EditorState.create({ doc, extensions: [calcLanguage] });

@@ -2,8 +2,8 @@ import assert from 'node:assert';
 import { Tree } from "@lezer/common"
 
 import { formatTreeBody, printTree } from '../lib/tree';
-import { parseFixtures } from './calculus-language-grammar.fixtures';
-import { calculusParser } from './baseline/parser';
+import { parseFixtures } from './compio-language-grammar.fixtures';
+import { compioParser } from './baseline/parser';
 
 
 function assertMatchTree(tree: Tree, expected: string) {
@@ -16,10 +16,10 @@ function assertMatchTree(tree: Tree, expected: string) {
 
 describe('CalcDoc grammar', () => {
 	
-	const configuredParser = calculusParser.configure({ /* strict: true */ })
+	const configuredParser = compioParser.configure({ /* strict: true */ })
 
 	it('should build parser', () => {
-		assert.ok(calculusParser);
+		assert.ok(compioParser);
 	})
 
 	for (const fx of parseFixtures) {

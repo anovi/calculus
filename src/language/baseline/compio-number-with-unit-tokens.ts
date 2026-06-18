@@ -2,7 +2,7 @@ import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { longestRecognizedUnitSpelling } from '../../units';
 import { isIdentifierChar } from './identifier-char';
-import { PercentSuffix, Unit } from './calculus-language-parser.terms';
+import { PercentSuffix, Unit } from './compio-language-parser.terms';
 
 export type NumberWithUnitTokenizerTerms = {
   Unit: number;
@@ -63,5 +63,5 @@ export function createUnitTokenizer(terms: { Unit: number }) {
   return createNumberWithUnitTokensTokenizer({ Unit: terms.Unit, PercentSuffix });
 }
 
-/** Wired into the generated parser; term ids come from `calculus-language-parser.terms`. */
+/** Wired into the generated parser; term ids come from `compio-language-parser.terms`. */
 export const numberWithUnitTokens = createNumberWithUnitTokensTokenizer({ Unit, PercentSuffix });

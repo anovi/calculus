@@ -8,12 +8,12 @@ type InstallAvailabilityListener = () => void
 
 declare global {
   interface Window {
-    __calculusDeferredInstallPrompt?: BeforeInstallPromptEvent | null
+    __compioDeferredInstallPrompt?: BeforeInstallPromptEvent | null
   }
 }
 
 let deferredPrompt: BeforeInstallPromptEvent | null =
-  window.__calculusDeferredInstallPrompt ?? null
+  window.__compioDeferredInstallPrompt ?? null
 const readyListeners = new Set<InstallPromptReadyListener>()
 const availabilityListeners = new Set<InstallAvailabilityListener>()
 
@@ -24,14 +24,14 @@ function notifyAvailabilityChange() {
 function storeDeferredPrompt(event: BeforeInstallPromptEvent) {
   event.preventDefault()
   deferredPrompt = event
-  window.__calculusDeferredInstallPrompt = event
+  window.__compioDeferredInstallPrompt = event
   for (const listener of readyListeners) listener(event)
   notifyAvailabilityChange()
 }
 
 function clearDeferredPrompt() {
   deferredPrompt = null
-  window.__calculusDeferredInstallPrompt = null
+  window.__compioDeferredInstallPrompt = null
   notifyAvailabilityChange()
 }
 

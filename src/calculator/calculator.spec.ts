@@ -4,9 +4,9 @@ import { Tree } from "@lezer/common"
 import { Range } from "@codemirror/state";
 import Decimal from 'decimal.js';
 
-import grammarSource from '../language/baseline/calculus-language.grammar?raw';
-import { createIdentifierTokensTokenizer } from '../language/baseline/calculus-identifier-tokens';
-import { createNumberWithUnitTokensTokenizer } from '../language/baseline/calculus-number-with-unit-tokens';
+import grammarSource from '../language/baseline/compio-language.grammar?raw';
+import { createIdentifierTokensTokenizer } from '../language/baseline/compio-identifier-tokens';
+import { createNumberWithUnitTokensTokenizer } from '../language/baseline/compio-number-with-unit-tokens';
 import { CalcValue, MathCalculator } from './calculator';
 import {
     calculatorFixtures,
@@ -18,7 +18,7 @@ import { printTree } from '../lib/tree';
 
 const parser = buildParser(grammarSource, {
 	moduleStyle: 'es',
-	fileName: 'calculus.build',
+	fileName: 'compio.build',
 	externalTokenizer(name, terms) {
 		if (name === 'numberWithUnitTokens') {
 			return createNumberWithUnitTokensTokenizer({

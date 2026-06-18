@@ -27,7 +27,7 @@ const currenciesCsv = fs.readFileSync(
 const currencies = parseCurrenciesCsv(currenciesCsv)
 
 /** Production URL for canonical and Open Graph absolute links. */
-const SITE_URL = 'https://anovi.github.io/calculus'
+const SITE_URL = 'https://compio.app'
 
 /** Relative base so the app works on GitHub Pages project sites (`/repo/`) and locally. */
 export default defineConfig({
@@ -74,8 +74,8 @@ export default defineConfig({
         'og-image.png',
     ],
     manifest: {
-      name: 'Calculus',
-      short_name: 'Calculus',
+      name: 'Compio',
+      short_name: 'Compio',
       description: 'A tiny notebook editor for everyday math.',
       theme_color: DARK_MODE_BG,
       background_color: DARK_MODE_BG,

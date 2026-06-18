@@ -1,9 +1,9 @@
 // NAMING RULES
 // - Capitalized rules will show up as nodes in the syntax tree produced by the parser, lower-case rules will not.
 
-// Unit suffixes are matched in TypeScript (see calculus-number-with-unit-tokens.ts) so ISO lists
+// Unit suffixes are matched in TypeScript (see compio-number-with-unit-tokens.ts) so ISO lists
 // stay in `src/units/currencies-list.ts` instead of being pasted into this grammar.
-@external tokens numberWithUnitTokens from "./calculus-number-with-unit-tokens.ts" {
+@external tokens numberWithUnitTokens from "./compio-number-with-unit-tokens.ts" {
 	Unit
 	PercentSuffix
 }
@@ -116,8 +116,8 @@ ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }
 
 @skip { space }
 
-@external tokens identifierTokens from "./calculus-identifier-tokens.ts" {
+@external tokens identifierTokens from "./compio-identifier-tokens.ts" {
 	Identifier
 }
 
-@external propSource calculusLangHighlight from "./calculus-lang-highlighting"
+@external propSource compioLangHighlight from "./compio-lang-highlighting"

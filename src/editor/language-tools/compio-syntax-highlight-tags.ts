@@ -1,7 +1,7 @@
 import { tags } from "@lezer/highlight"
 import { HighlightStyle } from "@codemirror/language"
 
-export const calculusHighlightStyle = HighlightStyle.define([
+export const compioHighlightStyle = HighlightStyle.define([
 	{ tag: tags.function(tags.name), color: 'var(--editor-function)' },
 	{ tag: tags.variableName, color: 'var(--editor-variable)' },
 	{ tag: tags.operator, color: 'var(--editor-operator)' },

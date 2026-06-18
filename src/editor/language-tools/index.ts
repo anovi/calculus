@@ -1,2 +1,2 @@
 export * from './syntax-nodes'
-export * from './calculus-syntax-highlight-tags'
+export * from './compio-syntax-highlight-tags'

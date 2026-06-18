@@ -1,6 +1,6 @@
 import type { PairEntry, PairKey } from "./types";
 
-const STORAGE_KEY = "calculus:rates:v1";
+const STORAGE_KEY = "compio:rates:v1";
 const SCHEMA_VERSION = 1;
 
 type SerializedSnapshot = {

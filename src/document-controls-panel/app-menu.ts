@@ -33,12 +33,12 @@ export function mountAppMenu(trigger: HTMLButtonElement, ctx: AppContext): () =>
       {
         kind: 'link',
         label: 'User Manual',
-        href: 'https://github.com/anovi/calculus/blob/main/docs/user-manual.md',
+        href: 'https://github.com/anovi/compio/blob/main/docs/user-manual.md',
       },
       {
         kind: 'link',
         label: 'Found a bug or have request?',
-        href: 'https://github.com/anovi/calculus/issues',
+        href: 'https://github.com/anovi/compio/issues',
       },
       { kind: 'separator' },
       {
@@ -49,7 +49,7 @@ export function mountAppMenu(trigger: HTMLButtonElement, ctx: AppContext): () =>
       {
         kind: 'link',
         label: 'GitHub',
-        href: 'https://github.com/anovi/calculus',
+        href: 'https://github.com/anovi/compio',
       },
     ],
   })

@@ -10,7 +10,7 @@ import { calcRanges } from '../values-field';
 import { variableCompletionSource } from './variable-autocomplete';
 
 const calcLanguage = LRLanguage.define({
-  name: 'calculus',
+  name: 'compio',
   parser,
 });
 

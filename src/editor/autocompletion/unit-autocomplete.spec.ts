@@ -13,7 +13,7 @@ import {
 } from '../autocompletion';
 
 const calcLanguage = LRLanguage.define({
-  name: 'calculus',
+  name: 'compio',
   parser,
 });
 

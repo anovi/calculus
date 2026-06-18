@@ -2,12 +2,12 @@ import assert from 'node:assert';
 import { Tree } from '@lezer/common';
 import { EditorState } from '@codemirror/state';
 
-import { calculusParser } from '../../language/baseline/parser';
+import { compioParser } from '../../language/baseline/parser';
 import { applyFormatSpecs, formatTextLine } from '.';
 import { formatLineFixtures } from './editor-commands.fixtures';
 
 function applyFormatLine(doc: string): string {
-	const tree = calculusParser.configure({}).parse(doc);
+	const tree = compioParser.configure({}).parse(doc);
 	assert.ok(tree instanceof Tree);
 	const changes = formatTextLine(tree, 0, doc.length);
 	const state = EditorState.create({ doc });

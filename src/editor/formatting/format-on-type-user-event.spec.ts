@@ -9,7 +9,7 @@ import { formatOnType } from './format-on-type';
 const MOBILE_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15';
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser });
+const calcLanguage = LRLanguage.define({ name: 'compio', parser });
 
 function typeTransaction(state: EditorState, pos: number, text: string): Transaction {
   return state.update({

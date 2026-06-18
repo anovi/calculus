@@ -1,4 +1,4 @@
-/** Matches calculus `IdentifierChar` in calculus-language.grammar. */
+/** Matches compio `IdentifierChar` in compio-language.grammar. */
 export function isIdentifierChar(code: number): boolean {
   if (code < 0) return false; // end of input / invalid code point
   if (

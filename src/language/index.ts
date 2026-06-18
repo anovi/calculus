@@ -1,7 +1,7 @@
-import * as terms from './baseline/calculus-language-parser.terms';
-export * from './baseline/calculus-language-parser';
+import * as terms from './baseline/compio-language-parser.terms';
+export * from './baseline/compio-language-parser';
 export { terms };
 
-export type { TermKey, TermValue } from './baseline/calculus-lang-highlighting';
+export type { TermKey, TermValue } from './baseline/compio-lang-highlighting';
 
-export * from './calculus-language'
+export * from './compio-language'

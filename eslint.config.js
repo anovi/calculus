@@ -9,14 +9,14 @@ export default [
 			parser: tsParser,
 		},
 		plugins: {
-			'calculus-architecture': {
+			'compio-architecture': {
 				rules: {
 					'no-deep-cross-module-imports': noDeepCrossModuleImports,
 				},
 			},
 		},
 		rules: {
-			'calculus-architecture/no-deep-cross-module-imports': 'error',
+			'compio-architecture/no-deep-cross-module-imports': 'error',
 		},
 	},
 ];

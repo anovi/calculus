@@ -3,7 +3,7 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
 import { autocompletion } from '@codemirror/autocomplete'
 
-import { calculus } from '../language' 
+import { compio } from '../language' 
 
 import { basicSetup } from './basic-setup'
 import { calcClipboard } from './clipboard'
@@ -17,7 +17,7 @@ import { unitCompletionSource, variableCompletionSource } from './autocompletion
 import { helpPanel } from './mobile-toolbar'
 import { calcSyntaxLinter } from './linter'
 import { renameVariableReferences } from './variables/rename-variable-references'
-import { calculusHighlightStyle } from './language-tools/calculus-syntax-highlight-tags'
+import { compioHighlightStyle } from './language-tools/compio-syntax-highlight-tags'
 import { hackSafariTouchSelection } from './safari-selection-hack'
 import { emptyEditorPlaceholder } from './empty-editor-placeholder'
 // import { calcBindingFold } from './folding/line-fold'
@@ -46,7 +46,7 @@ export function createEditor({
 
   const buildExtensions = (dark: boolean): Extension[] => [
     basicSetup(),
-    calculus(),
+    compio(),
     autocompletion({
       maxRenderedOptions: 20,
       override: [unitCompletionSource, variableCompletionSource],
@@ -61,7 +61,7 @@ export function createEditor({
     calcResultTooltips(),
     functionArgsTooltip(),
     variableHoverTooltip,
-    syntaxHighlighting(calculusHighlightStyle),
+    syntaxHighlighting(compioHighlightStyle),
     helpPanel(),
     ...emptyEditorPlaceholder(),
     createEditorTheme(dark),

@@ -1,6 +1,6 @@
 // =============================================================================
 // BIG CALC NOTEBOOK — stress & showcase document
-// Calculus: one expression or binding per line; results appear at line ends.
+// Compio: one expression or binding per line; results appear at line ends.
 // =============================================================================
 
 # Chapter 1: Constants & reference values
@@ -404,4 +404,4 @@ closing_eur = closing_usd in EUR
 closing_message = closing_eur + 0 EUR
 
 // END OF BIG CALC NOTEBOOK
-// Paste into calculus editor; trim chapters you do not need.
+// Paste into compio editor; trim chapters you do not need.

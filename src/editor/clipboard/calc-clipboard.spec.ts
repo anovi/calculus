@@ -7,7 +7,7 @@ import { parser } from '../../language'
 import { calcRanges } from '../values-field'
 import { calcClipboard } from './calc-clipboard'
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser });
+const calcLanguage = LRLanguage.define({ name: 'compio', parser });
 
 function filterCopy(doc: string, selectionText?: string): string {
     const selected = selectionText ?? doc;

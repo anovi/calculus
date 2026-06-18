@@ -1,10 +1,10 @@
-# Calculus
+# Compio
 
 A tiny notebook editor for everyday math. Type calculations line by line; results appear at the end of each line as you go.
 
 ## About
 
-Calculus is a document-style calculator: each line is either a computed expression or a named value you can reuse below. It is meant for budgets, unit conversions, quick what-if math, and notes that stay live as you edit.
+Compio is a document-style calculator: each line is either a computed expression or a named value you can reuse below. It is meant for budgets, unit conversions, quick what-if math, and notes that stay live as you edit.
 
 ```text
 monthly = 4200 EUR
@@ -30,7 +30,7 @@ For syntax details and examples, see the [user manual](docs/user-manual.md).
 
 ## Precision and decimals
 
-Calculus computes with full precision behind the scenes. What you see in the **result pill** at the end of each line is a rounded, human-friendly display — not the raw internal value.
+Compio computes with full precision behind the scenes. What you see in the **result pill** at the end of each line is a rounded, human-friendly display — not the raw internal value.
 
 **How results are shown**
 
@@ -48,7 +48,7 @@ On desktop, hover a result pill to see a tooltip with a **more precise** value (
 
 ## Install as an app
 
-Calculus is a [Progressive Web App](https://web.dev/explore/progressive-web-apps). You can install it on your phone or computer and open it from the home screen or app launcher — like a native app, without the browser toolbar.
+Compio is a [Progressive Web App](https://web.dev/explore/progressive-web-apps). You can install it on your phone or computer and open it from the home screen or app launcher — like a native app, without the browser toolbar.
 
 **What you get**
 
@@ -60,25 +60,25 @@ Calculus is a [Progressive Web App](https://web.dev/explore/progressive-web-apps
 
 On **desktop** (Chrome, Edge, and similar):
 
-1. Open Calculus in the browser.
+1. Open Compio in the browser.
 2. Click **Install as app** in the bottom-right corner, or open the app menu and choose **Install the app**.
 
 You may also see an install icon in the address bar. The in-app link appears only when the browser offers install and the app is not already installed.
 
 On **desktop** (Safari):
 
-1. Open Calculus in the browser.
+1. Open Compio in the browser.
 2. Tap the **Share** button.
 3. Choose **Add to Dock**.
 
 On **Android** (Chrome and other Chromium browsers):
 
-1. Open Calculus in the browser.
+1. Open Compio in the browser.
 2. Tap **Install as app** in the bottom-right corner, or open the app menu and choose **Install the app**.
 
 On **iPhone and iPad** (Safari, Chrome, or any browser):
 
-1. Open Calculus in the browser.
+1. Open Compio in the browser.
 2. Tap the **Share** button.
 3. Choose **Add to Home Screen**.
 
@@ -107,5 +107,5 @@ Other limitations:
 ## Current issues
 
 - **Compound units from multiplication** — Multiplying two lengths does not produce area units (`4.2 m * 3.6 m` keeps `m`, not `m2`). Converting derived quantities like `room_area in ft2` is not supported yet.
-- **Ambiguous unit spellings** — Some inputs match more than one unit (e.g. `MS` can mean megaseconds or milliseconds). Calculus reports an ambiguity error; use the exact spelling you mean (`Ms` vs `ms`).
+- **Ambiguous unit spellings** — Some inputs match more than one unit (e.g. `MS` can mean megaseconds or milliseconds). Compio reports an ambiguity error; use the exact spelling you mean (`Ms` vs `ms`).
 - **Exchange rates when offline** — Currency conversions show `NaN` until rates are fetched. Exotic or unsupported pairs may stay unavailable depending on Frankfurter coverage.

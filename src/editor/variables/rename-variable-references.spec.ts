@@ -14,7 +14,7 @@ import {
 	RENAME_VARIABLE_REFERENCES_DELAY_MS,
 } from './rename-variable-references'
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser })
+const calcLanguage = LRLanguage.define({ name: 'compio', parser })
 
 function stateWithDoc(doc: string): EditorState {
 	const state = EditorState.create({ doc, extensions: [calcLanguage] })

@@ -14,7 +14,7 @@ import {
 	iterateTreeVisibleRanges,
 } from './range'
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser })
+const calcLanguage = LRLanguage.define({ name: 'compio', parser })
 
 function stateWithFold(doc: string, foldFrom: number, foldTo: number): EditorState {
 	return EditorState.create({

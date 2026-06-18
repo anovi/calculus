@@ -1,6 +1,6 @@
-# Calculus User Manual
+# Compio User Manual
 
-Calculus is a notebook-style editor for everyday math. Each line is either a calculation or a variable assignment; results appear at the end of the line as you type.
+Compio is a notebook-style editor for everyday math. Each line is either a calculation or a variable assignment; results appear at the end of the line as you type.
 
 ---
 
@@ -386,7 +386,7 @@ length in m    → 0.2 m
 
 ### Mixing units in expressions
 
-When you add or subtract compatible units, Calculus converts automatically to a common unit (the rightmost unit with a value wins):
+When you add or subtract compatible units, Compio converts automatically to a common unit (the rightmost unit with a value wins):
 
 ```text
 10 cm + 1 m    → 1.1 m
@@ -404,7 +404,7 @@ Multiplication and division work on the numeric parts; incompatible unit combina
 
 ### Ambiguous unit names
 
-Some spellings match more than one unit. For example, `MS` can mean megaseconds (`Ms`) or milliseconds (`ms`). Calculus reports an ambiguity error and suggests the possible units — pick the exact spelling you mean:
+Some spellings match more than one unit. For example, `MS` can mean megaseconds (`Ms`) or milliseconds (`ms`). Compio reports an ambiguity error and suggests the possible units — pick the exact spelling you mean:
 
 ```text
 100 Ms     → megaseconds
@@ -436,13 +436,13 @@ Toggle comments from the editor toolbar or with the standard comment shortcut (`
 
 ## Limitations
 
-**No sync between devices.** Calculus has no accounts and does not upload your notebooks anywhere. Everything is saved on the device and in the browser you are using.
+**No sync between devices.** Compio has no accounts and does not upload your notebooks anywhere. Everything is saved on the device and in the browser you are using.
 
 What that means in practice:
 
 - Notebooks on your laptop are not available on your phone, tablet, or another device.
 - Different browsers keep separate copies, even on the same machine.
-- Installing Calculus as an app (PWA) still uses the same browser storage; installation does not back up documents elsewhere.
+- Installing Compio as an app (PWA) still uses the same browser storage; installation does not back up documents elsewhere.
 - Clearing site data, uninstalling the browser, or using private browsing can remove or isolate stored documents.
 
 **Currency signs are not supported.** Use ISO 4217 codes instead of symbols:

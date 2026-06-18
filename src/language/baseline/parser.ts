@@ -1,12 +1,12 @@
 import { buildParser } from "@lezer/generator";
-import grammarSource from './calculus-language.grammar?raw';
-import { createIdentifierTokensTokenizer } from './calculus-identifier-tokens';
-import { createNumberWithUnitTokensTokenizer } from './calculus-number-with-unit-tokens';
+import grammarSource from './compio-language.grammar?raw';
+import { createIdentifierTokensTokenizer } from './compio-identifier-tokens';
+import { createNumberWithUnitTokensTokenizer } from './compio-number-with-unit-tokens';
 
 
-export const calculusParser = buildParser(grammarSource, {
+export const compioParser = buildParser(grammarSource, {
 	moduleStyle: 'es',
-	fileName: 'calculus.build',
+	fileName: 'compio.build',
 	externalTokenizer(name, terms) {
 		if (name === 'numberWithUnitTokens') {
 			return createNumberWithUnitTokensTokenizer({

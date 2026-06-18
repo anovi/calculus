@@ -6,7 +6,7 @@ import { parser } from '../../language'
 import { calcRanges } from '../values-field'
 import { calcValueForVariableName } from './variable-tooltip'
 
-const calcLanguage = LRLanguage.define({ name: 'calculus', parser })
+const calcLanguage = LRLanguage.define({ name: 'compio', parser })
 
 function stateWithDoc(doc: string): EditorState {
   return EditorState.create({ doc, extensions: [calcLanguage, calcRanges()] })
