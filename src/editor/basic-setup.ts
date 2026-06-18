@@ -8,7 +8,7 @@ import { type Extension } from "@codemirror/state"
 import {
   defaultHighlightStyle,
   syntaxHighlighting,
-  foldGutter,
+  // foldGutter,
   bracketMatching
 } from "@codemirror/language"
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
