@@ -38,7 +38,7 @@ export const basicSetup: () => Extension = () => [
   history(renameVariableReferencesHistoryConfig),
   
   // https://codemirror.net/docs/ref/#language.foldGutter
-  foldGutter(),
+  // foldGutter(),
   
   // https://codemirror.net/docs/ref/#view.drawSelection
   // drawSelection(),

@@ -57,7 +57,7 @@ export function createEditor({
     calcRanges(),
     calcClipboard(),
     calcResultsPlugin,
-    calcBindingFold(),
+    // calcBindingFold(),
     calcResultTooltips(),
     functionArgsTooltip(),
     variableHoverTooltip,
