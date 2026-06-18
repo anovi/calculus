@@ -1,4 +1,4 @@
-# Split a restaurant bill with tip
+# Split a bill with tip
 bill = 86.50 EUR
 tip rate = 0.15
 people = 4

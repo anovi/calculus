@@ -1,5 +1,5 @@
 # Calculate gross from net and a tax rate
-net = 100
+net = 123 USD
 tax_rate = 0.21
 tax = net * tax_rate
 gross = net + tax
