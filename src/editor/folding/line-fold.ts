@@ -1,4 +1,4 @@
-import { foldedRanges, foldService, syntaxTree } from '@codemirror/language'
+import { codeFolding, foldedRanges, foldService, syntaxTree } from '@codemirror/language'
 import type { Extension } from '@codemirror/state'
 import type { EditorState } from '@codemirror/state'
 import { keymap } from "@codemirror/view"
@@ -52,11 +52,41 @@ function bindingFoldOnLine(state: EditorState, lineStart: number, lineEnd: numbe
   return found
 }
 
+const lineFolder = codeFolding({
+  placeholderDOM(_view, onclick) {
+    const dom = document.createElement('span');
+    dom.innerHTML = ' ';
+    dom.className = 'foldLine__expander'
+    dom.addEventListener('click', onclick);
+    return dom;
+  },
+})
+
+// import downIcon from '../../assets/icons/chevron_down.svg?raw'
+// const gutterFolder = foldGutter({
+//   markerDOM(open) {
+//     return toggleButton(downIcon, open);
+//   },
+// })
+// function toggleButton(svg: string, open: boolean): HTMLSpanElement {
+//   const markup = svg.replace(/\bfill="black"/gi, 'fill="currentColor"')
+//   const wrap = document.createElement('span')
+//   wrap.className = 'cm-foldGutter__button'
+//   if (!open) wrap.classList.add('is-closed')
+//   wrap.style.width = `${18}px`
+//   wrap.style.height = `${18}px`
+//   wrap.setAttribute('aria-hidden', 'true')
+//   wrap.innerHTML = markup
+//   return wrap
+// }
+
 /** Code folding for binding expressions */
 export function calcBindingFold(): Extension {
   return [
     foldService.of(bindingFoldOnLine),
     keymap.of(foldKeymap),
+    lineFolder,
+    // gutterFolder
   ]
 }
 

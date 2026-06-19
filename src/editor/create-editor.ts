@@ -20,7 +20,7 @@ import { renameVariableReferences } from './variables/rename-variable-references
 import { compioHighlightStyle } from './language-tools/compio-syntax-highlight-tags'
 import { hackSafariTouchSelection } from './safari-selection-hack'
 import { emptyEditorPlaceholder } from './empty-editor-placeholder'
-// import { calcBindingFold } from './folding/line-fold'
+import { calcBindingFold } from './folding/line-fold'
 
 export type CreateEditorOptions = {
   parent: HTMLElement
@@ -57,7 +57,7 @@ export function createEditor({
     calcRanges(),
     calcClipboard(),
     calcResultsPlugin,
-    // calcBindingFold(),
+    calcBindingFold(),
     calcResultTooltips(),
     functionArgsTooltip(),
     variableHoverTooltip,

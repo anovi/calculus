@@ -346,12 +346,45 @@ body {
   color: var(--text-primary);
 }
 
-#editor .cm-binding-fold-placeholder {
-  cursor: pointer;
+#editor .cm-gutterElement {
+  &:hover {
+    & .cm-foldGutter__button > svg {
+      color: rgb(0 0 0 / 50%);
+    }
+  }
+}
+#editor .cm-foldGutter__button {
+  svg {
+    width: 16px;
+    height: 16px;
+    color: rgb(0 0 0 / 30%);
+    transform: translate(0, 0.2em);
+  }
+}
+#editor .cm-foldGutter__button.is-closed  {
+  svg {
+    transform: translate(0, 0.2em) rotate(-90deg);
+    color: var(--accent);
+  }
 }
 
-#editor .cm-binding-fold-placeholder .cm-calc-result::before {
-  content: none;
+#editor .foldLine__expander {
+  --size: 6px;
+  width: var(--size);
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+
+  &::after {
+    position: absolute;
+    display: block;
+    content: '';
+    bottom: 0.5em;
+    width: var(--size);
+    height: var(--size);
+    border-radius: var(--size);
+    background-color: var(--text-secondary);
+  }
 }
 
 #editor .cm-cursor {
@@ -451,6 +484,9 @@ body {
   content: '';
   display: inline-block;
   width: 1ch;
+}
+#editor .expander + .cm-widgetBuffer + .cm-widgetBuffer + .cm-calc-result::before {
+  width: 0;
 }
 
 #editor .cm-calc-result__pill {
