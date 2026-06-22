@@ -3,7 +3,7 @@ import { EditorState, type Extension } from '@codemirror/state'
 import { syntaxHighlighting } from '@codemirror/language'
 import { autocompletion } from '@codemirror/autocomplete'
 
-import { compio } from '../language' 
+import { compio } from '../language'
 
 import { basicSetup } from './basic-setup'
 import { calcClipboard } from './clipboard'

@@ -492,7 +492,7 @@ body {
 #editor .cm-calc-result__pill {
   display: inline-block;
   position: relative;
-  padding: 0 8px;
+  padding: 0 6px;
   font-variant-numeric: tabular-nums;
   color: var(--editor-result);
   cursor: pointer;
@@ -500,7 +500,6 @@ body {
   tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   touch-action: manipulation;
-  /* border: 1px solid var(--result-border-color); */
 
   &:after {
     position: absolute;

@@ -1,4 +1,6 @@
 import { IterMode, type NodeIterator, Tree } from "@lezer/common"
+import { syntaxTreeAvailable } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
 
 /** Node names from innermost to outermost, as returned by `Tree.resolveStack`. */
 export function nodeStackNames(stack: NodeIterator | null): string[] {
@@ -36,4 +38,43 @@ function formatTree(tree: Tree, from?: number, to?: number): string {
 /** Logs tree with dashed rules; node lines match what `assertMatchTree` compares. */
 export function printTree(tree: Tree, from?: number, to?: number) {
 	console.log(formatTree(tree, from, to));
+}
+
+
+function checkSyntaxTree(state: EditorState): Promise<boolean> {
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			resolve(syntaxTreeAvailable(state));
+		}, 10);
+	})
+}
+
+const ParsingResult = {
+	ok: 0,
+	cancelled: 1,
+	timedOut: 2,
+	error: 3,
+} as const;
+
+export type SyntaxTreeAwaiterResult = typeof ParsingResult[keyof typeof ParsingResult]
+
+export async function makeFullSyntaxTreeAwaiter(state: EditorState, signal?: AbortSignal): Promise<SyntaxTreeAwaiterResult> {
+	const maxTimeout = 3000;
+	const startedAt = Date.now();
+	try {
+		const treeAvailable = syntaxTreeAvailable(state);
+		if (treeAvailable) return ParsingResult.ok;
+
+		let parsed = false;
+		while (!parsed) {
+			if (signal && signal.aborted) return ParsingResult.cancelled;
+			if (Date.now() - startedAt >= maxTimeout) {
+				return ParsingResult.timedOut;
+			}
+			parsed = await checkSyntaxTree(state);
+		}
+		return ParsingResult.ok;
+	} catch (error) {
+		return ParsingResult.error;
+	}
 }

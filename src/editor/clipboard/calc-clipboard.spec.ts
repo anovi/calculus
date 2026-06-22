@@ -6,6 +6,7 @@ import { LRLanguage } from '@codemirror/language'
 import { parser } from '../../language'
 import { calcRanges } from '../values-field'
 import { calcClipboard } from './calc-clipboard'
+import { makeFullSyntaxTreeAwaiter } from '../../lib/tree'
 
 const calcLanguage = LRLanguage.define({ name: 'compio', parser });
 
@@ -37,32 +38,32 @@ describe('calcClipboard', () => {
         assert.strictEqual(filterCopy('23 + 3'), '23 + 3 = 26')
         assert.strictEqual(filterCopy('2^4'), '2^4 = 16')
     })
-    
+
     it('does not append result for named bindings', () => {
         assert.strictEqual(filterCopy('tax_rate = 0.21'), 'tax_rate = 0.21')
     })
-    
+
     it('append result for expression with named bindings', () => {
         assert.strictEqual(
             filterCopy('tax_rate = 0.21\nnet = 100\n gross = net + net * tax_rate'),
             'tax_rate = 0.21\nnet = 100\n gross = net + net * tax_rate = 121'
         )
     })
-    
+
     it('appends result when copied line has leading spaces', () => {
         assert.strictEqual(filterCopy('  23 + 3'), '  23 + 3 = 26')
     })
-    
+
     it('strips a trailing result when pasting', () => {
         assert.strictEqual(filterPaste('', '2^4 = 16'), '2^4')
         assert.strictEqual(filterPaste('', '23 + 3 = 26'), '23 + 3')
     })
-    
+
     it('strips only when the suffix matches the computed result', () => {
         assert.strictEqual(filterPaste('', 'tax_rate = 0.21'), 'tax_rate = 0.21')
         assert.strictEqual(filterPaste('', '23 + 3 = 99'), '23 + 3 = 99')
     })
-    
+
     it('strips result for expression with named bindings', () => {
         const doc = 'tax_rate = 0.21\nnet = 100\n gross = net + net * tax_rate'
         const pasted = 'tax_rate = 0.21\nnet = 100\n gross = net + net * tax_rate = 121'
@@ -74,7 +75,18 @@ describe('calcClipboard', () => {
         const expected = 'rate = 5 / 9\nvinegar = 300 + rate'
         assert.strictEqual(filterPaste('', pasted), expected)
     })
-    
+
+    it('strips results of a variable assignment', async () => {
+        const pasted = 'portion = 2.1 = 2.1'
+        const expected = 'portion = 2.1'
+        const state = EditorState.create({
+            doc: pasted,
+            extensions: [calcLanguage, calcRanges(), calcClipboard()],
+        })
+        await makeFullSyntaxTreeAwaiter(state);
+        assert.strictEqual(filterPaste('', pasted), expected)
+    })
+
     it('round-trips expression lines', () => {
         const copied = filterCopy('2^4')
         assert.strictEqual(filterPaste('', copied), '2^4')

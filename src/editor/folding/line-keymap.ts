@@ -1,5 +1,5 @@
 import {
-    EditorView,
+  EditorView,
     type KeyBinding
 } from "@codemirror/view"
 import { EditorState } from "@codemirror/state"
@@ -87,5 +87,5 @@ export const toggleLinesCodeFolding = (view: EditorView, lines: {from: number, t
 export const foldKeymap: readonly KeyBinding[] = [
   { key: "Ctrl-.",     mac: "Cmd-.",     run: (view) => toggleLinesCodeFolding(view, getLinesWithSelection(view.state)) },
   { key: "Ctrl-Alt-.", mac: "Cmd-Alt-.", run: (view) => toggleLinesCodeFolding(view, view.viewportLineBlocks) },
-  { key: "Ctrl-Alt-.", mac: "Cmd-Alt-.", run: (view) => toggleLinesCodeFolding(view, view.viewportLineBlocks) }
+  { key: "Ctrl-Alt-.", mac: "Cmd-Alt-.", run: (view) => toggleLinesCodeFolding(view, view.viewportLineBlocks) },
 ]
