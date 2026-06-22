@@ -110,6 +110,7 @@ function buildCopiedLineSuffixQueues(state: EditorState): Map<string, string[]> 
     const ranges = getCalcRanges(state);
     const intervals = getSelectionIntervals(state);
     ranges.between(0, state.doc.length, (from, to, value) => {
+        if (value.primitive) return;
         if (!inAnySelection(from, to, intervals)) return;
         const sourceLine = normalizeCopiedLine(state.sliceDoc(from, to));
         const suffix = formatCalcSuffix(value);
