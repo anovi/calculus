@@ -1,5 +1,5 @@
 /** Bump when public/ icon files change so browsers and the PWA pick up new assets. */
-export const ICON_ASSETS_VERSION = '4'
+export const ICON_ASSETS_VERSION = '5'
 
 export function versionedIconAsset(name: string): string {
   const dot = name.lastIndexOf('.')
