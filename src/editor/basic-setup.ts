@@ -17,7 +17,6 @@ import {
   closeBrackets,
   closeBracketsKeymap,
 } from "@codemirror/autocomplete"
-import { lintKeymap } from "@codemirror/lint"
 import { renameVariableReferencesHistoryConfig } from "./variables/rename-variable-references"
 
 
@@ -29,66 +28,65 @@ import { renameVariableReferencesHistoryConfig } from "./variables/rename-variab
 export const basicSetup: () => Extension = () => [
   // https://codemirror.net/docs/ref/#view.lineNumbers
   // lineNumbers(),
-  
+
   // https://codemirror.net/docs/ref/#view.highlightSpecialChars
   highlightSpecialChars(),
-  
+
   // https://codemirror.net/docs/ref/#commands.history
   history(renameVariableReferencesHistoryConfig),
-  
+
   // https://codemirror.net/docs/ref/#language.foldGutter
   // foldGutter(),
-  
+
   // https://codemirror.net/docs/ref/#view.drawSelection
   // drawSelection(),
-  
+
   // https://codemirror.net/docs/ref/#view.dropCursor
   dropCursor(),
-  
+
   // https://codemirror.net/docs/ref/#state.EditorState%5EallowMultipleSelections
   // EditorState.allowMultipleSelections.of(true),
-  
+
   // https://codemirror.net/docs/ref/#language.indentOnInput
   // indentOnInput(),
-  
+
   // https://codemirror.net/docs/ref/#language.defaultHighlightStyle
   syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
-  
+
   // https://codemirror.net/docs/ref/#language.bracketMatching
   bracketMatching(),
-  
+
   // https://codemirror.net/docs/ref/#autocomplete.closeBrackets
   closeBrackets(),
-  
+
   // Autocompletion is provided by unitAutocompletion() (single autocompletion() instance).
   // https://codemirror.net/docs/ref/#autocomplete.autocompletion
   // autocompletion({
   // 	maxRenderedOptions: 20,
   // }),
-  
+
   // https://codemirror.net/docs/ref/#view.rectangularSelection
   // rectangularSelection(),
-  
+
   // https://codemirror.net/docs/ref/#view.crosshairCursor
   // crosshairCursor(),
-  
+
   // https://codemirror.net/docs/ref/#view.highlightActiveLine
   // highlightActiveLine(),
-  
+
   // https://codemirror.net/docs/ref/#view.highlightActiveLineGutter
   // highlightActiveLineGutter(),
-  
+
   // https://codemirror.net/docs/ref/#search.highlightSelectionMatches
   highlightSelectionMatches(),
-  
+
   EditorView.lineWrapping,
-  
+
   keymap.of([
     ...closeBracketsKeymap,
     ...defaultKeymap, // when removed, jumping over widgets is broken
     ...searchKeymap,
     ...historyKeymap,
     ...completionKeymap,
-    ...lintKeymap,
   ])
 ]
