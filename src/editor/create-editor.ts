@@ -1,5 +1,6 @@
 import { EditorView } from 'codemirror'
 import { EditorState, type Extension } from '@codemirror/state'
+import { placeholder } from '@codemirror/view'
 import { syntaxHighlighting } from '@codemirror/language'
 import { autocompletion } from '@codemirror/autocomplete'
 
@@ -63,6 +64,7 @@ export function createEditor({
     variableHoverTooltip,
     syntaxHighlighting(compioHighlightStyle),
     helpPanel(),
+    placeholder('Write a formula or variable'),
     ...emptyEditorPlaceholder(),
     createEditorTheme(dark),
     calcSyntaxLinter,
