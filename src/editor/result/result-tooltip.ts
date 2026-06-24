@@ -50,6 +50,9 @@ function buildMobileActionsDom(
   copyBtn.textContent = 'Copy'
   bindFocusPreservingButton(copyBtn, () => {
     const res = copyTextToClipboard(formatResult(value))
+    view.dispatch({
+      effects: closeHoverTooltips,
+    })
     res.clear()
   })
 
