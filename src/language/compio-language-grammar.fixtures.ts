@@ -301,6 +301,19 @@ expectedTree: `CalcDoc
             PercentSuffix`,
 },
 {
+name: 'variable with percent value',
+doc: 'rate = 20%',
+expectedTree: `CalcDoc
+  StatementGroup
+    Binding
+      Identifier
+      EqualSign
+      Literal
+        PercentLiteral
+          Number
+          PercentSuffix`,
+},
+{
 name: 'precedence exponent over multiply',
 doc: '2 * 2 ^ 3',
 expectedTree: `CalcDoc

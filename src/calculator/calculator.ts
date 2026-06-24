@@ -13,7 +13,7 @@ import { isCurrency } from '../units';
 import { pairKey, type PairKey, type RatesStore } from '../rates-store';
 import { BUILTIN_FUNCTION_ALIASES, BUILTIN_FUNCTION_BY_NAME } from './builtin-fn-registry';
 import { builtinHandlers, groupAggregationHandlers } from './builtin-fn-handlers';
-import { isExpressionResultError, type ExpressionResult, type ExpressionResultError } from './types';
+import { isExpressionResultError, isExpressionResultPercent, type ExpressionResult, type ExpressionResultError } from './types';
 
 /** Represents line's calculation result; can be binded to a name */
 export class CalcValue extends RangeValue {
@@ -66,7 +66,7 @@ function calcValueFromExpr(expr: ExpressionResult, name?: string): CalcValue {
         n,
         name,
         undefined,
-        expr.unit,
+        isExpressionResultPercent(expr) ? '%' : expr.unit,
         expr.error,
         isError ? expr.from : undefined,
         isError ? expr.to : undefined,
@@ -238,6 +238,7 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
         process: (_ctx, props: { number: ExpressionResult }): ExpressionResult => ({
             n: props.number.n,
             isPercent: true,
+            isPrimitive: true,
         }),
     },
 
@@ -275,12 +276,16 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
                 }
                 const handler = groupAggregationHandlers.get(canonicalName);
                 if (!handler) return null;
-                return handler([...ctx.getGroupLineResults()], {
-                    cursor: ctx.cursor,
-                    combineAdd: (...operands) => ctx.performOperation(ctx.cursor, '+', ...operands),
-                    normalizeArgs: (operands) => ctx.normalizeOperands(ctx.cursor, operands),
-                    expressionError: (message) => expressionError(message, ctx.cursor),
-                });
+                // Percents should be ignored by aggregation functions
+                return handler(
+                    ctx.getGroupLineResults().filter(res => !('unit' in res && res.unit === '%')),
+                    {
+                        cursor: ctx.cursor,
+                        combineAdd: (...operands) => ctx.performOperation(ctx.cursor, '+', ...operands),
+                        normalizeArgs: (operands) => ctx.normalizeOperands(ctx.cursor, operands),
+                        expressionError: (message) => expressionError(message, ctx.cursor),
+                    }
+                );
             }
             if (args.length !== def.arity) {
                 const n = def.arity;
@@ -466,8 +471,11 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
         process: (ctx, params: { value: ExpressionResult }): ExpressionResult => {
             if (isPercentOperand(params.value)) {
                 const parent = ctx.parentNodeType();
-                if (parent === terms.NoBinding || parent === terms.Binding) {
+                if (parent === terms.NoBinding) {
                     return expressionError(PERCENT_ERROR, ctx.cursor);
+                }
+                if (parent === terms.Binding) {
+                    return params.value;
                 }
             }
             if (ctx.stack.length <= 3 && !isExpressionResultError(params.value)) {
@@ -632,6 +640,10 @@ export class MathCalculator implements Ctx {
 
         if (operator === '-' && args.length === 1) {
             return { n: args[0].n.negated(), unit: args[0].unit };
+        }
+
+        if (args.length === 1 && isPercentOperand(args[0])) {
+            return args[0];
         }
 
         if (args.length === 2) {

@@ -32,3 +32,7 @@ export type ExpressionResult = ExpressionResultOk | ExpressionResultError;
 export function isExpressionResultError (res: unknown): res is ExpressionResultError  {
     return Boolean(typeof res === 'object' && res !== null && 'error' in res && res.error);
 }
+
+export function isExpressionResultPercent (res: unknown): res is ExpressionResultOk & { isPercent: true }  {
+    return Boolean(typeof res === 'object' && res !== null && 'isPercent' in res && res.isPercent);
+}

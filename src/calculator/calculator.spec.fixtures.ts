@@ -9,6 +9,7 @@ const MOCK_RATES: Partial<Record<CurrencyCode, Partial<Record<CurrencyCode, numb
   USD: { EUR: 0.9 },
   EUR: { USD: 1.12 },
 };
+const U = undefined;
 
 /**
  * Builds a `RatesStore` pre-seeded with deterministic fixture rates. Uses the real
@@ -84,6 +85,13 @@ export const calculatorFixtures: CalculatorFixture[] = [
   { name: 'percent exponent error', doc: '100 ^ 20%', expected: [{ error: 'Percentage must be used with +, -, or *.' }] },
   { name: 'percent modulo error', doc: '100 % 20%', expected: [{ error: 'Percentage must be used with +, -, or *.' }] },
   { name: 'percent standalone error', doc: '20%', expected: [{ error: 'Percentage must be used with +, -, or *.' }] },
+  
+  { name: 'percent assigned to a variable and used in expression', doc: 'rate = 20%\n100 + rate', expected: [20, 120], expectedUnits: ['%', U] },
+  { name: 'percent should not be aggregated', doc: '1\nrate = 5%\n100 + rate\nsum()',
+    expected:      [1,   5, 105, 106],
+    expectedUnits: [U, '%',   U,   U]
+  },
+
   { name: 'percent left of plus error', doc: '20% + 100', expected: [{ error: 'Percentage must be used with +, -, or *.' }] },
   { name: 'Exponent', doc: '2^4', expected: [16] },
   { name: 'Exponent over multiply', doc: '2*2^3', expected: [16] },
