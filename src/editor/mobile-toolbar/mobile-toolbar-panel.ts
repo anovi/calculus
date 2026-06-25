@@ -11,6 +11,7 @@ import { OPERATION_ICON } from './operation-icons';
 import { OperationsDictionary, type Operation, type OperationDef } from './operations-dictionary';
 import { createPanelPositioner, type PanelPositioner } from "./panel-positioner";
 import { helpPanelState } from "./state";
+import { syncInstallPromptButtonWithBottomToolbar } from "../../pwa";
 
 
 /*===============================================================================
@@ -203,6 +204,7 @@ const HelpPanelViewPlugin = ViewPlugin.fromClass(class HelpPanelView {
     #syncPositioner(isOpen: boolean) {
         this.#positioner?.destroy();
         this.#positioner = null;
+        syncInstallPromptButtonWithBottomToolbar(isOpen);
         if (!isOpen) return;
 
         const elem = document.getElementById('cm-suggestions-panel') as HTMLDivElement | null;

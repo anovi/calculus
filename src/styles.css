@@ -33,6 +33,7 @@ body {
   justify-content: center;
   flex-shrink: 0;
   pointer-events: none;
+  color: var(--icon-color);
 }
 
 .button-icon__svg {
@@ -41,12 +42,90 @@ body {
   display: block;
 }
 
-#app-shell .button-icon {
-  color: var(--icon-color);
+#app-shell .button-icon {}
+
+button.primary {
+  flex: 0 0 48px;
+  min-height: 48px;
+  padding: 0.5em 1em;
+  border-radius: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  line-height: 1;
+  font-weight: 360;
+
+  background: var(--accent);
+  color: var(--on-accent-primary);
+  border: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
+
+  &:focus,
+  &:focus-visible {
+    outline: none;
+    background: var(--button-bg);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--button-hover-bg);
+    }
+  }
+
+  &:active {
+    background: var(--button-hover-bg);
+  }
+}
+
+
+/*=============================================
+=        Installation button and prompt       =
+=============================================*/
+
+.install-pwa-sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: var(--z-layer-floating);
+  margin: 0;
+  /* padding-right: max(1rem, env(safe-area-inset-right, 0px)); */
+  /* padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); */
+  padding-right: calc(var(--side-padding) - 12px);
+  padding-left: var(--side-padding);
+  border: none;
+  background: var(--background);
+  min-height: 48px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 10%, var(--background));
+  &.hidden {
+    display: none;
+  }
+}
+
+.install-pwa-sheet-close {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  img {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .pwa-install-link {
-  position: fixed;
+  /* position: fixed; */
   right: max(1rem, env(safe-area-inset-right, 0px));
   bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   z-index: var(--z-layer-floating);
@@ -72,10 +151,47 @@ body {
   display: none;
 }
 
-#cm-suggestions-panel .button-icon {
-  color: inherit;
+.install-pwa-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background);
+  color: var(--editor-base);
+  z-index: 9999;
+  padding: var(--side-padding);
+
+  H2 {
+    text-align: center;
+  }
 }
 
+.install-pwa-image {
+  text-align: center;
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.install-pwa-close {}
+
+.install-pwa-action {
+  
+  img {
+    vertical-align: bottom;
+  }
+  [data-theme="light"] & {
+    color: #007AFF;
+    color-scheme: light;
+  }
+  [data-theme="dark"] & {
+    color: #ffffff;
+    color-scheme: dark;
+  }
+}
 
 /*=============================================
 =                  Drawer                     =
@@ -1294,6 +1410,7 @@ body {
   }
 
   .button-icon {
+    color: inherit;
     width: 32px;
     height: 32px;
     display: flex;

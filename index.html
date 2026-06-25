@@ -63,5 +63,30 @@
       <div id="editor"></div>
     </div>
     <script type="module" src="/src/main.ts"></script>
+
+    <template id="install-pwa-dialog-template">
+      <div class="install-pwa-wrapper">
+        <div class="install-pwa-image">
+          <img src="/icons/add-to-home-screen.svg" style="width: 70vw; text-align: center;">
+        </div>
+        <h2>Add Compio to your Home Screen</h2>
+        <p>Install for offline access and a more native app experience.</p>
+        <ol>
+          <li>Tap <span class="install-pwa-action"><img src="/icons/share.svg"></span> share in your browser</li>
+          <li>Select <span class="install-pwa-action"><img src="/icons/plus-app.svg"> Add to Home Screen</span></li>
+        </ol>
+        <button id="install-pwa-close" class="primary install-pwa-close">Close</button> 
+      </div>
+    </template>
+
+    <template id="install-pwa-sheet-template">
+      <div class="install-pwa-sheet">
+        <button id="pwa-install-link" class="pwa-install-link">Install as app for better experience</button> 
+        <button id="install-pwa-sheet-close" class="install-pwa-sheet-close">
+          <img src="/icons/xmark.svg">
+        </button> 
+      </div>
+    </template>
+
   </body>
 </html>

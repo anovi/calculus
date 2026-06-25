@@ -1,3 +1,5 @@
+import { isIOSDevice } from "../lib/mobile-device";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
@@ -14,6 +16,30 @@ declare global {
 
 let deferredPrompt: BeforeInstallPromptEvent | null =
   window.__compioDeferredInstallPrompt ?? null
+
+
+const INSTALL_STATUS_KEY = 'installation';
+type InstallPropValues = 'dismissed' | 'installed';
+
+/* ------------------------------------------------------------------------------- */
+
+/** Listen as early as possible so we do not miss a prompt fired before UI mounts. */
+function captureInstallPrompt() {
+  if (isStandaloneApp()) return
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    storeDeferredPrompt(event as BeforeInstallPromptEvent)
+  })
+
+  window.addEventListener('appinstalled', () => {
+    clearDeferredPrompt()
+  })
+}
+
+captureInstallPrompt()
+
+/* ------------------------------------------------------------------------------- */
+
 const readyListeners = new Set<InstallPromptReadyListener>()
 const availabilityListeners = new Set<InstallAvailabilityListener>()
 
@@ -35,16 +61,12 @@ function clearDeferredPrompt() {
   notifyAvailabilityChange()
 }
 
-function captureInstallPrompt() {
-  if (isStandaloneApp()) return
+function setInstallStatus(value: InstallPropValues) {
+  localStorage.setItem(INSTALL_STATUS_KEY, value)
+}
 
-  window.addEventListener('beforeinstallprompt', (event) => {
-    storeDeferredPrompt(event as BeforeInstallPromptEvent)
-  })
-
-  window.addEventListener('appinstalled', () => {
-    clearDeferredPrompt()
-  })
+function getInstallStatus(): InstallPropValues | undefined {
+  return localStorage.getItem(INSTALL_STATUS_KEY) as InstallPropValues;
 }
 
 /** True when the app is running as an installed PWA (standalone / home screen). */
@@ -54,11 +76,8 @@ export function isStandaloneApp(): boolean {
   return (navigator as Navigator & { standalone?: boolean }).standalone === true
 }
 
-/** Listen as early as possible so we do not miss a prompt fired before UI mounts. */
-captureInstallPrompt()
-
 export function isInstallPromptAvailable(): boolean {
-  return !isStandaloneApp() && deferredPrompt !== null
+  return !isStandaloneApp() && (deferredPrompt !== null || isIOSDevice())
 }
 
 export function onInstallAvailabilityChange(listener: () => void): () => void {
@@ -69,36 +88,78 @@ export function onInstallAvailabilityChange(listener: () => void): () => void {
 
 export function triggerInstallPrompt(): void {
   if (!deferredPrompt) return
-  void deferredPrompt.prompt().then(() => deferredPrompt!.userChoice).then(() => {
+  void deferredPrompt.prompt().then(() => deferredPrompt!.userChoice).then((result) => {
+    setInstallStatus(result.outcome === 'accepted' ? 'installed' : 'dismissed');
     clearDeferredPrompt()
   })
 }
 
 /** Fixed “Install as app” control; shown only when the browser offers install. */
 export function mountInstallPromptButton(): () => void {
-  if (isStandaloneApp()) return () => {}
+  if (isStandaloneApp() || getInstallStatus() !== null) return () => {}
 
-  const button = document.createElement('button')
-  button.type = 'button'
-  button.className = 'pwa-install-link'
-  button.textContent = 'Install as app'
-  button.hidden = !isInstallPromptAvailable()
-  document.body.appendChild(button)
+  const template = document.getElementById('install-pwa-sheet-template') as HTMLTemplateElement;
+  const fragment = template.content.cloneNode(true);
+  document.body.appendChild(fragment);
+
+  const sheet = document.querySelector('.install-pwa-sheet')!;
+  const button = document.querySelector('.pwa-install-link')!;
+  const closeButton = document.querySelector('.install-pwa-sheet-close')!;
+
+  sheet.classList.toggle('hidden', !isInstallPromptAvailable());
 
   const syncButton = () => {
-    button.hidden = !isInstallPromptAvailable()
+    sheet.classList.toggle('hidden', !isInstallPromptAvailable());
   }
 
   const onClick = () => {
-    triggerInstallPrompt()
+    if (isIOSDevice()) {
+      invokeInstallOverlayInstruction();
+    } else {
+      triggerInstallPrompt()
+    }
+  }
+  const onCloseClick = () => {
+    close();
+    setInstallStatus('dismissed');
   }
 
-  const stopAvailability = onInstallAvailabilityChange(syncButton)
-  button.addEventListener('click', onClick)
+  availabilityListeners.add(syncButton);
+  button.addEventListener('click', onClick);
+  closeButton.addEventListener('click', onCloseClick);
 
-  return () => {
-    stopAvailability()
+  syncButton()
+
+  const close = () => {
+    availabilityListeners.delete(syncButton)
     button.removeEventListener('click', onClick)
-    button.remove()
+    sheet.remove()
   }
+
+  return close;
+}
+
+export function syncInstallPromptButtonWithBottomToolbar (toolbarIsVisible: boolean) {
+  if (isStandaloneApp()) return;
+  const sheet = document.querySelector('.install-pwa-sheet');
+  if (!sheet) return;
+  sheet.classList.toggle('hidden', toolbarIsVisible);
+}
+
+/* ------------------------------------------------------------------------------- */
+
+function invokeInstallOverlayInstruction() {
+  if (isStandaloneApp()) return;
+  const template = document.getElementById('install-pwa-dialog-template') as HTMLTemplateElement;
+  if (!template) return;
+  const fragment = template.content.cloneNode(true);
+  document.body.appendChild(fragment);
+
+  const dialog = document.querySelector('.install-pwa-wrapper')!;
+  const close = () => document.body.removeChild(dialog);
+
+  const closeButton = document.getElementById('install-pwa-close');
+  closeButton?.addEventListener('click', () => {
+    close();
+  })
 }
