@@ -33,7 +33,7 @@ export function mountAppMenu(trigger: HTMLButtonElement, ctx: AppContext): () =>
       {
         kind: 'link',
         label: 'User Manual',
-        href: 'https://github.com/anovi/compio/blob/main/docs/user-manual.md',
+        href: 'https://github.com/anovi/compio/wiki/Compio-User-Manual',
       },
       {
         kind: 'link',
@@ -46,11 +46,11 @@ export function mountAppMenu(trigger: HTMLButtonElement, ctx: AppContext): () =>
         label: 'Author: Aleksei Novichkov',
         href: 'http://novichkov.link',
       },
-      {
-        kind: 'link',
-        label: 'GitHub',
-        href: 'https://github.com/anovi/compio',
-      },
+      // {
+      //   kind: 'link',
+      //   label: 'GitHub',
+      //   href: 'https://github.com/anovi/compio',
+      // },
     ],
   })
 
