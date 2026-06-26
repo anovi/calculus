@@ -1,0 +1,55 @@
+# Welcome to compio
+// Each line is either an expression, a comment, like this line, or a header (starts with #)
+
+# Basic arithmetics
+500 - 120 - 85 - 40 - 33
+(85 + 120 + 93) / 3
+
+// exponent
+256^3
+
+// percentage
+3599 + 21%
+3599 * 21%
+
+# Trip budget example
+flight = 320 USD
+hotel = 85 USD * 7
+food = 40 USD * 7
+total trip = flight + hotel + food
+
+// convert to euros
+total trip in EUR
+
+# Unit conversion
+marathon = 42.195 km in miles
+half_marathon = marathon / 2
+
+# Bill split example
+bill = 124 USD
+tip = bill * 15%
+people = 4
+per person = (bill + tip) / people
+
+# Functions
+// square root
+sqrt(256)
+round(4.56)
+// remove unit from number
+num(233 m²)
+
+# Summaries
+33 EUR
+5 EUR
+1755 RSD
+80 BAM
+20 BAM
+200 RSD
+5 EUR
+sum() in RSD
+// Summary functions use the values directly above them.
+// Use sum(), average(), or median() after a group of lines.
+
+// Discover all functions under [f] icon on the top panel
+
+// Press + to start a new document

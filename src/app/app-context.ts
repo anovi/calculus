@@ -6,7 +6,7 @@ import {
   DocumentSession,
   type ActiveDocument,
 } from '../documents'
-import { DEFAULT_DOC } from './default-document'
+import DEFAULT_DOC from './default-document.txt?raw'
 import { createDocumentActions, type DocumentActions } from './document-actions'
 import { createThemeController, type ThemeController } from './theme-controller'
 
