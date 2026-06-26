@@ -14,7 +14,6 @@ Compio is a notebook-style editor for everyday math. Each line is either a calcu
 - [Functions](#functions)
 - [Units and conversions](#units-and-conversions)
 - [Comments and headings](#comments-and-headings)
-- [Common patterns](#common-patterns)
 - [Limitations](#limitations)
 
 ---
