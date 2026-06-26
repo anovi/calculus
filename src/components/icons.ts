@@ -13,6 +13,7 @@ import timesIcon from '../assets/icons/times.svg?raw'
 import undoIcon from '../assets/icons/undo.svg?raw'
 import exponentIcon from '../assets/icons/exponent.svg?raw'
 import sumIcon from '../assets/icons/sum.svg?raw'
+import functionIcon from '../assets/icons/function.svg?raw'
 
 export type IconName =
   | 'plus'
@@ -30,6 +31,7 @@ export type IconName =
   | 'sun'
   | 'sum'
   | 'moon'
+  | 'function'
 
 const ICONS: Record<IconName, string> = {
   plus: plusIcon,
@@ -47,6 +49,7 @@ const ICONS: Record<IconName, string> = {
   gear: gearIcon,
   sun: sunIcon,
   moon: moonIcon,
+  function: functionIcon,
 }
 
 export function iconSvg(name: IconName): string {

@@ -35,9 +35,9 @@ const MENU_SECTION_DEFS: readonly {
   },
   {
     id: 'totals',
-    label: 'Totals',
+    label: 'Summary functions',
     intro:
-      'Summarize the lines above within a group. Groups are separated by blank lines.',
+      'Use a group of lines above them. Groups are separated by blank lines.',
     names: ['sum', 'average', 'median'],
   },
   {

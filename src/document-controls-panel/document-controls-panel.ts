@@ -69,19 +69,12 @@ export function createDocumentControlsPanel(ctx: AppContext): DocumentControlsPa
     className: 'cm-document-controls__button cm-document-controls__app-menu-button',
   })
 
-  const functionsButton = document.createElement('button')
-  functionsButton.type = 'button'
-  functionsButton.id = 'functions-menu-toggle'
-  functionsButton.className =
-    'cm-document-controls__button cm-document-controls__functions-button'
-  functionsButton.setAttribute('aria-label', 'Functions')
-  functionsButton.textContent = 'ƒ'
-  // const functionsButton = createIconButton({
-  //   icon: 'sum',
-  //   ariaLabel: 'Functions',
-  //   id: 'functions-menu-toggle',
-  //   className: 'cm-document-controls__button cm-document-controls__functions-button',
-  // })
+  const functionsButton = createIconButton({
+    icon: 'function',
+    ariaLabel: 'Functions',
+    id: 'functions-menu-toggle',
+    className: 'cm-document-controls__button cm-document-controls__functions-button',
+  })
 
   let historyButtons: HistoryButtons | null = null
   let unmountFunctionsMenu: (() => void) | null = null
