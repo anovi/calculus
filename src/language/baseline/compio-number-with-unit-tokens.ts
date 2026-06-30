@@ -1,8 +1,11 @@
-import { ExternalTokenizer, type InputStream } from '@lezer/lr';
+import { ExternalTokenizer, Stack, type InputStream } from '@lezer/lr';
 
 import { longestRecognizedUnitSpelling } from '../../units';
 import { isIdentifierChar } from './identifier-char';
-import { PercentSuffix, Unit } from './compio-language-parser.terms';
+import { PercentSuffix, Unit, Identifier } from './compio-language-parser.terms';
+import { COLON, EQUALS, SPACE } from './symbols';
+import { CURRENCY_SYMBOLS_SET } from '../../units/currencies-list';
+import { longestRecognizedCurrencySymbolSpelling } from '../../units/all-units-vocabluary';
 
 export type NumberWithUnitTokenizerTerms = {
   Unit: number;
@@ -11,6 +14,10 @@ export type NumberWithUnitTokenizerTerms = {
 
 function isDigit(code: number) {
   return code >= 48 && code <= 57;
+}
+
+function isEqualsSymbol(code: number) {
+  return code === EQUALS || code === COLON;
 }
 
 /** Unit/currency tokens must not continue into an Identifier (e.g. `s` in `sqrt`). */
@@ -44,23 +51,38 @@ function tryPercentSuffix(input: InputStream, terms: NumberWithUnitTokenizerTerm
 }
 
 export function createNumberWithUnitTokensTokenizer(terms: NumberWithUnitTokenizerTerms) {
-  return new ExternalTokenizer((input: InputStream) => {
+  return new ExternalTokenizer((input: InputStream, stack: Stack) => {
     if (tryPercentSuffix(input, terms)) return;
 
-    const suffixLen = longestRecognizedUnitSpelling((rel) => input.peek(rel));
+    let isSymbol = false;
+    let suffixLen = longestRecognizedUnitSpelling((rel) => input.peek(rel));
+    if (suffixLen === 0) {
+      suffixLen = longestRecognizedCurrencySymbolSpelling((rel) => input.peek(rel));
+      if (suffixLen === 0) return;
+      isSymbol = true;
+    }
+    // console.log('pos', stack.pos)
+    // console.log('--canShift:', stack.canShift(Identifier))
+    // console.log('suffixLen', suffixLen)
 
-    if (suffixLen === 0) return;
-    if (!hasUnitSuffixBoundary(input, suffixLen)) return;
-    if (isStandaloneInKeyword(input, suffixLen)) return;
+    if (isSymbol && (input.peek(suffixLen) === SPACE || isDigit(input.peek(suffixLen))))  {
+      // console.log('IS SYMBOL')
+    } else {
+      if (!hasUnitSuffixBoundary(input, suffixLen)) return;
+      if (isStandaloneInKeyword(input, suffixLen)) return;
+    }
 
-    for (let k = 0; k < suffixLen; k++) input.advance();
-    input.acceptToken(terms.Unit);
+    if (!isSymbol && stack.canShift(Identifier)) return
+
+    let offset = suffixLen;
+    while (input.peek(offset) === SPACE) offset++;
+
+    if (!isEqualsSymbol(input.peek(offset))) {
+      for (let k = 0; k < suffixLen; k++) input.advance();
+      input.acceptToken(terms.Unit);
+    }
+    
   });
-}
-
-/** @deprecated Use {@link createNumberWithUnitTokensTokenizer}. */
-export function createUnitTokenizer(terms: { Unit: number }) {
-  return createNumberWithUnitTokensTokenizer({ Unit: terms.Unit, PercentSuffix });
 }
 
 /** Wired into the generated parser; term ids come from `compio-language-parser.terms`. */

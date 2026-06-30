@@ -220,15 +220,24 @@ const decisionTree: Record<TermValue, CalcDecisionPoint> = {
     },
     [terms.NumberWithUnit]: {
         props: [
-            { key: 'number', expect: [terms.Number] },
-            { key: 'unit', expect: [terms.Unit] }
+            { key: 'first', expect: [terms.Number, terms.Unit] },
+            { key: 'second', expect: [terms.Unit, terms.Number] }
         ],
         process: (
             _ctx,
-            props: { number: ExpressionResult|null, unit: string|undefined }
+            props: { first: ExpressionResult|string|null, second: string|ExpressionResult|undefined }
         ): ExpressionResult|null => {
-            if (props.number !== null && props.unit) {
-                return { n: props.number.n, unit: props.unit } as ExpressionResult;
+            let unit: string|null = null, n: Decimal|null = null;
+            if (props.first && typeof props.first === 'string') {
+                unit = props.first;
+                n = (props.second as ExpressionResult).n;
+            }
+            else if (props.second && typeof props.second === 'string') {
+                unit = props.second;
+                n = (props.first as ExpressionResult).n;
+            }
+            if (n != null  && unit!= null) {
+                return { n, unit } as ExpressionResult;
             }
             return null;
         }

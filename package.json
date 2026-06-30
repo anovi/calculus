@@ -12,6 +12,7 @@
     "test": "vitest run",
     "bench": "vitest bench src/benchmarks",
     "test:watch": "vitest",
+    "test:file:watch": "vitest $npm_config",
     "grammar": "lezer-generator ./src/language/baseline/compio-language.grammar -o ./src/language/baseline/compio-language-parser.ts && node scripts/patch-lezer-parser.mjs",
     "prepare": "husky",
     "deploy": "npm run build && wrangler deploy"

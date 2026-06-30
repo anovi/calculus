@@ -1,6 +1,6 @@
 import { unitsObject } from '../../node_modules/convert/dist/generated/parse-unit.js';
 
-import { CURRENCY_CODES } from './currencies-list';
+import { CURRENCIES, type CurrencyEntry } from './currencies-list';
 
 /** Every unit spelling accepted by the `convert` package (names, symbols, aliases). */
 export const CANONICAL_UNIT_SPELLINGS = Object.freeze(Object.keys(unitsObject));
@@ -19,7 +19,28 @@ function buildCanonicalUnitByLower(
   return map;
 }
 
-const currencies = buildCanonicalUnitByLower(new Map(), CURRENCY_CODES);
+function buildCanonicalCurrencyByLower(
+  map: Map<string, string[]>,
+  collection: readonly CurrencyEntry[]
+): Map<string, string[]> {
+  for (const unit of collection) {
+    const lower = unit.code.toLowerCase();
+    let arr = map.get(lower);
+    if (!arr) arr = [];
+    arr.push(unit.code);
+    map.set(lower, arr);
+    if (unit.symbol) {
+      if (unit.symbol === '$' && unit.code !== 'USD') continue;
+      let arr = map.get(unit.symbol);
+      if (!arr) arr = [];
+      arr.push(unit.code);
+      map.set(unit.symbol, arr);
+    }
+  }
+  return map;
+}
+
+let currencies = buildCanonicalCurrencyByLower(new Map(), CURRENCIES);
 const canonicalUnitByLower = buildCanonicalUnitByLower(currencies, CANONICAL_UNIT_SPELLINGS);
 
 /**

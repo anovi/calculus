@@ -40,7 +40,9 @@ function completionAt(doc: string, pos: number = doc.length, explicit = true) {
 }
 
 function applyText(option: { apply?: unknown; label: string }): string {
-  return typeof option.apply === 'string' ? option.apply : option.label;
+  const r = typeof option.apply === 'string' ? option.apply : option.label;
+  console.log(r)
+  return r
 }
 
 describe('sourceUnitForConvertTarget', () => {

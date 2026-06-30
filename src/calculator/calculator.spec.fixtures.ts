@@ -335,6 +335,17 @@ export const calculatorFixtures: CalculatorFixture[] = [
     expected: [9],
   },
   {
+    name: 'currency convertion from symbol',
+    doc: '$10 in EUR',
+    expected: [9],
+  },
+  {
+    name: 'varible binding with the name identical to unit',
+    doc: 'w = 12 EUR\n1 + w',
+    expected: [12, 13],
+    expectedUnits: ['EUR', 'EUR'],
+  },
+  {
     name: 'conversion before arithmetic',
     doc: '23 EUR in USD + 10',
     expected: ['35.76'],

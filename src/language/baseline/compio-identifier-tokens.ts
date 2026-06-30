@@ -2,8 +2,7 @@ import { ExternalTokenizer, type InputStream } from '@lezer/lr';
 
 import { isIdentifierChar } from './identifier-char';
 import { Identifier } from './compio-language-parser.terms';
-
-const SPACE = 32, ZERO = 48, NINE = 57;
+import { NINE, SPACE, ZERO } from './symbols';
 
 function scanWordLength(input: InputStream, offset: number): number {
   let len = 0;

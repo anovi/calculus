@@ -5,6 +5,7 @@
 // stay in `src/units/currencies-list.ts` instead of being pasted into this grammar.
 @external tokens numberWithUnitTokens from "./compio-number-with-unit-tokens.ts" {
 	Unit
+	CurrencySymbol
 	PercentSuffix
 }
 
@@ -55,7 +56,7 @@ ArgList { expression ("," expression)* }
 
 Literal { NumberWithUnit | PercentLiteral | Number | String | Date }
 
-NumberWithUnit { Number Unit }
+NumberWithUnit { Number Unit | Unit Number }
 PercentLiteral { Number PercentSuffix }
 
 ConvertOp { @specialize<Identifier, "IN" | "in" | "into" | "as" | "to"> }

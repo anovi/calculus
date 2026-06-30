@@ -1,11 +1,16 @@
 import { PrefixTree } from "../lib/prefix-tree";
-import { CURRENCY_CODES } from "./currencies-list";
+import { CURRENCY_CODES, CURRENCY_SYMBOLS } from "./currencies-list";
 import { CANONICAL_UNIT_SPELLINGS } from "./unit-name-normalizer";
 
 
 const knownUnitSpellings = PrefixTree.fromWords([
+    // ...CURRENCY_SYMBOLS,
     ...CURRENCY_CODES,
     ...CANONICAL_UNIT_SPELLINGS
+]);
+
+const knownCurrencySymbolsSpellings = PrefixTree.fromWords([
+    ...CURRENCY_SYMBOLS,
 ]);
 
 /**
@@ -14,4 +19,8 @@ const knownUnitSpellings = PrefixTree.fromWords([
  */
 export function longestRecognizedUnitSpelling(peek: (offset: number) => number): number {
     return knownUnitSpellings.longestMatchUtf16(peek);
+}
+
+export function longestRecognizedCurrencySymbolSpelling(peek: (offset: number) => number): number {
+    return knownCurrencySymbolsSpellings.longestMatchUtf16(peek);
 }

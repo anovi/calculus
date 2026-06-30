@@ -65,6 +65,26 @@ expectedTree: `CalcDoc
           Unit`,
 },
 {
+name: 'varible binding with the name identical to unit',
+// only: true,
+doc: 'w = 12 EUR\n1 + w',
+expectedTree: `CalcDoc
+  StatementGroup
+    Binding
+      Identifier
+      EqualSign
+      Literal
+        NumberWithUnit
+          Number
+          Unit
+    NoBinding
+      AddExpression
+        Literal
+          Number
+        PlusBinaryOp
+        Identifier`,
+},
+{
 name: 'unit convertion',
 doc: '12 EUR in Usd',
 expectedTree: `CalcDoc
@@ -75,6 +95,20 @@ expectedTree: `CalcDoc
           NumberWithUnit
             Number
             Unit
+        ConvertOp
+        Unit`,
+},
+{
+name: 'currency convertion from symbol',
+doc: '€12 in Usd',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      ConvertExpression
+        Literal
+          NumberWithUnit
+            Unit
+            Number
         ConvertOp
         Unit`,
 },
@@ -563,5 +597,38 @@ expectedTree: `CalcDoc
       Identifier
       EqualSign
       Identifier`,
+},
+{
+name: 'currency symbol as suffix',
+doc: '23$',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        NumberWithUnit
+          Number
+          Unit`,
+},
+{
+name: 'currency symbol as prefix',
+doc: '$23',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        NumberWithUnit
+          Unit
+          Number`,
+},
+{
+name: 'currency symbol as prefix with space',
+doc: '€ 23.5',
+expectedTree: `CalcDoc
+  StatementGroup
+    NoBinding
+      Literal
+        NumberWithUnit
+          Unit
+          Number`,
 },
 ];

@@ -1,8 +1,9 @@
-import { CURRENCIES, CURRENCY_CODES, type CurrencyCode, type CurrencyEntry } from './currencies-list';
+import { CURRENCIES, CURRENCY_CODES, CURRENCY_SYMBOLS_SET, type CurrencyCode, type CurrencyEntry } from './currencies-list';
 
 export type { CurrencyCode, CurrencyEntry } from './currencies-list';
 
 const CURRENCY_SET: ReadonlySet<string> = new Set(CURRENCY_CODES);
+
 
 /** Fractional digits for display, derived from {@link CurrencyEntry.numberToBasic} (e.g. 100 → 2). */
 const DECIMAL_PLACES_BY_CODE = new Map<string, number>(
@@ -35,7 +36,7 @@ export function isCurrencyCode(value: string): value is CurrencyCode {
 }
 
 export function isCurrency(unit: string): unit is CurrencyCode {
-	return isCurrencyCode(unit.toUpperCase());
+	return isCurrencyCode(unit.toUpperCase()) || CURRENCY_SYMBOLS_SET.has(unit);
 }
 
 export function getCurrencies(): readonly CurrencyEntry[] {
